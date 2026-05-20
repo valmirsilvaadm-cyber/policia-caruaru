@@ -6,10 +6,10 @@
 <title>Polícia Municipal de Caruaru</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap');
-:root {
-  --azul-escuro:#0b1f3a; --azul-medio:#1c3d73; --azul-claro:#2e5aa7;
-  --dourado:#c9a84c; --dourado-claro:#e8c96b; --branco:#f0f4ff;
-  --cinza:#8a9bb5; --vermelho:#c0392b; --verde:#1e8449; --amarelo:#d4ac0d;
+:root{
+  --azul-escuro:#0b1f3a;--azul-medio:#1c3d73;--azul-claro:#2e5aa7;
+  --dourado:#c9a84c;--dourado-claro:#e8c96b;--branco:#f0f4ff;
+  --cinza:#8a9bb5;--vermelho:#c0392b;--verde:#1e8449;--amarelo:#d4ac0d;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Source Sans 3',sans-serif;color:var(--branco);background-color:var(--azul-escuro);
@@ -50,13 +50,16 @@ h1{font-family:'Oswald',sans-serif;font-size:1.6rem;font-weight:700;letter-spaci
 .btn-verde:hover{background:linear-gradient(135deg,#27ae60,var(--verde));border-color:#27ae60;}
 .btn-cinza{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:var(--cinza);}
 .btn-bloqueado{opacity:.35;cursor:not-allowed!important;}
-.btn-bloqueado:hover{background:linear-gradient(135deg,var(--azul-medio),var(--azul-escuro))!important;border-color:rgba(201,168,76,.25)!important;color:var(--branco)!important;}
+.btn-bloqueado:hover{background:linear-gradient(135deg,var(--azul-medio),var(--azul-escuro))!important;
+  border-color:rgba(201,168,76,.25)!important;color:var(--branco)!important;}
 .aviso-login{display:none;text-align:center;font-size:.72rem;color:var(--amarelo);letter-spacing:1px;
   font-family:'Oswald',sans-serif;margin:2px 0 8px;grid-column:1/-1;}
 
 /* INSPETORIA */
-.insp-btn{background:linear-gradient(135deg,#1a5276,#0b1f3a)!important;border-color:rgba(100,180,255,.35)!important;color:#a8d4f5!important;}
-.insp-btn:hover{background:linear-gradient(135deg,#2471a3,#1a5276)!important;border-color:#5dade2!important;color:#d6eaf8!important;}
+.insp-btn{background:linear-gradient(135deg,#1a5276,#0b1f3a)!important;
+  border-color:rgba(100,180,255,.35)!important;color:#a8d4f5!important;}
+.insp-btn:hover{background:linear-gradient(135deg,#2471a3,#1a5276)!important;
+  border-color:#5dade2!important;color:#d6eaf8!important;}
 
 /* SEÇÕES */
 .secao{display:none;animation:fadeIn .25s ease;}
@@ -73,11 +76,8 @@ textarea{resize:vertical;min-height:70px;}
 .btn-voltar{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--cinza);
   font-size:.75rem;padding:7px 14px;margin-bottom:4px;width:auto;letter-spacing:1px;}
 .btn-voltar:hover{border-color:var(--cinza);color:var(--branco);background:transparent;}
-
-/* CAMPO LABEL */
 .campo-label{font-family:'Oswald',sans-serif;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;
   color:var(--cinza);display:block;margin:8px 0 2px;}
-.campo-label:first-child{margin-top:0;}
 
 /* ARMAS MULTI */
 .arma-linha{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:10px;margin-bottom:8px;}
@@ -92,13 +92,14 @@ textarea{resize:vertical;min-height:70px;}
 .btn-add-linha:hover{background:rgba(201,168,76,.2);border-color:var(--dourado);}
 
 /* HISTÓRICO */
-#historico-lista,#admin-lista,#auditoria-lista,#admin-servidores-lista,
-#plantao-admin-lista,.hist-scroll{margin-top:10px;max-height:420px;overflow-y:auto;padding-right:4px;}
+.hist-scroll{max-height:420px;overflow-y:auto;padding-right:4px;}
+.hist-scroll::-webkit-scrollbar{width:4px;}
+.hist-scroll::-webkit-scrollbar-thumb{background:var(--azul-claro);border-radius:4px;}
 .hist-item{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.15);
   border-left:3px solid var(--dourado);border-radius:6px;padding:10px 12px;margin-bottom:8px;}
 .hist-item .hist-tipo{font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--dourado);margin-bottom:4px;}
 .hist-item .hist-data{font-size:.7rem;color:var(--cinza);margin-bottom:4px;}
-.hist-item .hist-usuario{font-size:.72rem;color:var(--dourado-claro);margin-bottom:6px;font-style:italic;}
+.hist-item .hist-usuario{font-size:.72rem;color:var(--dourado-claro);margin-bottom:6px;}
 .hist-item .hist-corpo{font-size:.82rem;line-height:1.5;color:rgba(240,244,255,.85);white-space:pre-line;}
 .hist-vazio{text-align:center;color:var(--cinza);font-size:.85rem;padding:30px 0;}
 .hist-contador{font-size:.75rem;color:var(--cinza);text-align:right;margin-bottom:8px;}
@@ -109,10 +110,16 @@ textarea{resize:vertical;min-height:70px;}
 .badge.status-erro{background:var(--vermelho);}
 .badge.status-aviso{background:var(--amarelo);color:#000;}
 
+/* CHECKBOX AUDITORIA */
+.hist-item .audit-check{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;vertical-align:middle;}
+.audit-sel-bar{display:none;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);
+  border-radius:8px;padding:10px;margin-bottom:10px;gap:8px;align-items:center;justify-content:space-between;}
+.audit-sel-bar.visivel{display:flex;}
+
 /* ADMIN TABS */
 .admin-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:14px;}
-.tab-btn{padding:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;
-  font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:1px;text-transform:uppercase;
+.tab-btn{padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;
+  font-family:'Oswald',sans-serif;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;
   color:var(--cinza);cursor:pointer;transition:all .2s;text-align:center;}
 .tab-btn.ativa{background:rgba(201,168,76,.15);border-color:var(--dourado);color:var(--dourado);}
 .tab-painel{display:none;}
@@ -134,27 +141,7 @@ textarea{resize:vertical;min-height:70px;}
 .cnt-vermelho{background:rgba(192,57,43,.2);border-color:rgba(192,57,43,.4);}
 .cnt-laranja{background:rgba(230,126,34,.2);border-color:rgba(230,126,34,.4);}
 
-/* BOTÕES GRANDES PLANTÃO */
-.btns-plantao{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0;}
-.btn-plantao{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:18px 6px;border-radius:10px;border:2px solid transparent;cursor:pointer;
-  font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:1px;text-transform:uppercase;
-  transition:all .2s;gap:6px;}
-.btn-plantao span{font-size:.72rem;}
-.btn-plantao-presente{background:rgba(30,132,73,.25);border-color:rgba(30,132,73,.6);color:#7dcea0;font-size:1.6rem;}
-.btn-plantao-presente:hover{background:rgba(30,132,73,.4);border-color:#27ae60;}
-.btn-plantao-ausente{background:rgba(192,57,43,.25);border-color:rgba(192,57,43,.6);color:#f1948a;font-size:1.6rem;}
-.btn-plantao-ausente:hover{background:rgba(192,57,43,.4);border-color:#e74c3c;}
-.btn-plantao-atrasado{background:rgba(230,126,34,.25);border-color:rgba(230,126,34,.6);color:#f0b27a;font-size:1.6rem;}
-.btn-plantao-atrasado:hover{background:rgba(230,126,34,.4);border-color:#e67e22;}
-
-/* BOTÕES ESPECIAIS PLANTÃO */
-.btn-atestado{background:rgba(100,100,200,.25);border-color:rgba(100,100,200,.6);color:#a8b4f8;}
-.btn-atestado:hover{background:rgba(100,100,200,.4);border-color:#818cf8;}
-.btn-outros{background:rgba(150,100,200,.25);border-color:rgba(150,100,200,.6);color:#c4b5fd;}
-.btn-outros:hover{background:rgba(150,100,200,.4);border-color:#a78bfa;}
-
-/* CARD SERVIDOR */
+/* SERVIDOR CARD */
 .servidor-card{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.15);border-radius:8px;
   padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;}
 .servidor-card:hover{border-color:var(--dourado);background:rgba(201,168,76,.08);}
@@ -165,14 +152,32 @@ textarea{resize:vertical;min-height:70px;}
 .sc-ausente{background:rgba(192,57,43,.3);color:#f1948a;}
 .sc-atrasado{background:rgba(230,126,34,.3);color:#f0b27a;}
 .sc-pendente{background:rgba(255,255,255,.08);color:var(--cinza);}
-.sc-atestado{background:rgba(100,100,200,.3);color:#a8b4f8;}
-.sc-outros{background:rgba(150,100,200,.3);color:#c4b5fd;}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
-.modal-box{background:#0f2744;border:1px solid rgba(201,168,76,.3);border-radius:12px;padding:20px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto;}
-.modal-nome{font-family:'Oswald',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--dourado);}
-.modal-mat{font-size:.75rem;color:var(--cinza);margin-top:2px;}
+/* MARCAÇÃO CHECKBOX */
+.marcacao-group{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:10px 12px;margin:6px 0;}
+.marcacao-title{font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:2px;color:var(--cinza);
+  text-transform:uppercase;margin-bottom:8px;}
+.marcacao-item{display:flex;align-items:center;gap:10px;padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);}
+.marcacao-item:last-child{border-bottom:none;}
+.marcacao-item label{font-size:.85rem;color:var(--branco);flex:1;cursor:pointer;}
+.marcacao-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;flex-shrink:0;}
+.marcacao-item input[type=radio]{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;flex-shrink:0;}
+
+/* BOTÕES CONFIRMAÇÃO PLANTÃO */
+.btns-confirmar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0;}
+.btn-conf{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:14px 4px;border-radius:10px;border:2px solid transparent;cursor:pointer;
+  font-family:'Oswald',sans-serif;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;
+  transition:all .2s;gap:4px;width:100%;}
+.btn-conf-presente{background:rgba(30,132,73,.25);border-color:rgba(30,132,73,.6);color:#7dcea0;font-size:1.4rem;}
+.btn-conf-presente:hover{background:rgba(30,132,73,.45);border-color:#27ae60;}
+.btn-conf-ausente{background:rgba(192,57,43,.25);border-color:rgba(192,57,43,.6);color:#f1948a;font-size:1.4rem;}
+.btn-conf-ausente:hover{background:rgba(192,57,43,.45);border-color:#e74c3c;}
+.btn-conf-atrasado{background:rgba(230,126,34,.25);border-color:rgba(230,126,34,.6);color:#f0b27a;font-size:1.4rem;}
+.btn-conf-atrasado:hover{background:rgba(230,126,34,.45);border-color:#e67e22;}
+.btn-conf.selecionado{transform:scale(1.05);box-shadow:0 0 12px rgba(255,255,255,.15);}
 
 /* PERMISSÕES */
 .perm-box{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:12px;margin-top:8px;}
@@ -182,93 +187,46 @@ textarea{resize:vertical;min-height:70px;}
 .perm-item label{font-size:.82rem;color:var(--branco);flex:1;cursor:pointer;}
 .perm-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;flex-shrink:0;}
 
-/* AUDITORIA — SELEÇÃO */
-.audit-check{width:16px;height:16px;accent-color:var(--vermelho);cursor:pointer;margin:0;flex-shrink:0;}
-.audit-select-bar{display:flex;align-items:center;gap:8px;padding:8px 0;margin-bottom:6px;flex-wrap:wrap;}
-.audit-select-bar label{font-size:.75rem;color:var(--cinza);font-family:'Oswald',sans-serif;letter-spacing:1px;flex:1;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;
+  display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal-box{background:#0f2744;border:1px solid rgba(201,168,76,.3);border-radius:12px;
+  padding:18px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.6);
+  max-height:92vh;overflow-y:auto;}
+.modal-nome{font-family:'Oswald',sans-serif;font-size:1.05rem;letter-spacing:2px;color:var(--dourado);}
+.modal-mat{font-size:.75rem;color:var(--cinza);margin-top:2px;}
 
-/* ADMIN LOCK */
 .admin-lock{text-align:center;padding:16px 0 4px;font-size:2.2rem;}
 .divisor{border:none;border-top:1px solid rgba(255,255,255,.08);margin:10px 0;grid-column:1/-1;}
 .nota{font-size:.75rem;color:var(--cinza);text-align:center;margin-top:10px;line-height:1.5;}
 
-/* GOOGLE MAPS */
-.mapa-box{border-radius:10px;overflow:hidden;border:1px solid rgba(201,168,76,.3);margin:12px 0;height:200px;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;}
+/* MAPA */
+.mapa-box{width:100%;height:200px;border-radius:8px;border:1px solid rgba(201,168,76,.2);
+  margin:10px 0;overflow:hidden;}
 .mapa-box iframe{width:100%;height:100%;border:none;}
-.mapa-loading{font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:1px;color:var(--cinza);text-align:center;padding:20px;}
-.mapa-link-btn{display:block;text-align:center;padding:8px;background:rgba(66,133,244,.15);border:1px solid rgba(66,133,244,.4);
-  border-radius:6px;color:#90c2fa;font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:1px;
-  text-decoration:none;margin-top:6px;transition:all .2s;}
-.mapa-link-btn:hover{background:rgba(66,133,244,.3);border-color:#4285f4;}
-
-/* JORNADA TIPOS */
-.jornada-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0 10px;}
-.jornada-btn{padding:10px 6px;border-radius:8px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);
-  color:var(--cinza);font-family:'Oswald',sans-serif;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;
-  cursor:pointer;text-align:center;transition:all .2s;}
-.jornada-btn:hover{border-color:var(--dourado);color:var(--dourado-claro);}
-.jornada-btn.selecionado{background:rgba(201,168,76,.2);border-color:var(--dourado);color:var(--dourado);}
-
-/* MARCAÇÃO EXTRA */
-.marcacao-extra{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
-.marcacao-btn{padding:10px 8px;border-radius:8px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);
-  color:var(--cinza);font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:1px;text-transform:uppercase;
-  cursor:pointer;text-align:center;transition:all .2s;}
-.marcacao-btn:hover{border-color:#a78bfa;color:#c4b5fd;}
-.marcacao-btn.selecionado{background:rgba(167,139,250,.2);border-color:#a78bfa;color:#c4b5fd;}
-
-/* NOTIFICAÇÃO INTERNA */
-.notif-badge{position:fixed;top:60px;right:16px;background:var(--dourado);color:var(--azul-escuro);
-  border-radius:50%;width:22px;height:22px;display:none;align-items:center;justify-content:center;
-  font-family:'Oswald',sans-serif;font-size:.75rem;font-weight:700;z-index:9998;}
-.notif-badge.visivel{display:flex;}
-.notif-painel{position:fixed;top:86px;right:16px;background:#0f2744;border:1px solid rgba(201,168,76,.3);
-  border-radius:10px;max-width:300px;width:90%;z-index:9997;box-shadow:0 8px 32px rgba(0,0,0,.6);
-  max-height:60vh;overflow-y:auto;display:none;}
-.notif-painel.visivel{display:block;}
-.notif-header{padding:10px 14px;font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:2px;
-  color:var(--dourado);border-bottom:1px solid rgba(201,168,76,.2);display:flex;justify-content:space-between;align-items:center;}
-.notif-item{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.78rem;line-height:1.5;}
-.notif-item:last-child{border-bottom:none;}
-.notif-item .notif-titulo{font-family:'Oswald',sans-serif;font-size:.72rem;letter-spacing:1px;color:var(--dourado);margin-bottom:4px;}
-.notif-item .notif-corpo{color:rgba(240,244,255,.8);white-space:pre-line;}
-.notif-item .notif-hora{font-size:.65rem;color:var(--cinza);margin-top:4px;}
-.notif-vazio{text-align:center;color:var(--cinza);font-size:.8rem;padding:20px;}
-.btn-notif{background:transparent;border:none;color:var(--dourado);font-size:1.3rem;cursor:pointer;
-  position:fixed;top:54px;right:16px;z-index:9998;padding:4px;}
+.localizacao-info{font-size:.75rem;color:var(--cinza);text-align:center;margin-bottom:8px;}
 
 /* IMPRESSÃO */
-@media print {
+@media print{
   body{background:#fff!important;color:#000!important;padding:10px!important;}
   .no-print{display:none!important;}
-  h1{color:#0b1f3a!important;} .subtitulo{color:#555!important;}
-  .hist-item{background:#f9f9f9!important;border:1px solid #ccc!important;border-left:3px solid #c9a84c!important;page-break-inside:avoid;}
-  .hist-item .hist-tipo{color:#0b1f3a!important;} .hist-item .hist-data,.hist-item .hist-usuario{color:#666!important;}
+  h1{color:#0b1f3a!important;}.subtitulo{color:#555!important;}
+  .hist-item{background:#f9f9f9!important;border:1px solid #ccc!important;
+    border-left:3px solid #c9a84c!important;page-break-inside:avoid;}
+  .hist-item .hist-tipo{color:#0b1f3a!important;}
+  .hist-item .hist-data,.hist-item .hist-usuario{color:#666!important;}
   .hist-item .hist-corpo{color:#222!important;}
-  #historico-lista{max-height:none!important;overflow:visible!important;}
   .secao-titulo{color:#0b1f3a!important;border-color:#c9a84c!important;}
-  .print-header{display:flex!important;justify-content:space-between;border-bottom:2px solid #0b1f3a;padding-bottom:10px;margin-bottom:16px;}
+  .print-header{display:flex!important;justify-content:space-between;
+    border-bottom:2px solid #0b1f3a;padding-bottom:10px;margin-bottom:16px;}
   .print-meta{font-size:.75rem;color:#555;text-align:right;}
-  .btn-notif,.notif-badge,.notif-painel{display:none!important;}
-  .mapa-box{display:none!important;}
+  .hist-scroll{max-height:none!important;overflow:visible!important;}
 }
 .print-header{display:none;}
 </style>
 </head>
 <body>
 <div id="alerta-global" class="alerta-box"></div>
-
-<!-- Botão de notificações -->
-<button class="btn-notif no-print" id="btn-notif" onclick="toggleNotif()" title="Notificações">🔔</button>
-<div class="notif-badge no-print" id="notif-badge">0</div>
-<div class="notif-painel no-print" id="notif-painel">
-  <div class="notif-header">
-    <span>🔔 Notificações</span>
-    <button onclick="limparNotificacoes()" style="background:transparent;border:none;color:var(--cinza);cursor:pointer;font-size:.75rem;font-family:'Oswald',sans-serif;letter-spacing:1px">Limpar</button>
-  </div>
-  <div id="notif-lista"><p class="notif-vazio">Sem notificações.</p></div>
-</div>
-
 <div class="container">
 
 <h1>🌟 Polícia Municipal</h1>
@@ -282,8 +240,8 @@ textarea{resize:vertical;min-height:70px;}
     <button class="btn" onclick="ir('cadastro')">Cadastro</button>
     <button class="btn" onclick="ir('login')">Login</button>
     <p class="aviso-login" id="aviso-login">🔒 Faça login para acessar</p>
-    <button id="btn-checklist" class="btn btn-full" onclick="irProtegido('checklist','checklist')">Armaria</button>
-    <button id="btn-historico" class="btn btn-full btn-dourado" onclick="irProtegido('historico','historico')">
+    <button id="btn-checklist"  class="btn btn-full" onclick="irProtegido('checklist','checklist')">Armaria</button>
+    <button id="btn-historico"  class="btn btn-full btn-dourado" onclick="irProtegido('historico','historico')">
       Histórico de Envios <span class="badge" id="badge-hist">0</span>
     </button>
     <button id="btn-inspetoria" class="btn btn-full insp-btn" onclick="irProtegido('inspetoria','inspetoria')">🏛 Inspetoria</button>
@@ -316,7 +274,7 @@ textarea{resize:vertical;min-height:70px;}
   <p class="nota">Ainda não tem cadastro? Volte ao menu e clique em <strong>Cadastro</strong>.</p>
 </div>
 
-<!-- ══ CHECKLIST (ARMARIA) ══ -->
+<!-- ══ ARMARIA (antigo checklist) ══ -->
 <div id="checklist" class="secao">
   <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
   <div class="secao-titulo">Armaria</div>
@@ -365,9 +323,9 @@ textarea{resize:vertical;min-height:70px;}
   <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
   <div class="secao-titulo">Meus Envios</div>
   <div class="hist-contador" id="hist-contador"></div>
-  <div id="historico-lista"></div>
+  <div id="historico-lista" class="hist-scroll"></div>
   <div class="hist-acoes no-print">
-    <button class="btn btn-verde"  onclick="imprimirHistorico()">🖨 Imprimir / PDF</button>
+    <button class="btn btn-verde"  onclick="imprimirHistorico()">🖨 Imprimir</button>
     <button class="btn btn-perigo" onclick="limparHistorico()">🗑 Limpar</button>
   </div>
 </div>
@@ -386,37 +344,42 @@ textarea{resize:vertical;min-height:70px;}
   <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
   <div class="secao-titulo">Painel do Administrador</div>
   <div class="admin-tabs">
-    <div class="tab-btn ativa" id="tab-btn-cadastros"  onclick="mudarAba('cadastros')">👥 Usuários</div>
-    <div class="tab-btn"       id="tab-btn-servidores" onclick="mudarAba('servidores')">👮 Servidores</div>
-    <div class="tab-btn"       id="tab-btn-auditoria"  onclick="mudarAba('auditoria')">📋 Auditoria</div>
+    <div class="tab-btn ativa" id="tab-btn-cadastros"     onclick="mudarAba('cadastros')">👥 Usuários</div>
+    <div class="tab-btn"       id="tab-btn-servidores"    onclick="mudarAba('servidores')">👮 Servidores</div>
+    <div class="tab-btn"       id="tab-btn-auditoria"     onclick="mudarAba('auditoria')">📋 Auditoria</div>
     <div class="tab-btn"       id="tab-btn-plantao-admin" onclick="mudarAba('plantao-admin')">🏛 Plantões</div>
   </div>
 
   <!-- ABA USUÁRIOS -->
   <div class="tab-painel ativa" id="tab-cadastros">
-    <p style="font-size:.8rem;color:var(--cinza);margin-bottom:10px">Gerencie usuários e defina permissões de acesso.</p>
+    <p style="font-size:.8rem;color:var(--cinza);margin-bottom:10px">Gerencie usuários, permissões e acesso.</p>
     <button class="btn btn-full btn-cinza" style="margin-bottom:8px;font-size:.78rem" id="btn-atualizar-admin">🔄 Atualizar</button>
-    <div id="admin-lista"><p class="hist-vazio">Carregando...</p></div>
+    <div id="admin-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
   </div>
 
   <!-- ABA SERVIDORES -->
   <div class="tab-painel" id="tab-servidores">
-    <p style="font-size:.8rem;color:var(--cinza);margin-bottom:10px">Cadastre servidores para a Assunção de Plantão.</p>
+    <p style="font-size:.8rem;color:var(--cinza);margin-bottom:10px">Cadastre servidores para Assunção de Plantão.</p>
     <div class="filtros-box">
-      <label>Nome completo</label>
-      <input type="text" id="adm-srv-nome" placeholder="Nome do servidor">
-      <label>Matrícula</label>
-      <input type="text" id="adm-srv-mat" placeholder="Matrícula">
-      <label>Cargo / Função</label>
-      <input type="text" id="adm-srv-cargo" placeholder="Ex: Inspetor, Guarda...">
+      <label>Nome completo</label><input type="text" id="adm-srv-nome" placeholder="Nome do servidor">
+      <label>Matrícula</label><input type="text" id="adm-srv-mat" placeholder="Matrícula">
+      <label>Cargo / Função</label><input type="text" id="adm-srv-cargo" placeholder="Ex: Inspetor, Guarda...">
+      <label>E-mail (para notificações)</label><input type="email" id="adm-srv-email" placeholder="E-mail do servidor">
       <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="cadastrarServidor()">+ Cadastrar Servidor</button>
     </div>
     <div class="hist-contador" id="cnt-servidores"></div>
-    <div id="admin-servidores-lista"><p class="hist-vazio">Carregando...</p></div>
+    <div id="admin-servidores-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
   </div>
 
   <!-- ABA AUDITORIA -->
   <div class="tab-painel" id="tab-auditoria">
+    <div class="audit-sel-bar" id="audit-sel-bar">
+      <span id="audit-sel-count" style="font-size:.8rem;color:var(--dourado);font-family:'Oswald',sans-serif;letter-spacing:1px"></span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-perigo" onclick="removerAuditoriaSelecionados()">🗑 Remover</button>
+        <button class="btn btn-sm btn-cinza"  onclick="desmarcarTodos()">✕ Cancelar</button>
+      </div>
+    </div>
     <div class="filtros-box">
       <label>🔍 Nome do usuário</label>
       <input type="text" id="filtro-nome" placeholder="Ex: João Silva" oninput="filtrarAuditoria()">
@@ -427,14 +390,8 @@ textarea{resize:vertical;min-height:70px;}
         <button class="btn btn-verde  btn-sm" onclick="window.print()">🖨 Imprimir</button>
       </div>
     </div>
-    <!-- Barra de seleção e exclusão em massa -->
-    <div class="audit-select-bar" id="audit-select-bar" style="display:none">
-      <input type="checkbox" id="audit-check-all" class="audit-check" onchange="selecionarTodosAudit(this.checked)">
-      <label for="audit-check-all">Selecionar todos</label>
-      <button class="btn btn-sm btn-perigo" onclick="removerAuditoriaSelecionados()">🗑 Remover selecionados</button>
-    </div>
     <div class="hist-contador" id="audit-contador"></div>
-    <div id="auditoria-lista"><p class="hist-vazio">Carregando...</p></div>
+    <div id="auditoria-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
   </div>
 
   <!-- ABA PLANTÕES -->
@@ -450,7 +407,7 @@ textarea{resize:vertical;min-height:70px;}
       </div>
     </div>
     <div class="hist-contador" id="plantao-admin-contador"></div>
-    <div id="plantao-admin-lista"><p class="hist-vazio">Use os filtros para buscar.</p></div>
+    <div id="plantao-admin-lista" class="hist-scroll"><p class="hist-vazio">Use os filtros para buscar.</p></div>
   </div>
 </div>
 
@@ -470,21 +427,16 @@ textarea{resize:vertical;min-height:70px;}
   <button class="btn btn-voltar no-print" onclick="ir('inspetoria')">← Voltar</button>
   <div class="secao-titulo">📋 Assunção de Plantão</div>
 
-  <!-- MAPA GOOGLE MAPS -->
-  <div class="mapa-box" id="mapa-plantao">
-    <p class="mapa-loading">📍 Carregando localização...</p>
+  <!-- MAPA -->
+  <div id="mapa-plantao" style="display:none">
+    <div class="localizacao-info" id="loc-info">📍 Obtendo localização...</div>
+    <div class="mapa-box"><iframe id="mapa-frame" src="" allowfullscreen></iframe></div>
   </div>
-  <a id="mapa-link" class="mapa-link-btn no-print" href="#" target="_blank" rel="noopener" style="display:none">
-    📍 Abrir no Google Maps
-  </a>
 
-  <div class="plantao-cabecalho" style="margin-top:12px">
-    <div>
-      <label class="campo-label">Data</label>
-      <input type="date" id="plantao-data">
-    </div>
-    <div>
-      <label class="campo-label">Jornada</label>
+  <!-- DATA E HORÁRIOS -->
+  <div class="plantao-cabecalho">
+    <div><label class="campo-label">Data</label><input type="date" id="plantao-data"></div>
+    <div><label class="campo-label">Jornada</label>
       <select id="plantao-turno">
         <option value="">Selecione...</option>
         <option>Ordinário</option>
@@ -493,15 +445,34 @@ textarea{resize:vertical;min-height:70px;}
       </select>
     </div>
   </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div><label class="campo-label">Hora Entrada</label><input type="time" id="plantao-entrada"></div>
+    <div><label class="campo-label">Hora Saída</label><input type="time" id="plantao-saida"></div>
+  </div>
 
-  <div class="plantao-contador">
+  <!-- MARCAÇÃO ATESTADO/OUTROS -->
+  <div class="marcacao-group">
+    <div class="marcacao-title">Marcação especial</div>
+    <div class="marcacao-item">
+      <input type="checkbox" id="mark-atestado" onchange="toggleMarcacao('atestado')">
+      <label for="mark-atestado">🏥 Atestado Médico</label>
+    </div>
+    <div class="marcacao-item">
+      <input type="checkbox" id="mark-outros" onchange="toggleMarcacao('outros')">
+      <label for="mark-outros">📎 Outros</label>
+    </div>
+    <textarea id="mark-obs" placeholder="Descreva se necessário..." style="display:none;margin-top:8px;min-height:50px"></textarea>
+  </div>
+
+  <!-- CONTADOR -->
+  <div class="plantao-contador" style="margin-top:12px">
     <div class="cnt-item cnt-verde"    onclick="ir('hist-presentes')" title="Ver histórico"><span id="cnt-presentes">0</span><small>Presentes</small></div>
     <div class="cnt-item cnt-vermelho" onclick="ir('hist-ausentes')"  title="Ver histórico"><span id="cnt-ausentes">0</span><small>Ausentes</small></div>
     <div class="cnt-item cnt-laranja"  onclick="ir('hist-atrasados')" title="Ver histórico"><span id="cnt-atrasados">0</span><small>Atrasados</small></div>
   </div>
   <p style="font-size:.68rem;color:var(--cinza);text-align:center;margin:-4px 0 12px">Toque no contador para ver o histórico</p>
 
-  <!-- BUSCA DE SERVIDOR -->
+  <!-- BUSCA SERVIDOR -->
   <div class="filtros-box" style="margin-bottom:10px">
     <label>🔍 Buscar servidor cadastrado</label>
     <input type="text" id="plantao-busca-nome" placeholder="Nome do servidor" oninput="buscarServidorPlantao()">
@@ -546,18 +517,18 @@ textarea{resize:vertical;min-height:70px;}
     <button class="btn insp-btn" onclick="ir('fisc-pv')">🚗 Patrulhamento (P.V)</button>
   </div>
 </div>
-<div id="fisc-prefeitura" class="secao fisc-tela" data-local="Prefeitura"></div>
-<div id="fisc-rendeiras"  class="secao fisc-tela" data-local="Rendeiras"></div>
-<div id="fisc-marco"      class="secao fisc-tela" data-local="Marco Zero"></div>
-<div id="fisc-saldanha"   class="secao fisc-tela" data-local="Saldanha da Gama"></div>
-<div id="fisc-po"         class="secao fisc-tela" data-local="Patrulhamento (P.O)"></div>
-<div id="fisc-pv"         class="secao fisc-tela" data-local="Patrulhamento Viatura (P.V)"></div>
-<div id="hist-fisc-prefeitura" class="secao" data-local="Prefeitura"></div>
-<div id="hist-fisc-rendeiras"  class="secao" data-local="Rendeiras"></div>
-<div id="hist-fisc-marco"      class="secao" data-local="Marco Zero"></div>
-<div id="hist-fisc-saldanha"   class="secao" data-local="Saldanha da Gama"></div>
-<div id="hist-fisc-po"         class="secao" data-local="Patrulhamento (P.O)"></div>
-<div id="hist-fisc-pv"         class="secao" data-local="Patrulhamento Viatura (P.V)"></div>
+<div id="fisc-prefeitura" class="secao" data-local="Prefeitura"></div>
+<div id="fisc-rendeiras"  class="secao" data-local="Rendeiras"></div>
+<div id="fisc-marco"      class="secao" data-local="Marco Zero"></div>
+<div id="fisc-saldanha"   class="secao" data-local="Saldanha da Gama"></div>
+<div id="fisc-po"         class="secao" data-local="Patrulhamento (P.O)"></div>
+<div id="fisc-pv"         class="secao" data-local="Patrulhamento Viatura (P.V)"></div>
+<div id="hist-fisc-prefeitura" class="secao"></div>
+<div id="hist-fisc-rendeiras"  class="secao"></div>
+<div id="hist-fisc-marco"      class="secao"></div>
+<div id="hist-fisc-saldanha"   class="secao"></div>
+<div id="hist-fisc-po"         class="secao"></div>
+<div id="hist-fisc-pv"         class="secao"></div>
 
 <!-- ══ ORDEM DE SERVIÇO ══ -->
 <div id="ordem-servico" class="secao">
@@ -609,44 +580,28 @@ textarea{resize:vertical;min-height:70px;}
 <!-- ══ MODAL PLANTÃO ══ -->
 <div id="modal-plantao" class="modal-overlay" style="display:none">
   <div class="modal-box">
-    <div id="modal-plantao-badge" style="font-size:2rem;text-align:center;margin-bottom:6px"></div>
-    <div class="modal-nome" id="modal-plantao-nome" style="text-align:center"></div>
-    <div class="modal-mat"  id="modal-plantao-mat"  style="text-align:center;margin-bottom:12px"></div>
+    <div class="modal-nome" id="modal-srv-nome" style="text-align:center;margin-bottom:2px"></div>
+    <div class="modal-mat"  id="modal-srv-mat"  style="text-align:center;margin-bottom:14px"></div>
 
-    <!-- Horários de entrada e saída -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div>
-        <label class="campo-label">Hora Entrada</label>
-        <input type="time" id="modal-hora-entrada">
-      </div>
-      <div>
-        <label class="campo-label">Hora Saída</label>
-        <input type="time" id="modal-hora-saida">
-      </div>
+    <!-- BOTÕES DE CONFIRMAÇÃO -->
+    <div class="btns-confirmar">
+      <button class="btn-conf btn-conf-presente" id="btn-conf-presente" onclick="selecionarStatus('presente')">
+        ✅<span>Presente</span>
+      </button>
+      <button class="btn-conf btn-conf-ausente" id="btn-conf-ausente" onclick="selecionarStatus('ausente')">
+        ❌<span>Ausente</span>
+      </button>
+      <button class="btn-conf btn-conf-atrasado" id="btn-conf-atrasado" onclick="selecionarStatus('atrasado')">
+        ⏰<span>Atrasado</span>
+      </button>
+    </div>
+    <div id="modal-status-label" style="text-align:center;font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:2px;color:var(--cinza);margin-bottom:10px">
+      Selecione o status acima
     </div>
 
-    <!-- Observação -->
     <label class="campo-label">Observação (opcional)</label>
     <textarea id="modal-plantao-obs" placeholder="Ex: chegou às 06h15..." style="min-height:50px;margin-bottom:12px"></textarea>
-
-    <!-- Marcações especiais -->
-    <label class="campo-label" style="margin-bottom:6px">Marcação Especial</label>
-    <div class="marcacao-extra">
-      <button class="marcacao-btn" id="btn-marc-atestado" onclick="toggleMarcacao('atestado')">🏥 Atestado Médico</button>
-      <button class="marcacao-btn" id="btn-marc-outros"   onclick="toggleMarcacao('outros')">📋 Outros</button>
-    </div>
-
-    <!-- Botões de status -->
-    <label class="campo-label" style="margin-bottom:6px">Status de Presença</label>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <button class="btn-plantao btn-plantao-presente" onclick="selecionarStatus('presente')" style="font-size:1.4rem;padding:12px 4px">✅<span>Presente</span></button>
-      <button class="btn-plantao btn-plantao-ausente"  onclick="selecionarStatus('ausente')"  style="font-size:1.4rem;padding:12px 4px">❌<span>Ausente</span></button>
-      <button class="btn-plantao btn-plantao-atrasado" onclick="selecionarStatus('atrasado')" style="font-size:1.4rem;padding:12px 4px">⏰<span>Atraso</span></button>
-    </div>
-
-    <div id="status-selecionado" style="text-align:center;font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:2px;color:var(--cinza);margin-bottom:12px">Selecione o status acima</div>
-
-    <button class="btn btn-full btn-dourado" onclick="confirmarPlantao()">✔ Confirmar</button>
+    <button class="btn btn-full btn-dourado" onclick="confirmarPlantao()">✔ Confirmar Registro</button>
     <button class="btn btn-full btn-cinza" style="margin-top:6px;font-size:.75rem" onclick="fecharModalPlantao()">Cancelar</button>
   </div>
 </div>
@@ -656,777 +611,520 @@ textarea{resize:vertical;min-height:70px;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc,
-         updateDoc, query, where, orderBy, serverTimestamp, deleteDoc }
+         updateDoc, deleteDoc, query, where, orderBy, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyCIW7CeYfeEYBxfjxPdCvRvu3IkWIKvcd8",
-  authDomain:        "policia-caruaru.firebaseapp.com",
-  projectId:         "policia-caruaru",
-  storageBucket:     "policia-caruaru.firebasestorage.app",
-  messagingSenderId: "929007613716",
-  appId:             "1:929007613716:web:11009e8a2dce37dc503401"
+  apiKey:"AIzaSyCIW7CeYfeEYBxfjxPdCvRvu3IkWIKvcd8",
+  authDomain:"policia-caruaru.firebaseapp.com",
+  projectId:"policia-caruaru",
+  storageBucket:"policia-caruaru.firebasestorage.app",
+  messagingSenderId:"929007613716",
+  appId:"1:929007613716:web:11009e8a2dce37dc503401"
 };
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
-
-const SENHA_ADMIN   = "adminvps";
-const COL_USUARIOS  = "usuarios";
-const COL_AUDITORIA = "auditoria";
-const COL_PLANTAO   = "plantao";
-const COL_SERV      = "servidores_plantao";
-const COL_FISC      = "fiscalizacao";
-const COL_OS        = "ordens_servico";
-const COL_NOTIF     = "notificacoes";
-
-const PERMISSOES = ["checklist","historico","inspetoria"];
-
-let usuarioLogado   = null;
-let contadorArmas   = 0;
-let todosRegistros  = [];
-let servidoresCache = [];
-let plantaoStatusAtual   = null;
-let plantaoMarcacaoExtra = null;
-let servidorPlantaoSelecionado = null;
-let registrosPlantaoLocal = {};
-let notificacoesLocal = [];
-let localizacaoAtual  = null;
-
-/* ══ TELAS ══ */
-const TELAS = [
-  "cadastro","login","checklist","armas","municoes","viaturas","historico",
-  "admin-login","admin","inspetoria","plantao",
-  "hist-presentes","hist-ausentes","hist-atrasados",
-  "fiscalizacao","fisc-prefeitura","fisc-rendeiras","fisc-marco","fisc-saldanha","fisc-po","fisc-pv",
-  "hist-fisc-prefeitura","hist-fisc-rendeiras","hist-fisc-marco","hist-fisc-saldanha","hist-fisc-po","hist-fisc-pv",
-  "ordem-servico","os-temporaria","os-permanente","hist-os-temporaria","hist-os-permanente"
-];
-
-const FISC_MAP = {
+const SENHA_ADMIN="adminvps";
+const COL_USUARIOS="usuarios";
+const COL_AUDITORIA="auditoria";
+const COL_PLANTAO="plantao";
+const COL_SERV="servidores_plantao";
+const COL_FISC="fiscalizacao";
+const COL_OS="ordens_servico";
+const PERMISSOES=["checklist","historico","inspetoria"];
+const FISC_MAP={
   "fisc-prefeitura":"Prefeitura","fisc-rendeiras":"Rendeiras","fisc-marco":"Marco Zero",
   "fisc-saldanha":"Saldanha da Gama","fisc-po":"Patrulhamento (P.O)","fisc-pv":"Patrulhamento Viatura (P.V)"
 };
 
+let usuarioLogado=null,contadorArmas=0,todosRegistros=[],servidoresCache=[],
+    plantaoStatusAtual=null,servidorSelecionado=null,
+    registrosPlantaoLocal={},auditoriaSelecionados=new Set();
+
+/* ══ TELAS ══ */
+const TELAS=["cadastro","login","checklist","armas","municoes","viaturas","historico",
+  "admin-login","admin","inspetoria","plantao","hist-presentes","hist-ausentes","hist-atrasados",
+  "fiscalizacao","fisc-prefeitura","fisc-rendeiras","fisc-marco","fisc-saldanha","fisc-po","fisc-pv",
+  "hist-fisc-prefeitura","hist-fisc-rendeiras","hist-fisc-marco","hist-fisc-saldanha","hist-fisc-po","hist-fisc-pv",
+  "ordem-servico","os-temporaria","os-permanente","hist-os-temporaria","hist-os-permanente"];
+
 /* ══ NAVEGAÇÃO ══ */
-function ir(id) {
-  TELAS.forEach(t => document.getElementById(t)?.classList.remove("ativa"));
-  document.getElementById("menu").style.display = "none";
+function ir(id){
+  TELAS.forEach(t=>document.getElementById(t)?.classList.remove("ativa"));
+  document.getElementById("menu").style.display="none";
   document.getElementById(id)?.classList.add("ativa");
-  if (id==="historico")      renderHistorico();
-  if (id==="armas")          iniciarArmas();
-  if (id==="admin")          { carregarAdmin(); carregarAuditoria(); carregarServidoresAdmin(); }
-  if (id==="plantao")        iniciarPlantao();
-  if (id==="hist-presentes") renderHistStatus("presente");
-  if (id==="hist-ausentes")  renderHistStatus("ausente");
-  if (id==="hist-atrasados") renderHistStatus("atrasado");
-  if (Object.keys(FISC_MAP).includes(id)) iniciarFiscTela(id);
-  if (id.startsWith("hist-fisc-")) renderHistFisc(id);
-  if (id==="hist-os-temporaria") renderHistOS("temporaria");
-  if (id==="hist-os-permanente") renderHistOS("permanente");
+  if(id==="historico")      renderHistorico();
+  if(id==="armas")          iniciarArmas();
+  if(id==="admin")          {carregarAdmin();carregarServidoresAdmin();carregarAuditoria();}
+  if(id==="plantao")        iniciarPlantao();
+  if(id==="hist-presentes") renderHistStatus("presente");
+  if(id==="hist-ausentes")  renderHistStatus("ausente");
+  if(id==="hist-atrasados") renderHistStatus("atrasado");
+  if(Object.keys(FISC_MAP).includes(id)) iniciarFiscTela(id);
+  if(id.startsWith("hist-fisc-")) renderHistFisc(id);
+  if(id==="hist-os-temporaria") renderHistOS("temporaria");
+  if(id==="hist-os-permanente") renderHistOS("permanente");
 }
 
-function irProtegido(destino, permissao) {
-  if (!usuarioLogado) {
-    alerta("Faça login para acessar esta área.", "aviso");
-    document.getElementById("aviso-login").style.display = "block";
-    return;
-  }
-  const perms = usuarioLogado.permissoes || {};
-  if (perms[permissao] === false) {
-    alerta("Você não tem permissão para acessar esta área.", "erro");
-    return;
-  }
+function irProtegido(destino,permissao){
+  if(!usuarioLogado){alerta("Faça login para acessar esta área.","aviso");
+    document.getElementById("aviso-login").style.display="block";return;}
+  const perms=usuarioLogado.permissoes||{};
+  if(perms[permissao]===false){alerta("Você não tem permissão para esta área.","erro");return;}
   ir(destino);
 }
 
-function voltar() {
-  TELAS.forEach(t => document.getElementById(t)?.classList.remove("ativa"));
-  document.getElementById("menu").style.display = "block";
-  atualizarBadge();
-  atualizarMenu();
-  // Fechar painel de notificações ao voltar
-  document.getElementById("notif-painel").classList.remove("visivel");
+function voltar(){
+  TELAS.forEach(t=>document.getElementById(t)?.classList.remove("ativa"));
+  document.getElementById("menu").style.display="block";
+  atualizarBadge();atualizarMenu();
 }
-
-window.ir          = ir;
-window.irProtegido = irProtegido;
-window.voltar      = voltar;
+window.ir=ir;window.irProtegido=irProtegido;window.voltar=voltar;
 
 /* ══ MENU ══ */
-function atualizarMenu() {
-  const logado = !!usuarioLogado;
-  const perms  = usuarioLogado?.permissoes || {};
-  ["checklist","historico","inspetoria"].forEach(p => {
-    const btn = document.getElementById("btn-" + p);
-    if (!btn) return;
-    const bloqueado = !logado || perms[p] === false;
-    btn.classList.toggle("btn-bloqueado", bloqueado);
+function atualizarMenu(){
+  const logado=!!usuarioLogado,perms=usuarioLogado?.permissoes||{};
+  ["checklist","historico","inspetoria"].forEach(p=>{
+    const btn=document.getElementById("btn-"+p);if(!btn)return;
+    btn.classList.toggle("btn-bloqueado",!logado||perms[p]===false);
   });
-  document.getElementById("aviso-login").style.display  = logado ? "none"  : "block";
-  document.getElementById("btn-sair").style.display     = logado ? "block" : "none";
-  document.getElementById("usuario-logado").style.display = logado ? "block" : "none";
+  document.getElementById("aviso-login").style.display=logado?"none":"block";
+  document.getElementById("btn-sair").style.display=logado?"block":"none";
+  document.getElementById("usuario-logado").style.display=logado?"block":"none";
 }
 
 /* ══ UTILS ══ */
-function v(id) { return (document.getElementById(id)?.value||"").trim(); }
-
-function alerta(msg, tipo) {
-  const el = document.getElementById("alerta-global");
-  el.textContent = msg;
-  el.className   = "alerta-box ativa "+(tipo||"ok");
-  clearTimeout(window._at);
-  window._at = setTimeout(()=>el.classList.remove("ativa"), 4500);
+function v(id){return(document.getElementById(id)?.value||"").trim();}
+function alerta(msg,tipo){
+  const el=document.getElementById("alerta-global");
+  el.textContent=msg;el.className="alerta-box ativa "+(tipo||"ok");
+  clearTimeout(window._at);window._at=setTimeout(()=>el.classList.remove("ativa"),4500);
 }
-
-function setBtnLoad(id, on, label="Entrar") {
-  const b = document.getElementById(id);
-  if (!b) return;
-  b.disabled = on;
-  b.textContent = on ? "Aguarde..." : label;
+function setBtnLoad(id,on,label="Entrar"){
+  const b=document.getElementById(id);if(!b)return;
+  b.disabled=on;b.textContent=on?"Aguarde...":label;
 }
+function tsStr(ts){if(!ts)return"";const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleString("pt-BR");}
+function tsData(ts){if(!ts)return"";const d=ts.toDate?ts.toDate():new Date(ts);return d.toISOString().slice(0,10);}
+function agora(){return new Date().toLocaleString("pt-BR");}
 
-function tsParaStr(ts) {
-  if (!ts) return "";
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleString("pt-BR");
+/* ══ MAPA / GEOLOCALIZAÇÃO ══ */
+function obterLocalizacao(){
+  const box=document.getElementById("mapa-plantao");
+  const info=document.getElementById("loc-info");
+  if(!box||!info)return;
+  box.style.display="block";
+  if(!navigator.geolocation){info.textContent="📍 Geolocalização não suportada.";return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude,lng=pos.coords.longitude;
+    info.textContent=`📍 Lat: ${lat.toFixed(5)} · Lng: ${lng.toFixed(5)}`;
+    document.getElementById("mapa-frame").src=
+      `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+  },()=>{info.textContent="📍 Não foi possível obter localização.";});
 }
-function tsParaData(ts) {
-  if (!ts) return "";
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toISOString().slice(0,10);
-}
-
-/* ══ GOOGLE MAPS / GEOLOCALIZAÇÃO ══ */
-function carregarMapa() {
-  const mapaEl   = document.getElementById("mapa-plantao");
-  const mapaLink = document.getElementById("mapa-link");
-  if (!navigator.geolocation) {
-    mapaEl.innerHTML = `<p class="mapa-loading">📍 Geolocalização não suportada neste dispositivo.</p>`;
-    return;
-  }
-  mapaEl.innerHTML = `<p class="mapa-loading">📍 Obtendo localização...</p>`;
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const lat = pos.coords.latitude.toFixed(6);
-      const lng = pos.coords.longitude.toFixed(6);
-      localizacaoAtual = { lat, lng };
-      // Embed do Google Maps sem API key (iframe embed estático)
-      mapaEl.innerHTML = `<iframe
-        src="https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed"
-        loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade">
-      </iframe>`;
-      mapaLink.href = `https://www.google.com/maps?q=${lat},${lng}`;
-      mapaLink.style.display = "block";
-    },
-    err => {
-      let msg = "Não foi possível obter a localização.";
-      if (err.code === 1) msg = "Permissão de localização negada.";
-      mapaEl.innerHTML = `<p class="mapa-loading">📍 ${msg}</p>`;
-      // Link para o Maps de Caruaru como fallback
-      mapaLink.href = "https://www.google.com/maps/place/Caruaru,+PE";
-      mapaLink.style.display = "block";
-      mapaLink.textContent = "📍 Ver Caruaru no Google Maps";
-    },
-    { timeout: 10000, enableHighAccuracy: true }
-  );
-}
-
-/* ══ NOTIFICAÇÕES INTERNAS ══ */
-function adicionarNotificacao(titulo, corpo) {
-  const agora = new Date().toLocaleString("pt-BR");
-  notificacoesLocal.unshift({ titulo, corpo, hora: agora, lida: false });
-  renderNotificacoes();
-}
-
-function renderNotificacoes() {
-  const lista = document.getElementById("notif-lista");
-  const badge = document.getElementById("notif-badge");
-  const naoLidas = notificacoesLocal.filter(n => !n.lida).length;
-  if (naoLidas > 0) {
-    badge.textContent = naoLidas;
-    badge.classList.add("visivel");
-  } else {
-    badge.classList.remove("visivel");
-  }
-  lista.innerHTML = notificacoesLocal.length
-    ? notificacoesLocal.map((n,i) => `
-        <div class="notif-item" style="${n.lida ? 'opacity:.6' : ''}">
-          <div class="notif-titulo">${n.titulo}</div>
-          <div class="notif-corpo">${n.corpo}</div>
-          <div class="notif-hora">🕐 ${n.hora}</div>
-        </div>`).join("")
-    : '<p class="notif-vazio">Sem notificações.</p>';
-}
-
-window.toggleNotif = function() {
-  const painel = document.getElementById("notif-painel");
-  painel.classList.toggle("visivel");
-  // Marcar como lidas ao abrir
-  if (painel.classList.contains("visivel")) {
-    notificacoesLocal.forEach(n => n.lida = true);
-    renderNotificacoes();
-  }
-};
-
-window.limparNotificacoes = function() {
-  notificacoesLocal = [];
-  renderNotificacoes();
-  document.getElementById("notif-painel").classList.remove("visivel");
-};
-
-// Fechar painel ao clicar fora
-document.addEventListener("click", e => {
-  const painel = document.getElementById("notif-painel");
-  const btn    = document.getElementById("btn-notif");
-  if (painel.classList.contains("visivel") && !painel.contains(e.target) && e.target !== btn) {
-    painel.classList.remove("visivel");
-  }
-});
 
 /* ══ CADASTRO ══ */
-window.enviarCadastro = async function() {
+window.enviarCadastro=async function(){
   const nome=v("nome"),nasc=v("data"),cpf=v("cpf"),mat=v("matricula"),
         email=v("email").toLowerCase(),senha=v("senha");
-  if (!nome||!nasc||!cpf||!mat||!email||!senha) return alerta("Preencha todos os campos.","erro");
-  if (senha.length!==6) return alerta("Senha deve ter 6 dígitos.","erro");
-  try {
-    const dup = await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
-    if (!dup.empty) return alerta("E-mail já cadastrado.","erro");
+  if(!nome||!nasc||!cpf||!mat||!email||!senha)return alerta("Preencha todos os campos.","erro");
+  if(senha.length!==6)return alerta("Senha deve ter 6 dígitos.","erro");
+  try{
+    const dup=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
+    if(!dup.empty)return alerta("E-mail já cadastrado.","erro");
     await addDoc(collection(db,COL_USUARIOS),{
-      nome,nascimento:nasc,cpf,matricula:mat,email,senha,
-      status:"pendente",
-      permissoes:{checklist:true,historico:true,inspetoria:true},
-      criadoEm:serverTimestamp()
+      nome,nascimento:nasc,cpf,matricula:mat,email,senha,status:"pendente",
+      permissoes:{checklist:true,historico:true,inspetoria:true},criadoEm:serverTimestamp()
     });
     alerta("Cadastro enviado! Aguarde aprovação do administrador.","ok");
     ["nome","data","cpf","matricula","email","senha"].forEach(id=>document.getElementById(id).value="");
-    setTimeout(()=>{
-      window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Novo%20cadastro%20pendente&body=`+
-        encodeURIComponent(`Novo cadastro:\n\nNome: ${nome}\nE-mail: ${email}\nMatrícula: ${mat}`);
-    },1500);
-  } catch(err){alerta("Erro: "+err.message,"erro");}
+    setTimeout(()=>{window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Novo%20cadastro%20pendente&body=`+
+      encodeURIComponent(`Novo cadastro:\n\nNome: ${nome}\nE-mail: ${email}\nMatrícula: ${mat}`);},1500);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
 };
 
 /* ══ LOGIN ══ */
-window.logar = async function() {
-  const email=v("loginEmail").toLowerCase(), senha=v("loginSenha");
-  if (!email||!senha) return alerta("Preencha e-mail e senha.","erro");
+window.logar=async function(){
+  const email=v("loginEmail").toLowerCase(),senha=v("loginSenha");
+  if(!email||!senha)return alerta("Preencha e-mail e senha.","erro");
   setBtnLoad("btn-entrar",true);
-  try {
-    const snap = await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email),where("senha","==",senha)));
-    if (snap.empty) { alerta("E-mail ou senha incorretos.","erro"); return setBtnLoad("btn-entrar",false); }
-    const usuario = snap.docs[0].data();
-    setBtnLoad("btn-entrar",false);
-    if (usuario.status==="pendente") return alerta("Cadastro aguarda aprovação do administrador.","aviso");
-    if (usuario.status==="rejeitado") return alerta("Cadastro rejeitado. Contate o administrador.","erro");
-    usuarioLogado = {...usuario, id:snap.docs[0].id};
-    document.getElementById("loginEmail").value="";
-    document.getElementById("loginSenha").value="";
-    const nome1 = usuario.nome.split(" ")[0];
-    document.getElementById("usuario-logado").textContent = `✓ ${nome1}`;
-    alerta(`Bem-vindo, ${nome1}!`,"ok");
-    // Verificar notificações pendentes para este usuário ao logar
-    verificarNotificacoesPendentes(usuario.email, usuario.matricula);
-    voltar();
-  } catch(err){alerta("Erro: "+err.message,"erro");setBtnLoad("btn-entrar",false);}
+  try{
+    const snap=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email),where("senha","==",senha)));
+    if(snap.empty){alerta("E-mail ou senha incorretos.","erro");return setBtnLoad("btn-entrar",false);}
+    const usuario=snap.docs[0].data();setBtnLoad("btn-entrar",false);
+    if(usuario.status==="pendente")return alerta("Cadastro aguarda aprovação.","aviso");
+    if(usuario.status==="rejeitado")return alerta("Cadastro rejeitado. Contate o administrador.","erro");
+    usuarioLogado={...usuario,id:snap.docs[0].id};
+    document.getElementById("loginEmail").value="";document.getElementById("loginSenha").value="";
+    const nome1=usuario.nome.split(" ")[0];
+    document.getElementById("usuario-logado").textContent=`✓ ${nome1}`;
+    alerta(`Bem-vindo, ${nome1}!`,"ok");voltar();
+  }catch(err){alerta("Erro: "+err.message,"erro");setBtnLoad("btn-entrar",false);}
 };
-
-// Busca notificações geradas para este servidor no Firebase
-async function verificarNotificacoesPendentes(email, matricula) {
-  try {
-    const snap = await getDocs(
-      query(collection(db, COL_NOTIF),
-        where("destinatarioEmail","==", email),
-        orderBy("criadoEm","desc")
-      )
-    );
-    snap.docs.forEach(d => {
-      const n = d.data();
-      adicionarNotificacao(n.titulo, n.corpo);
-    });
-  } catch(err) {
-    console.warn("Notificações:", err.message);
-  }
-}
-
-window.sair = function() { usuarioLogado=null; notificacoesLocal=[]; renderNotificacoes(); voltar(); };
+window.sair=function(){usuarioLogado=null;voltar();};
 
 /* ══ ADMIN LOGIN ══ */
-window.entrarAdmin = function() {
-  if (v("senhaAdmin")===SENHA_ADMIN) { document.getElementById("senhaAdmin").value=""; ir("admin"); }
+window.entrarAdmin=function(){
+  if(v("senhaAdmin")===SENHA_ADMIN){document.getElementById("senhaAdmin").value="";ir("admin");}
   else alerta("Senha incorreta.","erro");
 };
 
-/* ══ ADMIN — USUÁRIOS ══ */
-async function carregarAdmin() {
-  const lista = document.getElementById("admin-lista");
-  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
-  try {
-    const snap = await getDocs(query(collection(db,COL_USUARIOS),orderBy("criadoEm","desc")));
-    if (snap.empty){lista.innerHTML='<p class="hist-vazio">Nenhum cadastro.</p>';return;}
-    lista.innerHTML = snap.docs.map(d=>{
-      const u=d.data(),id=d.id;
-      const sc=u.status==="aprovado"?"status-ok":u.status==="rejeitado"?"status-erro":"status-aviso";
-      const sl=u.status==="aprovado"?"✓ Aprovado":u.status==="rejeitado"?"✕ Rejeitado":"⏳ Pendente";
-      const perms = u.permissoes||{checklist:true,historico:true,inspetoria:true};
-      const permHTML = PERMISSOES.map(p=>`
-        <div class="perm-item">
-          <input type="checkbox" id="perm-${id}-${p}" ${perms[p]!==false?"checked":""} onchange="salvarPermissao('${id}','${p}',this.checked)">
-          <label for="perm-${id}-${p}">${p==="checklist"?"Armaria":p==="historico"?"Histórico de Envios":"Inspetoria"}</label>
-        </div>`).join("");
-      return `<div class="hist-item">
-        <div class="hist-tipo">${u.nome}</div>
-        <div class="hist-data">📧 ${u.email} · Mat: ${u.matricula}</div>
-        <div class="hist-corpo" style="margin-bottom:6px">CPF: ${u.cpf}</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-          <span class="badge ${sc}">${sl}</span>
-          ${u.status!=="aprovado"?`<button class="btn btn-sm btn-verde"  data-id="${id}" data-acao="aprovar">Aprovar</button>`:""}
-          ${u.status!=="rejeitado"?`<button class="btn btn-sm btn-perigo" data-id="${id}" data-acao="rejeitar">Rejeitar</button>`:""}
-          <button class="btn btn-sm btn-perigo" data-id="${id}" data-acao="remover" style="margin-left:auto">🗑 Remover</button>
-        </div>
-        <div class="perm-box">
-          <div class="perm-titulo">🔑 Permissões de acesso</div>
-          ${permHTML}
-        </div>
-      </div>`;
-    }).join("");
-
-    lista.querySelectorAll("[data-acao]").forEach(btn=>{
-      btn.addEventListener("click",async()=>{
-        const id=btn.dataset.id,acao=btn.dataset.acao;
-        if (acao==="remover") {
-          if (!confirm("Tem certeza que deseja REMOVER este usuário permanentemente? Esta ação não pode ser desfeita.")) return;
-          await deleteDoc(doc(db,COL_USUARIOS,id));
-          alerta("Usuário removido permanentemente.","aviso");
-          carregarAdmin();
-          return;
-        }
-        if (acao==="rejeitar"&&!confirm("Confirmar rejeição?")) return;
-        await updateDoc(doc(db,COL_USUARIOS,id),{status:acao==="aprovar"?"aprovado":"rejeitado"});
-        alerta(acao==="aprovar"?"Usuário aprovado!":"Usuário rejeitado.",acao==="aprovar"?"ok":"aviso");
-        carregarAdmin();
-      });
-    });
-  } catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
-}
-
-window.salvarPermissao = async function(uid, permissao, valor) {
-  try {
-    await updateDoc(doc(db,COL_USUARIOS,uid), {[`permissoes.${permissao}`]: valor});
-    alerta(`Permissão "${permissao}" ${valor?"liberada":"bloqueada"}.`, valor?"ok":"aviso");
-  } catch(err){alerta("Erro: "+err.message,"erro");}
-};
-
-document.getElementById("btn-atualizar-admin").addEventListener("click", carregarAdmin);
-
-/* ══ ADMIN — SERVIDORES PLANTÃO ══ */
-window.cadastrarServidor = async function() {
-  const nome  = v("adm-srv-nome");
-  const mat   = v("adm-srv-mat");
-  const cargo = v("adm-srv-cargo");
-  if (!nome||!mat) return alerta("Preencha nome e matrícula.","erro");
-  try {
-    const dup = await getDocs(query(collection(db,COL_SERV),where("matricula","==",mat)));
-    if (!dup.empty) return alerta("Matrícula já cadastrada.","erro");
-    await addDoc(collection(db,COL_SERV),{nome,matricula:mat,cargo,ativo:true,criadoEm:serverTimestamp()});
-    alerta("Servidor cadastrado!","ok");
-    ["adm-srv-nome","adm-srv-mat","adm-srv-cargo"].forEach(id=>document.getElementById(id).value="");
-    carregarServidoresAdmin();
-    servidoresCache=[];
-  } catch(err){alerta("Erro: "+err.message,"erro");}
-};
-
-async function carregarServidoresAdmin() {
-  const lista = document.getElementById("admin-servidores-lista");
-  const cont  = document.getElementById("cnt-servidores");
-  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
-  try {
-    const snap = await getDocs(query(collection(db,COL_SERV),orderBy("nome")));
-    cont.textContent = snap.size ? `${snap.size} servidor(es) cadastrado(s)` : "";
-    if (snap.empty){lista.innerHTML='<p class="hist-vazio">Nenhum servidor cadastrado.</p>';return;}
-    lista.innerHTML = snap.docs.map(d=>{
-      const s=d.data(),id=d.id;
-      return `<div class="hist-item">
-        <div class="hist-tipo">${s.nome}</div>
-        <div class="hist-data">Mat: ${s.matricula}${s.cargo?" · "+s.cargo:""}</div>
-        <div style="margin-top:6px">
-          <button class="btn btn-sm btn-perigo" data-del="${id}">🗑 Remover</button>
-        </div>
-      </div>`;
-    }).join("");
-    lista.querySelectorAll("[data-del]").forEach(btn=>{
-      btn.addEventListener("click",async()=>{
-        if (!confirm("Remover servidor?")) return;
-        await deleteDoc(doc(db,COL_SERV,btn.dataset.del));
-        alerta("Servidor removido.","aviso");
-        carregarServidoresAdmin();
-        servidoresCache=[];
-      });
-    });
-  } catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
-}
-
-/* ══ ADMIN — AUDITORIA ══ */
-async function carregarAuditoria() {
-  const lista = document.getElementById("auditoria-lista");
-  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
-  try {
-    const snap = await getDocs(query(collection(db,COL_AUDITORIA),orderBy("criadoEm","desc")));
-    todosRegistros = snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderAuditoria(todosRegistros);
-  } catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
-}
-
-function renderAuditoria(registros) {
-  const lista = document.getElementById("auditoria-lista");
-  const cont  = document.getElementById("audit-contador");
-  const bar   = document.getElementById("audit-select-bar");
-  cont.textContent = registros.length?`${registros.length} registro(s)`:"";
-  bar.style.display = registros.length ? "flex" : "none";
-  document.getElementById("audit-check-all").checked = false;
-
-  lista.innerHTML = registros.length
-    ? registros.map(r=>`<div class="hist-item" style="display:flex;gap:10px;align-items:flex-start">
-        <input type="checkbox" class="audit-check audit-item-check" data-id="${r.id}" style="margin-top:3px;flex-shrink:0">
-        <div style="flex:1;min-width:0">
-          <div class="hist-tipo">${r.tipo}</div>
-          <div class="hist-data">🕐 ${tsParaStr(r.criadoEm)}</div>
-          <div class="hist-usuario">👮 ${r.usuarioNome} · ${r.matricula}</div>
-          <div class="hist-corpo">${r.dados}</div>
-          <div style="margin-top:6px">
-            <button class="btn btn-sm btn-perigo" data-del-audit="${r.id}">🗑 Remover</button>
-          </div>
-        </div>
-      </div>`).join("")
-    : '<p class="hist-vazio">Nenhum registro.</p>';
-
-  lista.querySelectorAll("[data-del-audit]").forEach(btn=>{
-    btn.addEventListener("click",async()=>{
-      if (!confirm("Remover este registro de auditoria?")) return;
-      try {
-        await deleteDoc(doc(db,COL_AUDITORIA,btn.dataset.delAudit));
-        alerta("Registro de auditoria removido.","aviso");
-        await carregarAuditoria();
-      } catch(err){alerta("Erro: "+err.message,"erro");}
-    });
-  });
-}
-
-window.selecionarTodosAudit = function(checked) {
-  document.querySelectorAll(".audit-item-check").forEach(cb=>cb.checked=checked);
-};
-
-window.removerAuditoriaSelecionados = async function() {
-  const selecionados = [...document.querySelectorAll(".audit-item-check:checked")].map(cb=>cb.dataset.id);
-  if (!selecionados.length) return alerta("Nenhum registro selecionado.","aviso");
-  if (!confirm(`Remover ${selecionados.length} registro(s) de auditoria? Esta ação não pode ser desfeita.`)) return;
-  try {
-    await Promise.all(selecionados.map(id=>deleteDoc(doc(db,COL_AUDITORIA,id))));
-    alerta(`${selecionados.length} registro(s) removido(s).`,"aviso");
-    await carregarAuditoria();
-  } catch(err){alerta("Erro: "+err.message,"erro");}
-};
-
-window.filtrarAuditoria = function() {
-  const nome = v("filtro-nome").toLowerCase();
-  const data = v("filtro-data");
-  renderAuditoria(todosRegistros.filter(r=>{
-    return (!nome||r.usuarioNome?.toLowerCase().includes(nome))&&
-           (!data||tsParaData(r.criadoEm)===data);
-  }));
-};
-window.limparFiltros = function() {
-  document.getElementById("filtro-nome").value="";
-  document.getElementById("filtro-data").value="";
-  renderAuditoria(todosRegistros);
-};
-
-/* ══ ADMIN — PLANTÕES ══ */
-window.mudarAba = function(aba) {
+/* ══ ADMIN ABAS ══ */
+window.mudarAba=function(aba){
   ["cadastros","servidores","auditoria","plantao-admin"].forEach(a=>{
     document.getElementById("tab-"+a)?.classList.remove("ativa");
     document.getElementById("tab-btn-"+a)?.classList.remove("ativa");
   });
   document.getElementById("tab-"+aba)?.classList.add("ativa");
   document.getElementById("tab-btn-"+aba)?.classList.add("ativa");
-  if (aba==="plantao-admin") carregarPlantaoAdmin();
-  if (aba==="auditoria") carregarAuditoria();
-  if (aba==="servidores") carregarServidoresAdmin();
+  if(aba==="plantao-admin")carregarPlantaoAdmin();
+  if(aba==="auditoria")carregarAuditoria();
+  if(aba==="servidores")carregarServidoresAdmin();
 };
 
-async function carregarPlantaoAdmin() {
-  const lista = document.getElementById("plantao-admin-lista");
-  const cont  = document.getElementById("plantao-admin-contador");
+/* ══ ADMIN USUÁRIOS ══ */
+async function carregarAdmin(){
+  const lista=document.getElementById("admin-lista");
   lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
-  try {
-    const filtNome = v("filtro-plantao-nome").toLowerCase();
-    const filtData = v("filtro-plantao-data");
-    const snap = await getDocs(query(collection(db,COL_PLANTAO),orderBy("criadoEm","desc")));
-    let regs = snap.docs.map(d=>({id:d.id,...d.data()}));
-    if (filtNome) regs=regs.filter(r=>r.servidorNome?.toLowerCase().includes(filtNome));
-    if (filtData) regs=regs.filter(r=>r.data===filtData);
-    cont.textContent = regs.length?`${regs.length} registro(s)`:"";
-    lista.innerHTML = regs.length
-      ? regs.map(r=>{
-          const ic=r.status==="presente"?"✅":r.status==="ausente"?"❌":r.status==="atrasado"?"⏰":r.status==="atestado"?"🏥":"📋";
-          const horarios=(r.horaEntrada||r.horaSaida)?`\nEntrada: ${r.horaEntrada||"—"} · Saída: ${r.horaSaida||"—"}`:"";
-          const marcExtra=r.marcacaoExtra?`\nMarcação: ${r.marcacaoExtra.toUpperCase()}`:"";
-          return `<div class="hist-item">
-            <div class="hist-tipo">${ic} ${(r.status||"").toUpperCase()}</div>
-            <div class="hist-data">📅 ${r.data} · ${r.jornada||r.turno||""}</div>
-            <div class="hist-usuario">👮 ${r.servidorNome} · Mat: ${r.servidorMat}</div>
-            <div class="hist-corpo">${r.obs?"Obs: "+r.obs+"\n":""}${horarios?horarios+"\n":""}${marcExtra?marcExtra+"\n":""}Supervisor: ${r.supervisorNome}\nMat Supervisor: ${r.supervisorMat||"—"}</div>
-          </div>`;
-        }).join("")
-      : '<p class="hist-vazio">Nenhum registro encontrado.</p>';
-  } catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+  try{
+    const snap=await getDocs(query(collection(db,COL_USUARIOS),orderBy("criadoEm","desc")));
+    if(snap.empty){lista.innerHTML='<p class="hist-vazio">Nenhum cadastro.</p>';return;}
+    lista.innerHTML=snap.docs.map(d=>{
+      const u=d.data(),id=d.id;
+      const sc=u.status==="aprovado"?"status-ok":u.status==="rejeitado"?"status-erro":"status-aviso";
+      const sl=u.status==="aprovado"?"✓ Aprovado":u.status==="rejeitado"?"✕ Rejeitado":"⏳ Pendente";
+      const perms=u.permissoes||{checklist:true,historico:true,inspetoria:true};
+      const permHTML=PERMISSOES.map(p=>`
+        <div class="perm-item">
+          <input type="checkbox" id="perm-${id}-${p}" ${perms[p]!==false?"checked":""} onchange="salvarPermissao('${id}','${p}',this.checked)">
+          <label for="perm-${id}-${p}">${p==="checklist"?"Armaria":p==="historico"?"Histórico":"Inspetoria"}</label>
+        </div>`).join("");
+      return`<div class="hist-item">
+        <div class="hist-tipo">${u.nome}</div>
+        <div class="hist-data">📧 ${u.email} · Mat: ${u.matricula}</div>
+        <div class="hist-corpo" style="margin-bottom:6px">CPF: ${u.cpf}</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <span class="badge ${sc}">${sl}</span>
+          ${u.status!=="aprovado"?`<button class="btn btn-sm btn-verde" data-id="${id}" data-acao="aprovar">Aprovar</button>`:""}
+          ${u.status!=="rejeitado"?`<button class="btn btn-sm btn-perigo" data-id="${id}" data-acao="rejeitar">Rejeitar</button>`:""}
+          <button class="btn btn-sm" style="background:rgba(192,57,43,.3);border-color:rgba(192,57,43,.5);color:#f1948a;font-size:.65rem"
+            data-id="${id}" data-acao="remover">🗑 Remover</button>
+        </div>
+        <div class="perm-box"><div class="perm-titulo">🔑 Permissões</div>${permHTML}</div>
+      </div>`;
+    }).join("");
+    lista.querySelectorAll("[data-acao]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const id=btn.dataset.id,acao=btn.dataset.acao;
+        if(acao==="remover"){if(!confirm("Remover usuário permanentemente?"))return;
+          await deleteDoc(doc(db,COL_USUARIOS,id));alerta("Usuário removido.","aviso");carregarAdmin();return;}
+        if(acao==="rejeitar"&&!confirm("Confirmar rejeição?"))return;
+        await updateDoc(doc(db,COL_USUARIOS,id),{status:acao==="aprovar"?"aprovado":"rejeitado"});
+        alerta(acao==="aprovar"?"Usuário aprovado!":"Usuário rejeitado.",acao==="aprovar"?"ok":"aviso");
+        carregarAdmin();
+      });
+    });
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
 }
-window.carregarPlantaoAdmin = carregarPlantaoAdmin;
+window.salvarPermissao=async function(uid,permissao,valor){
+  try{await updateDoc(doc(db,COL_USUARIOS,uid),{[`permissoes.${permissao}`]:valor});
+    alerta(`Permissão "${permissao}" ${valor?"liberada":"bloqueada"}.`,valor?"ok":"aviso");}
+  catch(err){alerta("Erro: "+err.message,"erro");}
+};
+document.getElementById("btn-atualizar-admin").addEventListener("click",carregarAdmin);
+
+/* ══ ADMIN SERVIDORES ══ */
+window.cadastrarServidor=async function(){
+  const nome=v("adm-srv-nome"),mat=v("adm-srv-mat"),cargo=v("adm-srv-cargo"),email=v("adm-srv-email");
+  if(!nome||!mat)return alerta("Preencha nome e matrícula.","erro");
+  try{
+    const dup=await getDocs(query(collection(db,COL_SERV),where("matricula","==",mat)));
+    if(!dup.empty)return alerta("Matrícula já cadastrada.","erro");
+    await addDoc(collection(db,COL_SERV),{nome,matricula:mat,cargo,email,ativo:true,criadoEm:serverTimestamp()});
+    alerta("Servidor cadastrado!","ok");
+    ["adm-srv-nome","adm-srv-mat","adm-srv-cargo","adm-srv-email"].forEach(id=>document.getElementById(id).value="");
+    carregarServidoresAdmin();servidoresCache=[];
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+async function carregarServidoresAdmin(){
+  const lista=document.getElementById("admin-servidores-lista");
+  const cont=document.getElementById("cnt-servidores");
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(collection(db,COL_SERV),orderBy("nome")));
+    cont.textContent=snap.size?`${snap.size} servidor(es)`:"";
+    if(snap.empty){lista.innerHTML='<p class="hist-vazio">Nenhum servidor.</p>';return;}
+    lista.innerHTML=snap.docs.map(d=>{const s=d.data(),id=d.id;
+      return`<div class="hist-item">
+        <div class="hist-tipo">${s.nome}</div>
+        <div class="hist-data">Mat: ${s.matricula}${s.cargo?" · "+s.cargo:""}${s.email?"\n📧 "+s.email:""}</div>
+        <div style="margin-top:6px"><button class="btn btn-sm btn-perigo" data-del="${id}">🗑 Remover</button></div>
+      </div>`;}).join("");
+    lista.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        if(!confirm("Remover servidor?"))return;
+        await deleteDoc(doc(db,COL_SERV,btn.dataset.del));
+        alerta("Servidor removido.","aviso");carregarServidoresAdmin();servidoresCache=[];
+      });
+    });
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+/* ══ AUDITORIA ══ */
+async function carregarAuditoria(){
+  const lista=document.getElementById("auditoria-lista");
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(collection(db,COL_AUDITORIA),orderBy("criadoEm","desc")));
+    todosRegistros=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderAuditoria(todosRegistros);
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+function renderAuditoria(registros){
+  const lista=document.getElementById("auditoria-lista");
+  const cont=document.getElementById("audit-contador");
+  cont.textContent=registros.length?`${registros.length} registro(s)`:"";
+  auditoriaSelecionados.clear();atualizarBarraSel();
+  lista.innerHTML=registros.length
+    ?registros.map(r=>`<div class="hist-item">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <input type="checkbox" class="audit-check" data-id="${r.id}" onchange="toggleAuditSel('${r.id}',this.checked)">
+          <div class="hist-tipo" style="margin:0">${r.tipo}</div>
+        </div>
+        <div class="hist-data">🕐 ${tsStr(r.criadoEm)}</div>
+        <div class="hist-usuario">👮 ${r.usuarioNome} · ${r.matricula}</div>
+        <div class="hist-corpo">${r.dados}</div>
+      </div>`).join("")
+    :'<p class="hist-vazio">Nenhum registro.</p>';
+}
+window.filtrarAuditoria=function(){
+  const nome=v("filtro-nome").toLowerCase(),data=v("filtro-data");
+  renderAuditoria(todosRegistros.filter(r=>
+    (!nome||r.usuarioNome?.toLowerCase().includes(nome))&&(!data||tsData(r.criadoEm)===data)));
+};
+window.limparFiltros=function(){
+  document.getElementById("filtro-nome").value="";document.getElementById("filtro-data").value="";
+  renderAuditoria(todosRegistros);
+};
+window.toggleAuditSel=function(id,checked){
+  if(checked)auditoriaSelecionados.add(id);else auditoriaSelecionados.delete(id);
+  atualizarBarraSel();
+};
+function atualizarBarraSel(){
+  const bar=document.getElementById("audit-sel-bar");
+  const cnt=document.getElementById("audit-sel-count");
+  const n=auditoriaSelecionados.size;
+  bar.classList.toggle("visivel",n>0);
+  cnt.textContent=n>0?`${n} selecionado(s)`:"";
+}
+window.desmarcarTodos=function(){
+  auditoriaSelecionados.clear();atualizarBarraSel();
+  document.querySelectorAll(".audit-check").forEach(c=>c.checked=false);
+};
+window.removerAuditoriaSelecionados=async function(){
+  if(!auditoriaSelecionados.size)return;
+  if(!confirm(`Remover ${auditoriaSelecionados.size} registro(s) de auditoria?`))return;
+  try{
+    for(const id of auditoriaSelecionados)await deleteDoc(doc(db,COL_AUDITORIA,id));
+    alerta("Registros removidos.","aviso");carregarAuditoria();
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+/* ══ PLANTÕES ADMIN ══ */
+async function carregarPlantaoAdmin(){
+  const lista=document.getElementById("plantao-admin-lista");
+  const cont=document.getElementById("plantao-admin-contador");
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const filtNome=v("filtro-plantao-nome").toLowerCase(),filtData=v("filtro-plantao-data");
+    const snap=await getDocs(query(collection(db,COL_PLANTAO),orderBy("criadoEm","desc")));
+    let regs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(filtNome)regs=regs.filter(r=>r.servidorNome?.toLowerCase().includes(filtNome));
+    if(filtData)regs=regs.filter(r=>r.data===filtData);
+    cont.textContent=regs.length?`${regs.length} registro(s)`:"";
+    lista.innerHTML=regs.length
+      ?regs.map(r=>{const ic=r.status==="presente"?"✅":r.status==="ausente"?"❌":"⏰";
+        return`<div class="hist-item">
+          <div class="hist-tipo">${ic} ${r.status?.toUpperCase()}</div>
+          <div class="hist-data">📅 ${r.data} · ${r.jornada||r.turno||""}</div>
+          <div class="hist-data">🕐 Entrada: ${r.entrada||"—"} · Saída: ${r.saida||"—"}</div>
+          <div class="hist-usuario">👮 ${r.servidorNome} · Mat: ${r.servidorMat}</div>
+          <div class="hist-corpo">${r.obs?"Obs: "+r.obs+"\n":""}${r.marcacao?"Marcação: "+r.marcacao+"\n":""}Supervisor: ${r.supervisorNome}\n🕐 Registrado: ${tsStr(r.criadoEm)}</div>
+        </div>`;}).join("")
+      :'<p class="hist-vazio">Nenhum registro.</p>';
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+window.carregarPlantaoAdmin=carregarPlantaoAdmin;
 
 /* ══ PLANTÃO ══ */
-function iniciarPlantao() {
-  const hoje = new Date().toISOString().slice(0,10);
-  document.getElementById("plantao-data").value = hoje;
+function iniciarPlantao(){
+  const hoje=new Date().toISOString().slice(0,10);
+  document.getElementById("plantao-data").value=hoje;
   document.getElementById("plantao-busca-nome").value="";
   document.getElementById("plantao-busca-mat").value="";
   document.getElementById("plantao-servidores").innerHTML='<p class="hist-vazio">Digite nome ou matrícula para buscar.</p>';
+  document.getElementById("mark-atestado").checked=false;
+  document.getElementById("mark-outros").checked=false;
+  document.getElementById("mark-obs").style.display="none";
+  document.getElementById("mark-obs").value="";
   atualizarContadorPlantao();
-  carregarMapa();
+  obterLocalizacao();
 }
 
-async function buscarServidorPlantao() {
-  const nome = v("plantao-busca-nome").toLowerCase();
-  const mat  = v("plantao-busca-mat").toLowerCase();
-  const lista = document.getElementById("plantao-servidores");
-  if (!nome&&!mat) { lista.innerHTML='<p class="hist-vazio">Digite nome ou matrícula para buscar.</p>'; return; }
-  if (!servidoresCache.length) {
-    try {
-      const snap = await getDocs(query(collection(db,COL_SERV),where("ativo","==",true),orderBy("nome")));
-      servidoresCache = snap.docs.map(d=>({id:d.id,...d.data()}));
-    } catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;return;}
+window.toggleMarcacao=function(tipo){
+  const atestado=document.getElementById("mark-atestado").checked;
+  const outros=document.getElementById("mark-outros").checked;
+  const obs=document.getElementById("mark-obs");
+  // só um de cada vez
+  if(tipo==="atestado"&&atestado)document.getElementById("mark-outros").checked=false;
+  if(tipo==="outros"&&outros)document.getElementById("mark-atestado").checked=false;
+  obs.style.display=(atestado||outros)?"block":"none";
+};
+
+async function buscarServidorPlantao(){
+  const nome=v("plantao-busca-nome").toLowerCase(),mat=v("plantao-busca-mat").toLowerCase();
+  const lista=document.getElementById("plantao-servidores");
+  if(!nome&&!mat){lista.innerHTML='<p class="hist-vazio">Digite nome ou matrícula para buscar.</p>';return;}
+  if(!servidoresCache.length){
+    try{const snap=await getDocs(query(collection(db,COL_SERV),where("ativo","==",true),orderBy("nome")));
+      servidoresCache=snap.docs.map(d=>({id:d.id,...d.data()}));}
+    catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;return;}
   }
-  const filtrados = servidoresCache.filter(s=>
-    (!nome||s.nome?.toLowerCase().includes(nome))&&
-    (!mat||s.matricula?.toLowerCase().includes(mat))
-  );
-  if (!filtrados.length){lista.innerHTML='<p class="hist-vazio">Servidor não encontrado ou não cadastrado.</p>';return;}
-  const dataP  = v("plantao-data");
-  const jornada = v("plantao-turno");
-  lista.innerHTML = filtrados.map(s=>{
-    const reg = registrosPlantaoLocal[`${s.id}_${dataP}_${jornada}`];
-    let statusClass = "sc-pendente", statusText = "— pendente";
-    if (reg) {
-      const ic = reg.status==="presente"?"✅":reg.status==="ausente"?"❌":reg.status==="atrasado"?"⏰":reg.status==="atestado"?"🏥":"📋";
-      statusClass = "sc-"+reg.status;
-      statusText = `${ic} ${reg.status}`;
-    }
-    return `<div class="servidor-card" data-sid="${s.id}">
+  const filtrados=servidoresCache.filter(s=>
+    (!nome||s.nome?.toLowerCase().includes(nome))&&(!mat||s.matricula?.toLowerCase().includes(mat)));
+  if(!filtrados.length){lista.innerHTML='<p class="hist-vazio">Servidor não cadastrado. Contate o administrador.</p>';return;}
+  const dataP=v("plantao-data"),turnoP=v("plantao-turno");
+  lista.innerHTML=filtrados.map(s=>{
+    const reg=registrosPlantaoLocal[`${s.id}_${dataP}_${turnoP}`];
+    const statusHtml=reg
+      ?`<span class="sc-status sc-${reg.status}">${reg.status==="presente"?"✅":reg.status==="ausente"?"❌":"⏰"} ${reg.status}</span>`
+      :`<span class="sc-status sc-pendente">— pendente</span>`;
+    return`<div class="servidor-card" data-sid="${s.id}">
       <div><div class="sc-nome">${s.nome}</div><div class="sc-mat">Mat: ${s.matricula}${s.cargo?" · "+s.cargo:""}</div></div>
-      <span class="sc-status ${statusClass}">${statusText}</span>
+      ${statusHtml}
     </div>`;
   }).join("");
   lista.querySelectorAll(".servidor-card").forEach(card=>{
     card.addEventListener("click",()=>{
-      const sid = card.dataset.sid;
-      const srv = servidoresCache.find(s=>s.id===sid);
-      if (srv) abrirModalPlantao(srv);
+      const srv=servidoresCache.find(s=>s.id===card.dataset.sid);
+      if(srv)abrirModalPlantao(srv);
     });
   });
 }
-window.buscarServidorPlantao = buscarServidorPlantao;
+window.buscarServidorPlantao=buscarServidorPlantao;
 
-function abrirModalPlantao(servidor) {
-  if (!v("plantao-data"))  return alerta("Selecione a data do plantão.","erro");
-  if (!v("plantao-turno")) return alerta("Selecione a jornada.","erro");
-  servidorPlantaoSelecionado = servidor;
-  plantaoStatusAtual   = null;
-  plantaoMarcacaoExtra = null;
-
-  document.getElementById("modal-plantao-nome").textContent  = servidor.nome;
-  document.getElementById("modal-plantao-mat").textContent   = `Mat: ${servidor.matricula}`;
-  document.getElementById("modal-plantao-obs").value = "";
-  document.getElementById("modal-hora-entrada").value = "";
-  document.getElementById("modal-hora-saida").value = "";
-  document.getElementById("status-selecionado").textContent = "Selecione o status acima";
-  document.getElementById("status-selecionado").style.color = "var(--cinza)";
-  document.getElementById("btn-marc-atestado").classList.remove("selecionado");
-  document.getElementById("btn-marc-outros").classList.remove("selecionado");
-
-  document.getElementById("modal-plantao").style.display = "flex";
+function abrirModalPlantao(servidor){
+  if(!v("plantao-data"))return alerta("Selecione a data.","erro");
+  if(!v("plantao-turno"))return alerta("Selecione a jornada.","erro");
+  servidorSelecionado=servidor;plantaoStatusAtual=null;
+  document.getElementById("modal-srv-nome").textContent=servidor.nome;
+  document.getElementById("modal-srv-mat").textContent=`Mat: ${servidor.matricula}`;
+  document.getElementById("modal-plantao-obs").value="";
+  document.getElementById("modal-status-label").textContent="Selecione o status acima";
+  document.getElementById("modal-status-label").style.color="var(--cinza)";
+  ["presente","ausente","atrasado"].forEach(s=>
+    document.getElementById("btn-conf-"+s)?.classList.remove("selecionado"));
+  document.getElementById("modal-plantao").style.display="flex";
 }
 
-window.selecionarStatus = function(status) {
-  plantaoStatusAtual = status;
-  const ic = status==="presente"?"✅":status==="ausente"?"❌":"⏰";
-  document.getElementById("status-selecionado").textContent = `${ic} ${status.toUpperCase()} selecionado`;
-  document.getElementById("status-selecionado").style.color = status==="presente"?"#7dcea0":status==="ausente"?"#f1948a":"#f0b27a";
+window.selecionarStatus=function(status){
+  plantaoStatusAtual=status;
+  ["presente","ausente","atrasado"].forEach(s=>
+    document.getElementById("btn-conf-"+s)?.classList.remove("selecionado"));
+  document.getElementById("btn-conf-"+status)?.classList.add("selecionado");
+  const ic=status==="presente"?"✅":status==="ausente"?"❌":"⏰";
+  const cor=status==="presente"?"#7dcea0":status==="ausente"?"#f1948a":"#f0b27a";
+  const lbl=document.getElementById("modal-status-label");
+  lbl.textContent=`${ic} ${status.toUpperCase()} selecionado`;lbl.style.color=cor;
 };
 
-window.toggleMarcacao = function(tipo) {
-  const btnAtestado = document.getElementById("btn-marc-atestado");
-  const btnOutros   = document.getElementById("btn-marc-outros");
-  if (plantaoMarcacaoExtra === tipo) {
-    plantaoMarcacaoExtra = null;
-    btnAtestado.classList.remove("selecionado");
-    btnOutros.classList.remove("selecionado");
-  } else {
-    plantaoMarcacaoExtra = tipo;
-    btnAtestado.classList.toggle("selecionado", tipo==="atestado");
-    btnOutros.classList.toggle("selecionado",   tipo==="outros");
-  }
-};
-
-window.confirmarPlantao = async function() {
-  if (!plantaoStatusAtual && !plantaoMarcacaoExtra) return alerta("Selecione um status ou marcação especial.","erro");
-
-  const statusFinal   = plantaoStatusAtual || plantaoMarcacaoExtra;
-  const obs           = v("modal-plantao-obs");
-  const horaEntrada   = v("modal-hora-entrada");
-  const horaSaida     = v("modal-hora-saida");
-  const dataP         = v("plantao-data");
-  const jornada       = v("plantao-turno");
-  const srv           = servidorPlantaoSelecionado;
-  const agora         = new Date();
-  const horaAtual     = agora.toLocaleTimeString("pt-BR");
-  const dataHora      = agora.toLocaleString("pt-BR");
-
-  try {
-    // Registrar no Firebase
+window.confirmarPlantao=async function(){
+  if(!plantaoStatusAtual)return alerta("Selecione um status primeiro.","erro");
+  const obs=v("modal-plantao-obs");
+  const dataP=v("plantao-data"),jornadaP=v("plantao-turno");
+  const entradaP=v("plantao-entrada"),saidaP=v("plantao-saida");
+  const srv=servidorSelecionado;
+  const atestado=document.getElementById("mark-atestado").checked;
+  const outros=document.getElementById("mark-outros").checked;
+  const markObs=v("mark-obs");
+  const marcacao=atestado?"Atestado Médico":outros?"Outros":"";
+  const agora_str=agora();
+  try{
     await addDoc(collection(db,COL_PLANTAO),{
-      servidorId:      srv.id,
-      servidorNome:    srv.nome,
-      servidorMat:     srv.matricula,
-      cargo:           srv.cargo||"",
-      data:            dataP,
-      jornada:         jornada,
-      turno:           jornada, // compatibilidade
-      status:          statusFinal,
-      marcacaoExtra:   plantaoMarcacaoExtra||"",
-      horaEntrada,
-      horaSaida,
-      obs,
-      supervisorNome:  usuarioLogado?.nome||"",
-      supervisorEmail: usuarioLogado?.email||"",
-      supervisorMat:   usuarioLogado?.matricula||"",
-      localizacao:     localizacaoAtual ? `${localizacaoAtual.lat}, ${localizacaoAtual.lng}` : "",
-      criadoEm:        serverTimestamp()
+      servidorId:srv.id,servidorNome:srv.nome,servidorMat:srv.matricula,
+      servidorEmail:srv.email||"",cargo:srv.cargo||"",
+      data:dataP,jornada:jornadaP,entrada:entradaP,saida:saidaP,
+      status:plantaoStatusAtual,obs,marcacao,markObs,
+      supervisorNome:usuarioLogado?.nome||"",supervisorMat:usuarioLogado?.matricula||"",
+      supervisorEmail:usuarioLogado?.email||"",
+      registradoEm:agora_str,criadoEm:serverTimestamp()
     });
-
-    // Montar corpo da notificação detalhada
-    const corpoNotif = [
-      `📅 Data: ${dataP}`,
-      `🕐 Horário do registro: ${horaAtual}`,
-      `📋 Jornada: ${jornada}`,
-      ``,
-      `👮 Servidor fiscalizado:`,
-      `   Nome: ${srv.nome}`,
-      `   Matrícula: ${srv.matricula}`,
-      ``,
-      `🔍 Supervisor/Fiscal:`,
-      `   Nome: ${usuarioLogado?.nome||"—"}`,
-      `   Matrícula: ${usuarioLogado?.matricula||"—"}`,
-      ``,
-      `✅ Status: ${statusFinal.toUpperCase()}`,
-      horaEntrada ? `⏱ Entrada: ${horaEntrada}` : "",
-      horaSaida   ? `⏱ Saída: ${horaSaida}`     : "",
-      plantaoMarcacaoExtra ? `🏷 Marcação: ${plantaoMarcacaoExtra.toUpperCase()}` : "",
-      obs ? `📝 Obs: ${obs}` : ""
-    ].filter(Boolean).join("\n");
-
-    // Salvar notificação no Firebase para o servidor fiscalizado (busca por matrícula)
-    try {
-      const snapSrv = await getDocs(
-        query(collection(db,COL_USUARIOS),
-          where("matricula","==", srv.matricula),
-          where("status","==","aprovado")
-        )
-      );
-      if (!snapSrv.empty) {
-        const emailDestino = snapSrv.docs[0].data().email;
-        await addDoc(collection(db,COL_NOTIF),{
-          destinatarioEmail: emailDestino,
-          destinatarioMat:   srv.matricula,
-          titulo:            `Plantão registrado — ${statusFinal.toUpperCase()}`,
-          corpo:             corpoNotif,
-          lida:              false,
-          criadoEm:          serverTimestamp()
-        });
-      }
-    } catch(e){ console.warn("Notif Firebase:", e.message); }
-
-    // Notificação local para o usuário logado (como feedback imediato)
-    adicionarNotificacao(
-      `✔ Plantão confirmado — ${srv.nome}`,
-      corpoNotif
-    );
-
-    // Salvar na auditoria
-    await salvarAuditoria(
-      `Plantão — ${statusFinal.toUpperCase()}`,
-      [
-        `Servidor: ${srv.nome} (Mat: ${srv.matricula})`,
-        `Data: ${dataP} · Jornada: ${jornada}`,
-        `Horário: Entrada ${horaEntrada||"—"} / Saída ${horaSaida||"—"}`,
-        plantaoMarcacaoExtra ? `Marcação especial: ${plantaoMarcacaoExtra}` : "",
-        `Obs: ${obs||"—"}`,
-        `Supervisor: ${usuarioLogado?.nome||""} (Mat: ${usuarioLogado?.matricula||"—"})`,
-        `Registrado em: ${dataHora}`
-      ].filter(Boolean).join("\n")
-    );
-
-    registrosPlantaoLocal[`${srv.id}_${dataP}_${jornada}`] = {status:statusFinal};
+    // auditoria
+    await salvarAuditoria("Plantão — "+plantaoStatusAtual.toUpperCase(),
+      `Servidor: ${srv.nome} · Mat: ${srv.matricula}\nData: ${dataP} · Jornada: ${jornadaP}\nEntrada: ${entradaP||"—"} · Saída: ${saidaP||"—"}\n${marcacao?"Marcação: "+marcacao+"\n":""}${obs?"Obs: "+obs+"\n":""}Supervisor: ${usuarioLogado?.nome||""} · ${usuarioLogado?.matricula||""}`);
+    registrosPlantaoLocal[`${srv.id}_${dataP}_${jornadaP}`]={status:plantaoStatusAtual};
     atualizarContadorPlantao();
     fecharModalPlantao();
-    alerta(`${statusFinal.toUpperCase()} registrado — ${srv.nome}`,"ok");
+    alerta(`${plantaoStatusAtual.toUpperCase()} registrado — ${srv.nome}`,"ok");
     buscarServidorPlantao();
-  } catch(err){alerta("Erro: "+err.message,"erro");}
+    // notificação por e-mail
+    enviarNotificacaoPlantao(srv,plantaoStatusAtual,dataP,jornadaP,entradaP,saidaP,marcacao,obs,agora_str);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
 };
 
-window.fecharModalPlantao = function() {
-  document.getElementById("modal-plantao").style.display="none";
-  servidorPlantaoSelecionado=null;
-  plantaoStatusAtual=null;
-  plantaoMarcacaoExtra=null;
-};
-
-function atualizarContadorPlantao() {
-  const vals = Object.values(registrosPlantaoLocal);
-  document.getElementById("cnt-presentes").textContent = vals.filter(r=>r.status==="presente").length;
-  document.getElementById("cnt-ausentes").textContent  = vals.filter(r=>r.status==="ausente").length;
-  document.getElementById("cnt-atrasados").textContent = vals.filter(r=>r.status==="atrasado").length;
+function enviarNotificacaoPlantao(srv,status,data,jornada,entrada,saida,marcacao,obs,agora_str){
+  if(!srv.email)return;
+  const ic=status==="presente"?"✅":status==="ausente"?"❌":"⏰";
+  const corpo=
+    `${ic} REGISTRO DE PLANTÃO — ${status.toUpperCase()}\n\n`+
+    `Data: ${data}\nHorário do registro: ${agora_str}\nJornada: ${jornada}\n`+
+    `Entrada: ${entrada||"—"} · Saída: ${saida||"—"}\n\n`+
+    `SERVIDOR FISCALIZADO:\nNome: ${srv.nome}\nMatrícula: ${srv.matricula}\n\n`+
+    `FISCAL RESPONSÁVEL:\nNome: ${usuarioLogado?.nome||""}\nMatrícula: ${usuarioLogado?.matricula||""}\n\n`+
+    (marcacao?`Marcação: ${marcacao}\n`:"")+(obs?`Observação: ${obs}\n`:"")+
+    `\nPolícia Municipal de Caruaru — Sistema Operacional`;
+  setTimeout(()=>{
+    window.location.href=`mailto:${srv.email}?subject=${encodeURIComponent("Registro de Plantão — "+status.toUpperCase())}&body=${encodeURIComponent(corpo)}`;
+  },800);
 }
 
-async function renderHistStatus(status) {
-  const idLista = `lista-hist-${status==="presente"?"presentes":status==="ausente"?"ausentes":"atrasados"}`;
-  const idCont  = `cnt-hist-${status==="presente"?"presentes":status==="ausente"?"ausentes":"atrasados"}`;
-  const lista = document.getElementById(idLista);
+window.fecharModalPlantao=function(){
+  document.getElementById("modal-plantao").style.display="none";
+  servidorSelecionado=null;plantaoStatusAtual=null;
+};
+
+function atualizarContadorPlantao(){
+  const vals=Object.values(registrosPlantaoLocal);
+  document.getElementById("cnt-presentes").textContent=vals.filter(r=>r.status==="presente").length;
+  document.getElementById("cnt-ausentes").textContent=vals.filter(r=>r.status==="ausente").length;
+  document.getElementById("cnt-atrasados").textContent=vals.filter(r=>r.status==="atrasado").length;
+}
+
+async function renderHistStatus(status){
+  const idL=`lista-hist-${status==="presente"?"presentes":status==="ausente"?"ausentes":"atrasados"}`;
+  const idC=`cnt-hist-${status==="presente"?"presentes":status==="ausente"?"ausentes":"atrasados"}`;
+  const lista=document.getElementById(idL);
   lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
-  try {
-    const snap = await getDocs(query(collection(db,COL_PLANTAO),where("status","==",status),orderBy("criadoEm","desc")));
-    document.getElementById(idCont).textContent = snap.size?`${snap.size} registro(s)`:"";
-    lista.innerHTML = snap.empty
-      ? '<p class="hist-vazio">Nenhum registro ainda.</p>'
-      : snap.docs.map(d=>{
-          const r=d.data();
-          const ic=status==="presente"?"✅":status==="ausente"?"❌":"⏰";
-          const horarios=(r.horaEntrada||r.horaSaida)?`\nEntrada: ${r.horaEntrada||"—"} · Saída: ${r.horaSaida||"—"}`:"";
-          return `<div class="hist-item">
-            <div class="hist-tipo">${ic} ${r.servidorNome}</div>
-            <div class="hist-data">📅 ${r.data} · ${r.jornada||r.turno||""}</div>
-            <div class="hist-usuario">Mat: ${r.servidorMat}${r.cargo?" · "+r.cargo:""}</div>
-            <div class="hist-corpo">${r.obs?"Obs: "+r.obs+"\n":""}${horarios?horarios+"\n":""}Supervisor: ${r.supervisorNome}${r.supervisorMat?" (Mat: "+r.supervisorMat+")":""}</div>
-          </div>`;
-        }).join("");
-  } catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+  try{
+    const snap=await getDocs(query(collection(db,COL_PLANTAO),where("status","==",status),orderBy("criadoEm","desc")));
+    document.getElementById(idC).textContent=snap.size?`${snap.size} registro(s)`:"";
+    lista.innerHTML=snap.empty?'<p class="hist-vazio">Nenhum registro.</p>'
+      :snap.docs.map(d=>{const r=d.data();const ic=status==="presente"?"✅":status==="ausente"?"❌":"⏰";
+        return`<div class="hist-item">
+          <div class="hist-tipo">${ic} ${r.servidorNome}</div>
+          <div class="hist-data">📅 ${r.data} · ${r.jornada||r.turno||""}</div>
+          <div class="hist-data">🕐 Entrada: ${r.entrada||"—"} · Saída: ${r.saida||"—"}</div>
+          <div class="hist-usuario">Mat: ${r.servidorMat}${r.cargo?" · "+r.cargo:""}</div>
+          <div class="hist-corpo">${r.marcacao?"Marcação: "+r.marcacao+"\n":""}${r.obs?"Obs: "+r.obs+"\n":""}Supervisor: ${r.supervisorNome} · ${r.supervisorMat||""}\n🕐 ${r.registradoEm||tsStr(r.criadoEm)}</div>
+        </div>`;}).join("");
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
 }
 
 /* ══ FISCALIZAÇÃO ══ */
-function iniciarFiscTela(id) {
-  const local  = FISC_MAP[id];
-  const histId = "hist-"+id;
-  const el = document.getElementById(id);
-  const hoje = new Date().toISOString().slice(0,10);
+function iniciarFiscTela(id){
+  const local=FISC_MAP[id],histId="hist-"+id,el=document.getElementById(id);
+  const hoje=new Date().toISOString().slice(0,10);
   el.innerHTML=`
     <button class="btn btn-voltar no-print" onclick="ir('fiscalizacao')">← Voltar</button>
     <div class="secao-titulo">🔍 ${local}</div>
@@ -1439,102 +1137,81 @@ function iniciarFiscTela(id) {
     <label class="campo-label">Hora Fim</label><input type="time" id="fisc-horafim-${id}">
     <label class="campo-label">Observação</label>
     <textarea id="fisc-obs-${id}" placeholder="Ocorrências, situação encontrada..."></textarea>
-    <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="registrarFisc('${id}','${local}')">💾 Registrar Fiscalização</button>
+    <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="registrarFisc('${id}','${local}')">💾 Registrar</button>
     <button class="btn btn-full btn-cinza"   style="margin-top:6px;font-size:.78rem" onclick="ir('${histId}')">📋 Ver Histórico</button>`;
 }
-
-window.registrarFisc = async function(tela,local) {
-  const srv  = v(`fisc-srv-${tela}`);
-  const data = v(`fisc-data-${tela}`);
-  const hora = v(`fisc-hora-${tela}`);
-  const horafim = v(`fisc-horafim-${tela}`);
-  const obs  = v(`fisc-obs-${tela}`);
-  if (!srv||!data||!hora) return alerta("Preencha servidor, data e hora início.","erro");
-  try {
-    await addDoc(collection(db,COL_FISC),{
-      local,servidor:srv,data,hora,horafim,obs,
-      supervisorNome:usuarioLogado?.nome||"",
-      supervisorEmail:usuarioLogado?.email||"",
-      criadoEm:serverTimestamp()
-    });
+window.registrarFisc=async function(tela,local){
+  const srv=v(`fisc-srv-${tela}`),data=v(`fisc-data-${tela}`),hora=v(`fisc-hora-${tela}`);
+  const horafim=v(`fisc-horafim-${tela}`),obs=v(`fisc-obs-${tela}`);
+  if(!srv||!data||!hora)return alerta("Preencha servidor, data e hora início.","erro");
+  try{
+    await addDoc(collection(db,COL_FISC),{local,servidor:srv,data,hora,horafim,obs,
+      supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",criadoEm:serverTimestamp()});
     alerta(`Fiscalização — ${local} registrada!`,"ok");
-    document.getElementById(`fisc-srv-${tela}`).value="";
-    document.getElementById(`fisc-obs-${tela}`).value="";
-    document.getElementById(`fisc-hora-${tela}`).value="";
-    document.getElementById(`fisc-horafim-${tela}`).value="";
-  } catch(err){alerta("Erro: "+err.message,"erro");}
+    [`fisc-srv-${tela}`,`fisc-obs-${tela}`,`fisc-hora-${tela}`,`fisc-horafim-${tela}`]
+      .forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  }catch(err){alerta("Erro: "+err.message,"erro");}
 };
-
-async function renderHistFisc(histId) {
-  const tela  = histId.replace("hist-","");
-  const local = FISC_MAP[tela];
-  const el    = document.getElementById(histId);
+async function renderHistFisc(histId){
+  const tela=histId.replace("hist-",""),local=FISC_MAP[tela],el=document.getElementById(histId);
   el.innerHTML=`
     <button class="btn btn-voltar no-print" onclick="ir('${tela}')">← Voltar</button>
     <div class="secao-titulo">📋 Histórico — ${local}</div>
     <div class="hist-contador" id="cnt-${histId}"></div>
     <div id="lista-${histId}" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
     <button class="btn btn-full btn-cinza" style="margin-top:10px" onclick="window.print()">🖨 Imprimir</button>`;
-  try {
-    const snap = await getDocs(query(collection(db,COL_FISC),where("local","==",local),orderBy("criadoEm","desc")));
+  try{
+    const snap=await getDocs(query(collection(db,COL_FISC),where("local","==",local),orderBy("criadoEm","desc")));
     document.getElementById(`cnt-${histId}`).textContent=snap.size?`${snap.size} registro(s)`:"";
     document.getElementById(`lista-${histId}`).innerHTML=snap.empty
-      ?'<p class="hist-vazio">Nenhum registro ainda.</p>'
+      ?'<p class="hist-vazio">Nenhum registro.</p>'
       :snap.docs.map(d=>{const r=d.data();return`<div class="hist-item">
           <div class="hist-tipo">🔍 ${r.local}</div>
           <div class="hist-data">📅 ${r.data} · ${r.hora}${r.horafim?" – "+r.horafim:""}</div>
           <div class="hist-usuario">👮 ${r.servidor}</div>
           <div class="hist-corpo">${r.obs||"Sem observações"}\nSupervisor: ${r.supervisorNome}</div>
         </div>`;}).join("");
-  } catch(err){document.getElementById(`lista-${histId}`).innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+  }catch(err){document.getElementById(`lista-${histId}`).innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
 }
 
 /* ══ ORDEM DE SERVIÇO ══ */
-window.registrarOS = async function(tipo) {
-  const p  = tipo==="temporaria"?"temp":"perm";
+window.registrarOS=async function(tipo){
+  const p=tipo==="temporaria"?"temp":"perm";
   const num=v(`os-${p}-num`),srv=v(`os-${p}-servidor`),mat=v(`os-${p}-mat`),
         ini=v(`os-${p}-inicio`),desc=v(`os-${p}-desc`);
   const fim=tipo==="temporaria"?v("os-temp-fim"):"indeterminado";
-  if (!num||!srv||!ini) return alerta("Preencha Nº, servidor e data de início.","erro");
-  try {
-    await addDoc(collection(db,COL_OS),{
-      tipo,numero:num,servidor:srv,matricula:mat,dataInicio:ini,dataFim:fim,descricao:desc,
-      supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",criadoEm:serverTimestamp()
-    });
+  if(!num||!srv||!ini)return alerta("Preencha Nº, servidor e data início.","erro");
+  try{
+    await addDoc(collection(db,COL_OS),{tipo,numero:num,servidor:srv,matricula:mat,dataInicio:ini,dataFim:fim,descricao:desc,
+      supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",criadoEm:serverTimestamp()});
     alerta(`O.S ${num} registrada!`,"ok");
-    ["num","servidor","mat","inicio","fim","desc"].forEach(c=>{
-      const el=document.getElementById(`os-${p}-${c}`);if(el)el.value="";
-    });
-  } catch(err){alerta("Erro: "+err.message,"erro");}
+    ["num","servidor","mat","inicio","fim","desc"].forEach(c=>{const el=document.getElementById(`os-${p}-${c}`);if(el)el.value="";});
+  }catch(err){alerta("Erro: "+err.message,"erro");}
 };
-
-async function renderHistOS(tipo) {
-  const lista=document.getElementById(`lista-os-${tipo}`);
-  const cont =document.getElementById(`contador-os-${tipo}`);
+async function renderHistOS(tipo){
+  const lista=document.getElementById(`lista-os-${tipo}`),cont=document.getElementById(`contador-os-${tipo}`);
   lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
-  try {
+  try{
     const snap=await getDocs(query(collection(db,COL_OS),where("tipo","==",tipo),orderBy("criadoEm","desc")));
     cont.textContent=snap.size?`${snap.size} registro(s)`:"";
-    lista.innerHTML=snap.empty
-      ?'<p class="hist-vazio">Nenhuma O.S registrada.</p>'
-      :snap.docs.map(d=>{const r=d.data();const ic=tipo==="temporaria"?"⏳":"♾";
+    lista.innerHTML=snap.empty?'<p class="hist-vazio">Nenhuma O.S.</p>'
+      :snap.docs.map(d=>{const r=d.data(),ic=tipo==="temporaria"?"⏳":"♾";
         return`<div class="hist-item">
           <div class="hist-tipo">${ic} O.S ${r.numero}</div>
           <div class="hist-data">📅 Início: ${r.dataInicio} · Fim: ${r.dataFim}</div>
           <div class="hist-usuario">👮 ${r.servidor} · Mat: ${r.matricula}</div>
           <div class="hist-corpo">${r.descricao||"Sem descrição"}\nSupervisor: ${r.supervisorNome}</div>
         </div>`;}).join("");
-  } catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
 }
 
 /* ══ ARMAS MULTI ══ */
-function iniciarArmas() {
+function iniciarArmas(){
   const cont=document.getElementById("armas-linhas");
-  if (cont.children.length===0){contadorArmas=0;adicionarLinhaArma();}
+  if(cont.children.length===0){contadorArmas=0;adicionarLinhaArma();}
 }
-function adicionarLinhaArma() {
-  contadorArmas++;
-  const n=contadorArmas,cont=document.getElementById("armas-linhas"),div=document.createElement("div");
+function adicionarLinhaArma(){
+  contadorArmas++;const n=contadorArmas,cont=document.getElementById("armas-linhas"),div=document.createElement("div");
   div.className="arma-linha";div.id="arma-linha-"+n;
   div.innerHTML=`<div class="arma-linha-header">
     <span class="arma-linha-num">Item ${n}</span>
@@ -1552,7 +1229,7 @@ window.adicionarLinhaArma=adicionarLinhaArma;
 const CHAVE="pmc_historico";
 function carregarHist(){try{return JSON.parse(localStorage.getItem(CHAVE))||[];}catch{return[];}}
 function salvarLocal(tipo,dados){
-  const h=carregarHist();h.unshift({tipo,dados,data:new Date().toLocaleString("pt-BR")});
+  const h=carregarHist();h.unshift({tipo,dados,data:agora()});
   localStorage.setItem(CHAVE,JSON.stringify(h));atualizarBadge();
 }
 function atualizarBadge(){document.getElementById("badge-hist").textContent=carregarHist().length;}
@@ -1566,20 +1243,20 @@ function renderHistorico(){
 window.limparHistorico=function(){if(!confirm("Apagar histórico?"))return;localStorage.removeItem(CHAVE);atualizarBadge();renderHistorico();};
 window.imprimirHistorico=function(){
   if(!carregarHist().length)return alerta("Histórico vazio.","aviso");
-  document.getElementById("print-meta").innerHTML=`Gerado em: ${new Date().toLocaleString("pt-BR")}<br>Total: ${carregarHist().length} registro(s)`;
+  document.getElementById("print-meta").innerHTML=`Gerado em: ${agora()}<br>Total: ${carregarHist().length} registro(s)`;
   window.print();
 };
 
 /* ══ AUDITORIA FIREBASE ══ */
 async function salvarAuditoria(tipo,dados){
   if(!usuarioLogado)return;
-  try{await addDoc(collection(db,COL_AUDITORIA),{
-    tipo,dados,usuarioNome:usuarioLogado.nome,usuarioEmail:usuarioLogado.email,
-    matricula:usuarioLogado.matricula,criadoEm:serverTimestamp()
-  });}catch(err){console.warn("Auditoria:",err.message);}
+  try{await addDoc(collection(db,COL_AUDITORIA),{tipo,dados,
+    usuarioNome:usuarioLogado.nome,usuarioEmail:usuarioLogado.email,
+    matricula:usuarioLogado.matricula,criadoEm:serverTimestamp()});}
+  catch(err){console.warn("Auditoria:",err.message);}
 }
 
-/* ══ ENVIOS CHECKLIST ══ */
+/* ══ ENVIOS ARMARIA ══ */
 window.enviarArmas=async function(){
   const linhas=document.querySelectorAll(".arma-linha");
   if(!linhas.length)return alerta("Adicione pelo menos um item.","erro");
@@ -1601,9 +1278,7 @@ window.enviarViatura=async function(){
 };
 
 /* ══ INIT ══ */
-atualizarBadge();
-atualizarMenu();
-renderNotificacoes();
+atualizarBadge();atualizarMenu();
 </script>
 </body>
 </html>
