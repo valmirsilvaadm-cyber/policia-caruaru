@@ -1,7 +1,7 @@
 {
-  "name": "Polícia Municipal de Caruaru",
+  "name": "PolÃ­cia Municipal de Caruaru",
   "short_name": "PMC Caruaru",
-  "description": "Aplicação da Polícia Municipal de Caruaru preparada como PWA instalável.",
+  "description": "AplicaÃ§Ã£o da PolÃ­cia Municipal de Caruaru preparada como PWA instalÃ¡vel.",
   "lang": "pt-BR",
   "start_url": "./index.html",
   "scope": "./",
