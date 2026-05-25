@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polícia Municipal de Caruaru</title>
+<link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#0b1f3a">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="format-detection" content="telephone=no">
-<title>Polícia Municipal de Caruaru</title>
+<meta name="apple-mobile-web-app-title" content="PMC Caruaru">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap');
 :root{
@@ -61,10 +61,10 @@ h1{font-family:'Oswald',sans-serif;font-size:1.6rem;font-weight:700;letter-spaci
 .aviso-login{display:none;text-align:center;font-size:.72rem;color:var(--amarelo);letter-spacing:1px;
   font-family:'Oswald',sans-serif;margin:2px 0 8px;grid-column:1/-1;}
 
-/* MÓDULOS + INSPETORIA — base uniforme, borda esquerda colorida */
+/* MÓDULOS + INSPETORIA — mesma base do .btn */
 .mod-btn,.insp-btn{
   background:linear-gradient(135deg,#1e3f6e,#152d52)!important;
-  border-color:rgba(100,160,255,.3)!important;
+  border:1px solid rgba(100,160,255,.3)!important;
   color:var(--branco)!important;letter-spacing:1.5px;
   box-shadow:0 2px 8px rgba(0,0,0,.3);
 }
@@ -72,13 +72,16 @@ h1{font-family:'Oswald',sans-serif;font-size:1.6rem;font-weight:700;letter-spaci
   background:linear-gradient(135deg,#2a5299,#1e3f6e)!important;
   border-color:var(--dourado)!important;color:var(--dourado-claro)!important;
 }
-.insp-btn {border-left:3px solid #5dade2!important;}
-.mod-adm  {border-left:3px solid #4caf7d!important;}
-.mod-vid  {border-left:3px solid #a78bfa!important;}
-.mod-int  {border-left:3px solid #f87171!important;}
-.mod-cmd  {border-left:3px solid #fbbf24!important;}
-.mod-fot  {border-left:3px solid #f472b6!important;}
-.mod-esc  {border-left:3px solid #38bdf8!important;}
+/* borda colorida só aparece quando NÃO bloqueado */
+.insp-btn:not(.btn-bloqueado){border-left:3px solid #5dade2!important;}
+.mod-adm:not(.btn-bloqueado) {border-left:3px solid #4caf7d!important;}
+.mod-vid:not(.btn-bloqueado) {border-left:3px solid #a78bfa!important;}
+.mod-int:not(.btn-bloqueado) {border-left:3px solid #f87171!important;}
+.mod-cmd:not(.btn-bloqueado) {border-left:3px solid #fbbf24!important;}
+.mod-pat:not(.btn-bloqueado) {border-left:3px solid #60a5fa!important;}
+.mod-tec:not(.btn-bloqueado) {border-left:3px solid #34d399!important;}
+.mod-fot:not(.btn-bloqueado) {border-left:3px solid #f472b6!important;}
+.mod-esc:not(.btn-bloqueado) {border-left:3px solid #38bdf8!important;}
 
 /* BANCO DE FOTOS */
 .foto-upload-area{
@@ -408,63 +411,6 @@ textarea{resize:vertical;min-height:70px;}
 .mapa-box iframe{width:100%;height:100%;border:none;}
 .localizacao-info{font-size:.75rem;color:var(--cinza);text-align:center;margin-bottom:8px;}
 
-
-
-/* AJUSTES MOBILE */
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
-body{
-  min-height:100dvh;
-  padding:
-    max(14px, env(safe-area-inset-top))
-    max(12px, env(safe-area-inset-right))
-    max(22px, env(safe-area-inset-bottom))
-    max(12px, env(safe-area-inset-left));
-  overflow-x:hidden;
-}
-.container{width:min(100%, 480px);padding-bottom:8px;}
-.btn,.tab-btn,.btn-voltar,.btn-add-linha,.btn-remover-linha{min-height:44px;touch-action:manipulation;}
-input,textarea,select,button{font-size:16px;}
-img,iframe,canvas,svg{max-width:100%;height:auto;}
-#notif-painel{width:min(100vw - 24px, 360px);max-height:min(70vh, 560px);right:0;left:auto;}
-.escala-modal-box,.modal-box,.modal,.caixa-modal{max-width:min(100%, 420px);}
-
-@media (max-width: 768px){
-  h1{font-size:clamp(1.35rem, 4.8vw, 1.8rem);letter-spacing:1.2px;}
-  .subtitulo{font-size:.72rem;letter-spacing:2px;}
-  .secao-titulo{font-size:1rem;letter-spacing:1.4px;}
-  .menu-grid,
-  .foto-grid,
-  .hist-acoes,
-  .admin-tabs,
-  .filtros-row,
-  .plantao-cabecalho,
-  .btns-confirmar{grid-template-columns:1fr;}
-  .plantao-contador{grid-template-columns:repeat(3, 1fr);}
-  .escala-header,
-  .escala-mes-nav,
-  .arma-linha-header,
-  .foto-toolbar,
-  .audit-sel-bar{flex-wrap:wrap;}
-  .servidor-card{align-items:flex-start;gap:8px;}
-}
-
-@media (max-width: 480px){
-  body{background-attachment:scroll;}
-  .container{max-width:100%;}
-  .menu-grid{gap:10px;}
-  .btn{padding:13px 10px;font-size:.85rem;}
-  .btn-sm{width:100%;}
-  .foto-card img{height:120px;}
-  .escala-cal{gap:2px;}
-  .escala-dia{min-height:46px;padding:3px;}
-  .escala-dia .dia-num{font-size:.7rem;}
-  .escala-turno{font-size:.5rem;}
-  .cnt-item span{font-size:1.3rem;}
-  .sc-nome{font-size:.82rem;}
-  .hist-scroll{max-height:none;}
-  #notif-painel{position:fixed;top:auto;left:12px;right:12px;bottom:12px;width:auto;max-height:60vh;}
-}
-
 /* IMPRESSÃO */
 @media print{
   body{background:#fff!important;color:#000!important;padding:10px!important;}
@@ -484,7 +430,17 @@ img,iframe,canvas,svg{max-width:100%;height:auto;}
 }
 .print-header{display:none;}
 
-/* PWA */
+/* PWA + BOTÕES PROTEGIDOS */
+.btn-login-nitido.btn-bloqueado{
+  opacity:.32 !important;
+  filter:grayscale(.85) saturate(.75) blur(1.15px) !important;
+  text-shadow:none !important;
+  box-shadow:none !important;
+}
+.btn-login-nitido.btn-bloqueado:hover{
+  transform:none !important;
+  color:var(--branco) !important;
+}
 .pwa-install-wrap{display:flex;justify-content:center;margin:0 0 12px;}
 #pwa-install-btn{display:none;min-height:46px;width:100%;max-width:420px;}
 #pwa-install-btn.visivel{display:block;}
@@ -505,12 +461,6 @@ img,iframe,canvas,svg{max-width:100%;height:auto;}
 <body>
 <div id="alerta-global" class="alerta-box"></div>
 <div class="container">
-
-<div class="pwa-install-wrap no-print">
-  <button id="pwa-install-btn" class="btn btn-dourado" type="button">Instalar aplicativo</button>
-</div>
-<div id="pwa-status" class="pwa-status no-print">Abra no navegador e use “Instalar aplicativo” para adicionar à tela inicial.</div>
-
 
 <h1 id="titulo-principal" onclick="contarToque()" style="cursor:default;user-select:none">🌟 Polícia Municipal</h1>
 <p class="subtitulo">Caruaru · Sistema Operacional</p>
@@ -540,6 +490,12 @@ img,iframe,canvas,svg{max-width:100%;height:auto;}
 
 <!-- ══ MENU ══ -->
 <div id="menu">
+
+<div class="pwa-install-wrap no-print">
+  <button id="pwa-install-btn" class="btn btn-dourado" type="button">Instalar aplicativo</button>
+</div>
+<div id="pwa-status" class="pwa-status no-print">Abra no navegador e use “Instalar aplicativo” para adicionar à tela inicial.</div>
+
   <button id="btn-sair" class="btn btn-full btn-cinza no-print" style="margin-bottom:10px" onclick="sair()">Sair da conta</button>
   <div class="menu-grid">
     <button class="btn" onclick="ir('cadastro')">Cadastro</button>
@@ -553,16 +509,14 @@ img,iframe,canvas,svg{max-width:100%;height:auto;}
     </div>
     <p id="home-search-nenhum" class="home-search-nenhum" style="display:none">Nenhum módulo encontrado.</p>
 
-    <button id="btn-checklist"     class="btn btn-full"          onclick="irProtegido('checklist','checklist')">🛡️ Armaria</button>
-    <button id="btn-inspetoria"    class="btn btn-full insp-btn" onclick="irProtegido('inspetoria','inspetoria')">🏛 Inspetoria</button>
+    <button id="btn-checklist"      class="btn btn-full"              onclick="irProtegido('checklist','checklist')">🛡️ Armaria</button>
+    <button id="btn-inspetoria"     class="btn btn-full mod-btn insp-btn" onclick="irProtegido('inspetoria','inspetoria')">🏛 Inspetoria</button>
     <button id="btn-administrativo" class="btn btn-full mod-btn mod-adm" onclick="irProtegido('administrativo','administrativo')">📁 Administrativo</button>
     <button id="btn-videomonitor"   class="btn btn-full mod-btn mod-vid" onclick="irProtegido('videomonitor','videomonitor')">📹 Vídeo Monitoramento</button>
     <button id="btn-inteligencia"   class="btn btn-full mod-btn mod-int" onclick="irProtegido('inteligencia','inteligencia')">🔎 Inteligência</button>
     <button id="btn-comando"        class="btn btn-full mod-btn mod-cmd" onclick="irProtegido('comando','comando')">⭐ Comando</button>
-    <button id="btn-patrimonio"     class="btn btn-full mod-btn mod-pat" onclick="irProtegido('patrimonio','patrimonio')">🏛 Patrimônio</button>
-    <button id="btn-tecnologia"     class="btn btn-full mod-btn mod-tec" onclick="irProtegido('tecnologia','tecnologia')">💻 Tecnologia</button>
-    <button id="btn-fotos"          class="btn btn-full mod-btn mod-fot" onclick="irProtegido('fotos','fotos')">📷 Banco de Fotos</button>
-    <button id="btn-escala"         class="btn btn-full mod-btn mod-esc" onclick="irProtegido('escala','escala')">📅 Escala / Plantão</button>
+    <button id="btn-patrimonio"     class="btn btn-full mod-btn mod-pat btn-login-nitido" onclick="irProtegido('patrimonio','patrimonio')">🏛 Patrimônio</button>
+    <button id="btn-tecnologia"     class="btn btn-full mod-btn mod-tec btn-login-nitido" onclick="irProtegido('tecnologia','tecnologia')">💻 Tecnologia</button>
   </div>
 </div>
 
@@ -939,9 +893,13 @@ img,iframe,canvas,svg{max-width:100%;height:auto;}
 <div id="administrativo" class="secao">
   <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
   <div class="secao-titulo">📁 Administrativo</div>
-  <p style="color:var(--cinza);font-size:.85rem;text-align:center;padding:20px 0">
-    Sub-menus serão adicionados em breve.
-  </p>
+  <div class="menu-grid">
+    <button id="btn-fotos" class="btn btn-full mod-btn mod-fot btn-login-nitido" onclick="irProtegido('fotos','fotos')">📷 Banco de Fotos</button>
+    <button id="btn-escala" class="btn btn-full mod-btn mod-esc btn-login-nitido" onclick="irProtegido('escala','escala')">📅 Escala / Plantão</button>
+    <p style="color:var(--cinza);font-size:.75rem;text-align:center;padding:10px 0;grid-column:1/-1">
+      Mais sub-menus serão adicionados em breve.
+    </p>
+  </div>
 </div>
 
 <!-- ══ VÍDEO MONITORAMENTO ══ -->
@@ -1215,7 +1173,7 @@ const COL_PLANTAO="plantao";
 const COL_SERV="servidores_plantao";
 const COL_FISC="fiscalizacao";
 const COL_OS="ordens_servico";
-const PERMISSOES=["checklist","historico","inspetoria","administrativo","videomonitor","inteligencia","comando"];
+const PERMISSOES=["checklist","historico","inspetoria","administrativo","videomonitor","inteligencia","comando","patrimonio","tecnologia","fotos","escala"];
 const FISC_MAP={
   "fisc-prefeitura":"Prefeitura","fisc-rendeiras":"Rendeiras","fisc-marco":"Marco Zero",
   "fisc-saldanha":"Saldanha da Gama","fisc-po":"Patrulhamento (P.O)","fisc-pv":"Patrulhamento Viatura (P.V)"
@@ -1273,12 +1231,16 @@ window.ir=ir;window.irProtegido=irProtegido;window.voltar=voltar;
 function atualizarMenu(){
   const logado=!!usuarioLogado,perms=usuarioLogado?.permissoes||{};
   const botoes=[
-    {id:"btn-checklist",    perm:"checklist"},
-    {id:"btn-inspetoria",   perm:"inspetoria"},
-    {id:"btn-administrativo",perm:"administrativo"},
-    {id:"btn-videomonitor", perm:"videomonitor"},
-    {id:"btn-inteligencia", perm:"inteligencia"},
-    {id:"btn-comando",      perm:"comando"},
+    {id:"btn-checklist",      perm:"checklist"},
+    {id:"btn-inspetoria",     perm:"inspetoria"},
+    {id:"btn-administrativo", perm:"administrativo"},
+    {id:"btn-videomonitor",   perm:"videomonitor"},
+    {id:"btn-inteligencia",   perm:"inteligencia"},
+    {id:"btn-comando",        perm:"comando"},
+    {id:"btn-patrimonio",     perm:"patrimonio"},
+    {id:"btn-tecnologia",     perm:"tecnologia"},
+    {id:"btn-fotos",          perm:"fotos"},
+    {id:"btn-escala",         perm:"escala"},
   ];
   botoes.forEach(({id,perm})=>{
     const btn=document.getElementById(id);if(!btn)return;
@@ -1346,7 +1308,7 @@ window.enviarCadastro=async function(){
     if(!dup.empty)return alerta("E-mail já cadastrado.","erro");
     await addDoc(collection(db,COL_USUARIOS),{
       nome,nascimento:nasc,cpf,matricula:mat,email,senha,status:"pendente",
-      permissoes:{checklist:true,historico:true,inspetoria:true,administrativo:false,videomonitor:false,inteligencia:false,comando:false},criadoEm:serverTimestamp()
+      permissoes:{checklist:true,historico:true,inspetoria:true,administrativo:false,videomonitor:false,inteligencia:false,comando:false,patrimonio:false,tecnologia:false,fotos:true,escala:false},criadoEm:serverTimestamp()
     });
     alerta("Cadastro enviado! Aguarde aprovação do administrador.","ok");
     ["nome","data","cpf","matricula","email","senha"].forEach(id=>document.getElementById(id).value="");
@@ -2112,14 +2074,14 @@ window.enviarViatura=async function(){
 
 /* ══ FILTRO HOME ══ */
 const MENU_BTNS=[
-  {id:"btn-checklist",    label:"armaria"},
-  {id:"btn-inspetoria",   label:"inspetoria"},
-  {id:"btn-administrativo",label:"administrativo"},
-  {id:"btn-videomonitor", label:"video monitoramento monitoramento"},
-  {id:"btn-inteligencia", label:"inteligencia inteligência"},
-  {id:"btn-comando",      label:"comando"},
-  {id:"btn-patrimonio",   label:"patrimônio patrimonio"},
-  {id:"btn-tecnologia",   label:"tecnologia"},
+  {id:"btn-checklist",      label:"armaria armas municoes viaturas"},
+  {id:"btn-inspetoria",     label:"inspetoria plantao fiscalizacao ordem servico os"},
+  {id:"btn-administrativo", label:"administrativo banco fotos escala plantão"},
+  {id:"btn-videomonitor",   label:"video monitoramento"},
+  {id:"btn-inteligencia",   label:"inteligencia inteligência"},
+  {id:"btn-comando",        label:"comando"},
+  {id:"btn-patrimonio",     label:"patrimônio patrimonio"},
+  {id:"btn-tecnologia",     label:"tecnologia"},
 ];
 
 window.filtrarMenu=function(){
@@ -2720,6 +2682,10 @@ window.contarToque=function(){
 
 /* ══ INIT ══ */
 atualizarBadge();atualizarMenu();
+// Registra Service Worker para PWA
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 </script>
 
 <script>
@@ -2727,28 +2693,17 @@ atualizarBadge();atualizarMenu();
   const installBtn = document.getElementById('pwa-install-btn');
   const statusEl = document.getElementById('pwa-status');
   let deferredPrompt = null;
-
   function showStatus(msg){
     if(!statusEl) return;
     statusEl.textContent = msg;
     statusEl.classList.add('visivel');
   }
-
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(err => {
-        console.error('Falha ao registrar service worker:', err);
-      });
-    });
-  }
-
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     if (installBtn) installBtn.classList.add('visivel');
     showStatus('Aplicativo pronto para instalação.');
   });
-
   if (installBtn) {
     installBtn.addEventListener('click', async () => {
       if (!deferredPrompt) {
@@ -2757,16 +2712,11 @@ atualizarBadge();atualizarMenu();
       }
       deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
-      if (choice && choice.outcome === 'accepted') {
-        showStatus('Instalação iniciada.');
-      } else {
-        showStatus('Instalação cancelada.');
-      }
+      showStatus(choice && choice.outcome === 'accepted' ? 'Instalação iniciada.' : 'Instalação cancelada.');
       deferredPrompt = null;
       installBtn.classList.remove('visivel');
     });
   }
-
   window.addEventListener('appinstalled', () => {
     if (installBtn) installBtn.classList.remove('visivel');
     showStatus('Aplicativo instalado com sucesso.');
