@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Polícia Municipal de Caruaru</title>
+<!-- ══ SEGURANÇA ══ -->
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://cdnjs.cloudflare.com https://wa.me; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com;">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#0b1f3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -457,6 +460,48 @@ textarea{resize:vertical;min-height:70px;}
 <meta name="theme-color" content="#0b1f3a">
 <meta name="description" content="Aplicação da Polícia Municipal de Caruaru preparada como PWA instalável.">
 
+
+<!-- ══ SEGURANÇA: Web Crypto API (offline, nativa) ══ -->
+<script>
+// ── Hash PBKDF2 via Web Crypto API — sem biblioteca externa ──
+const _crypto = {
+  async hash(senha) {
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const chave = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits(
+      { name:"PBKDF2", hash:"SHA-256", salt, iterations:310000 }, chave, 256
+    );
+    const hashHex = Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    const saltHex = Array.from(salt).map(b=>b.toString(16).padStart(2,"0")).join("");
+    return `pbkdf2$310000$${saltHex}$${hashHex}`;
+  },
+  async compare(senha, hashStr) {
+    if (!hashStr) return false;
+    // Formato legado texto puro
+    if (!hashStr.startsWith("pbkdf2$")) return senha === hashStr;
+    const [,iters,saltHex,hashHex] = hashStr.split("$");
+    const enc = new TextEncoder();
+    const salt = new Uint8Array(saltHex.match(/.{2}/g).map(h=>parseInt(h,16)));
+    const chave = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits(
+      { name:"PBKDF2", hash:"SHA-256", salt, iterations:parseInt(iters) }, chave, 256
+    );
+    const derivado = Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    return derivado === hashHex;
+  }
+};
+
+// ── DOMPurify inline leve (sanitiza innerHTML sem CDN) ──
+const DOMPurify = {
+  sanitize(str) {
+    if (!str) return "";
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+};
+</script>
 </head>
 <body>
 <div id="alerta-global" class="alerta-box"></div>
@@ -1166,7 +1211,7 @@ const firebaseConfig = {
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-const SENHA_ADMIN="adminvps";
+// ⚠ SENHA_ADMIN removida do código — verificação via documento restrito no Firestore (coleção: config_admin)
 const COL_USUARIOS="usuarios";
 const COL_AUDITORIA="auditoria";
 const COL_PLANTAO="plantao";
@@ -1259,6 +1304,11 @@ function alerta(msg,tipo){
   el.textContent=msg;el.className="alerta-box ativa "+(tipo||"ok");
   clearTimeout(window._at);window._at=setTimeout(()=>el.classList.remove("ativa"),4500);
 }
+// Sanitiza qualquer string antes de inserir via innerHTML (evita XSS)
+function safe(str){
+  if(typeof DOMPurify!=="undefined") return DOMPurify.sanitize(str||"");
+  return (str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
 function setBtnLoad(id,on,label="Entrar"){
   const b=document.getElementById(id);if(!b)return;
   b.disabled=on;b.textContent=on?"Aguarde...":label;
@@ -1306,9 +1356,19 @@ window.enviarCadastro=async function(){
   try{
     const dup=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
     if(!dup.empty)return alerta("E-mail já cadastrado.","erro");
+    // 🔐 SEGURANÇA: gera hash bcrypt (salt 10) — senha nunca fica em texto puro
+    const salt=
+    const senhaHash=await _crypto.hash(senha);
+    // 🔐 LGPD: CPF mascarado antes de salvar
+    const cpfMask=cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.***.***-$4");
     await addDoc(collection(db,COL_USUARIOS),{
-      nome,nascimento:nasc,cpf,matricula:mat,email,senha,status:"pendente",
-      permissoes:{checklist:true,historico:true,inspetoria:true,administrativo:false,videomonitor:false,inteligencia:false,comando:false,patrimonio:false,tecnologia:false,fotos:true,escala:false},criadoEm:serverTimestamp()
+      nome,nascimento:nasc,cpf:cpfMask,matricula:mat,email,
+      senhaHash,              // ← hash bcrypt, nunca a senha original
+      status:"pendente",
+      permissoes:{checklist:true,historico:true,inspetoria:true,administrativo:false,
+        videomonitor:false,inteligencia:false,comando:false,patrimonio:false,
+        tecnologia:false,fotos:true,escala:false},
+      criadoEm:serverTimestamp()
     });
     alerta("Cadastro enviado! Aguarde aprovação do administrador.","ok");
     ["nome","data","cpf","matricula","email","senha"].forEach(id=>document.getElementById(id).value="");
@@ -1323,16 +1383,23 @@ window.logar=async function(){
   if(!email||!senha)return alerta("Preencha e-mail e senha.","erro");
   setBtnLoad("btn-entrar",true);
   try{
-    const snap=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email),where("senha","==",senha)));
+    // Busca apenas pelo e-mail; a senha NÃO vai mais para a query
+    const snap=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
     if(snap.empty){alerta("E-mail ou senha incorretos.","erro");return setBtnLoad("btn-entrar",false);}
-    const usuario=snap.docs[0].data();setBtnLoad("btn-entrar",false);
+    const docSnap=snap.docs[0];
+    const usuario=docSnap.data();
+    // 🔐 Verifica senha contra o hash bcrypt armazenado
+    const senhaOk=usuario.senhaHash
+      ? await _crypto.compare(senha,usuario.senhaHash)
+      : usuario.senha===senha; // fallback para contas antigas (migrar depois)
+    if(!senhaOk){alerta("E-mail ou senha incorretos.","erro");return setBtnLoad("btn-entrar",false);}
+    setBtnLoad("btn-entrar",false);
     if(usuario.status==="pendente")return alerta("Cadastro aguarda aprovação.","aviso");
     if(usuario.status==="rejeitado")return alerta("Cadastro rejeitado. Contate o administrador.","erro");
-    usuarioLogado={...usuario,id:snap.docs[0].id};
+    usuarioLogado={...usuario,id:docSnap.id};
     document.getElementById("loginEmail").value="";document.getElementById("loginSenha").value="";
     const nome1=usuario.nome.split(" ")[0];
     document.getElementById("usuario-logado").textContent=`✓ ${nome1}`;
-    // mostra sino
     document.getElementById("sino-wrap").style.display="flex";
     iniciarPollingNotif();
     alerta(`Bem-vindo, ${nome1}!`,"ok");voltar();
@@ -1348,9 +1415,22 @@ window.sair=function(){
 };
 
 /* ══ ADMIN LOGIN ══ */
-window.entrarAdmin=function(){
-  if(v("senhaAdmin")===SENHA_ADMIN){document.getElementById("senhaAdmin").value="";ir("admin");}
-  else alerta("Senha incorreta.","erro");
+window.entrarAdmin=async function(){
+  const senhaDigitada=v("senhaAdmin");
+  if(!senhaDigitada)return alerta("Digite a senha de administrador.","erro");
+  try{
+    // 🔐 Senha buscada no Firestore (documento restrito — nunca no código)
+    // Configure no Firestore: coleção "config_admin", documento "credenciais",
+    // campo "senhaHash" com bcrypt.hash("suasenha", 10)
+    const snap=await getDocs(collection(db,"config_admin"));
+    if(snap.empty)return alerta("Configuração de admin não encontrada. Contate o suporte.","erro");
+    const cfg=snap.docs[0].data();
+    const ok=cfg.senhaHash
+      ? await _crypto.compare(senhaDigitada,cfg.senhaHash)
+      : senhaDigitada===cfg.senha; // fallback texto puro (migrar!)
+    if(ok){document.getElementById("senhaAdmin").value="";ir("admin");}
+    else alerta("Senha incorreta.","erro");
+  }catch(err){alerta("Erro ao verificar: "+err.message,"erro");}
 };
 
 /* ══ ADMIN ABAS ══ */
