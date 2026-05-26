@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Polícia Municipal de Caruaru</title>
-<!-- ══ SEGURANÇA ══ -->
-<meta http-equiv="Content-Security-Policy"
-  content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://cdnjs.cloudflare.com https://wa.me; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com;">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#0b1f3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -460,48 +457,6 @@ textarea{resize:vertical;min-height:70px;}
 <meta name="theme-color" content="#0b1f3a">
 <meta name="description" content="Aplicação da Polícia Municipal de Caruaru preparada como PWA instalável.">
 
-
-<!-- ══ SEGURANÇA: Web Crypto API (offline, nativa) ══ -->
-<script>
-// ── Hash PBKDF2 via Web Crypto API — sem biblioteca externa ──
-const _crypto = {
-  async hash(senha) {
-    const enc = new TextEncoder();
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    const chave = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveBits"]);
-    const bits = await crypto.subtle.deriveBits(
-      { name:"PBKDF2", hash:"SHA-256", salt, iterations:310000 }, chave, 256
-    );
-    const hashHex = Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,"0")).join("");
-    const saltHex = Array.from(salt).map(b=>b.toString(16).padStart(2,"0")).join("");
-    return `pbkdf2$310000$${saltHex}$${hashHex}`;
-  },
-  async compare(senha, hashStr) {
-    if (!hashStr) return false;
-    // Formato legado texto puro
-    if (!hashStr.startsWith("pbkdf2$")) return senha === hashStr;
-    const [,iters,saltHex,hashHex] = hashStr.split("$");
-    const enc = new TextEncoder();
-    const salt = new Uint8Array(saltHex.match(/.{2}/g).map(h=>parseInt(h,16)));
-    const chave = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveBits"]);
-    const bits = await crypto.subtle.deriveBits(
-      { name:"PBKDF2", hash:"SHA-256", salt, iterations:parseInt(iters) }, chave, 256
-    );
-    const derivado = Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,"0")).join("");
-    return derivado === hashHex;
-  }
-};
-
-// ── DOMPurify inline leve (sanitiza innerHTML sem CDN) ──
-const DOMPurify = {
-  sanitize(str) {
-    if (!str) return "";
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
-  }
-};
-</script>
 </head>
 <body>
 <div id="alerta-global" class="alerta-box"></div>
@@ -1211,7 +1166,7 @@ const firebaseConfig = {
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-// ⚠ SENHA_ADMIN removida do código — verificação via documento restrito no Firestore (coleção: config_admin)
+const SENHA_ADMIN="adminvps";
 const COL_USUARIOS="usuarios";
 const COL_AUDITORIA="auditoria";
 const COL_PLANTAO="plantao";
@@ -1304,11 +1259,6 @@ function alerta(msg,tipo){
   el.textContent=msg;el.className="alerta-box ativa "+(tipo||"ok");
   clearTimeout(window._at);window._at=setTimeout(()=>el.classList.remove("ativa"),4500);
 }
-// Sanitiza qualquer string antes de inserir via innerHTML (evita XSS)
-function safe(str){
-  if(typeof DOMPurify!=="undefined") return DOMPurify.sanitize(str||"");
-  return (str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
 function setBtnLoad(id,on,label="Entrar"){
   const b=document.getElementById(id);if(!b)return;
   b.disabled=on;b.textContent=on?"Aguarde...":label;
@@ -1356,19 +1306,9 @@ window.enviarCadastro=async function(){
   try{
     const dup=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
     if(!dup.empty)return alerta("E-mail já cadastrado.","erro");
-    // 🔐 SEGURANÇA: gera hash bcrypt (salt 10) — senha nunca fica em texto puro
-    const salt=
-    const senhaHash=await _crypto.hash(senha);
-    // 🔐 LGPD: CPF mascarado antes de salvar
-    const cpfMask=cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.***.***-$4");
     await addDoc(collection(db,COL_USUARIOS),{
-      nome,nascimento:nasc,cpf:cpfMask,matricula:mat,email,
-      senhaHash,              // ← hash bcrypt, nunca a senha original
-      status:"pendente",
-      permissoes:{checklist:true,historico:true,inspetoria:true,administrativo:false,
-        videomonitor:false,inteligencia:false,comando:false,patrimonio:false,
-        tecnologia:false,fotos:true,escala:false},
-      criadoEm:serverTimestamp()
+      nome,nascimento:nasc,cpf,matricula:mat,email,senha,status:"pendente",
+      permissoes:{checklist:true,historico:true,inspetoria:true,administrativo:false,videomonitor:false,inteligencia:false,comando:false,patrimonio:false,tecnologia:false,fotos:true,escala:false},criadoEm:serverTimestamp()
     });
     alerta("Cadastro enviado! Aguarde aprovação do administrador.","ok");
     ["nome","data","cpf","matricula","email","senha"].forEach(id=>document.getElementById(id).value="");
@@ -1383,23 +1323,16 @@ window.logar=async function(){
   if(!email||!senha)return alerta("Preencha e-mail e senha.","erro");
   setBtnLoad("btn-entrar",true);
   try{
-    // Busca apenas pelo e-mail; a senha NÃO vai mais para a query
-    const snap=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
+    const snap=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email),where("senha","==",senha)));
     if(snap.empty){alerta("E-mail ou senha incorretos.","erro");return setBtnLoad("btn-entrar",false);}
-    const docSnap=snap.docs[0];
-    const usuario=docSnap.data();
-    // 🔐 Verifica senha contra o hash bcrypt armazenado
-    const senhaOk=usuario.senhaHash
-      ? await _crypto.compare(senha,usuario.senhaHash)
-      : usuario.senha===senha; // fallback para contas antigas (migrar depois)
-    if(!senhaOk){alerta("E-mail ou senha incorretos.","erro");return setBtnLoad("btn-entrar",false);}
-    setBtnLoad("btn-entrar",false);
+    const usuario=snap.docs[0].data();setBtnLoad("btn-entrar",false);
     if(usuario.status==="pendente")return alerta("Cadastro aguarda aprovação.","aviso");
     if(usuario.status==="rejeitado")return alerta("Cadastro rejeitado. Contate o administrador.","erro");
-    usuarioLogado={...usuario,id:docSnap.id};
+    usuarioLogado={...usuario,id:snap.docs[0].id};
     document.getElementById("loginEmail").value="";document.getElementById("loginSenha").value="";
     const nome1=usuario.nome.split(" ")[0];
     document.getElementById("usuario-logado").textContent=`✓ ${nome1}`;
+    // mostra sino
     document.getElementById("sino-wrap").style.display="flex";
     iniciarPollingNotif();
     alerta(`Bem-vindo, ${nome1}!`,"ok");voltar();
@@ -1415,22 +1348,9 @@ window.sair=function(){
 };
 
 /* ══ ADMIN LOGIN ══ */
-window.entrarAdmin=async function(){
-  const senhaDigitada=v("senhaAdmin");
-  if(!senhaDigitada)return alerta("Digite a senha de administrador.","erro");
-  try{
-    // 🔐 Senha buscada no Firestore (documento restrito — nunca no código)
-    // Configure no Firestore: coleção "config_admin", documento "credenciais",
-    // campo "senhaHash" com bcrypt.hash("suasenha", 10)
-    const snap=await getDocs(collection(db,"config_admin"));
-    if(snap.empty)return alerta("Configuração de admin não encontrada. Contate o suporte.","erro");
-    const cfg=snap.docs[0].data();
-    const ok=cfg.senhaHash
-      ? await _crypto.compare(senhaDigitada,cfg.senhaHash)
-      : senhaDigitada===cfg.senha; // fallback texto puro (migrar!)
-    if(ok){document.getElementById("senhaAdmin").value="";ir("admin");}
-    else alerta("Senha incorreta.","erro");
-  }catch(err){alerta("Erro ao verificar: "+err.message,"erro");}
+window.entrarAdmin=function(){
+  if(v("senhaAdmin")===SENHA_ADMIN){document.getElementById("senhaAdmin").value="";ir("admin");}
+  else alerta("Senha incorreta.","erro");
 };
 
 /* ══ ADMIN ABAS ══ */
@@ -1828,4 +1748,981 @@ async function renderHistStatus(status){
           <div class="hist-tipo">${ic} ${r.servidorNome}</div>
           <div class="hist-data">📅 ${r.data} · ${r.jornada||r.turno||""}</div>
           <div class="hist-data">🕐 Entrada: ${r.entrada||"—"} · Saída: ${r.saida||"—"}</div>
-          <div class="hist-usuario">Mat: ${r.servidorMat}${r.cargo?" · "+r.cargo:"
+          <div class="hist-usuario">Mat: ${r.servidorMat}${r.cargo?" · "+r.cargo:""}</div>
+          <div class="hist-corpo">${r.marcacao?"Marcação: "+r.marcacao+"\n":""}${r.obs?"Obs: "+r.obs+"\n":""}Supervisor: ${r.supervisorNome} · ${r.supervisorMat||""}\n🕐 ${r.registradoEm||tsStr(r.criadoEm)}</div>
+        </div>`;}).join("");
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+/* ══ FISCALIZAÇÃO ══ */
+function iniciarFiscTela(id){
+  const local=FISC_MAP[id],histId="hist-"+id,el=document.getElementById(id);
+  const hoje=new Date().toISOString().slice(0,10);
+  el.innerHTML=`
+    <button class="btn btn-voltar no-print" onclick="ir('fiscalizacao')">← Voltar</button>
+    <div class="secao-titulo">🔍 ${local}</div>
+    <label class="campo-label">Servidor(es) designado(s)</label>
+    <input type="text" id="fisc-srv-${id}" placeholder="Nome(s) do(s) servidor(es)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label class="campo-label">Data</label><input type="date" id="fisc-data-${id}" value="${hoje}"></div>
+      <div><label class="campo-label">Hora Início</label><input type="time" id="fisc-hora-${id}"></div>
+    </div>
+    <label class="campo-label">Hora Fim</label><input type="time" id="fisc-horafim-${id}">
+    <label class="campo-label">Observação</label>
+    <textarea id="fisc-obs-${id}" placeholder="Ocorrências, situação encontrada..."></textarea>
+    <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="registrarFisc('${id}','${local}')">💾 Registrar</button>
+    <button class="btn btn-full btn-cinza"   style="margin-top:6px;font-size:.78rem" onclick="ir('${histId}')">📋 Ver Histórico</button>`;
+}
+window.registrarFisc=async function(tela,local){
+  const srv=v(`fisc-srv-${tela}`),data=v(`fisc-data-${tela}`),hora=v(`fisc-hora-${tela}`);
+  const horafim=v(`fisc-horafim-${tela}`),obs=v(`fisc-obs-${tela}`);
+  if(!srv||!data||!hora)return alerta("Preencha servidor, data e hora início.","erro");
+  try{
+    await addDoc(collection(db,COL_FISC),{local,servidor:srv,data,hora,horafim,obs,
+      supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",criadoEm:serverTimestamp()});
+    alerta(`Fiscalização — ${local} registrada!`,"ok");
+    [`fisc-srv-${tela}`,`fisc-obs-${tela}`,`fisc-hora-${tela}`,`fisc-horafim-${tela}`]
+      .forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+async function renderHistFisc(histId){
+  const tela=histId.replace("hist-",""),local=FISC_MAP[tela],el=document.getElementById(histId);
+  el.innerHTML=`
+    <button class="btn btn-voltar no-print" onclick="ir('${tela}')">← Voltar</button>
+    <div class="secao-titulo">📋 Histórico — ${local}</div>
+    <div class="hist-contador" id="cnt-${histId}"></div>
+    <div id="lista-${histId}" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+    <button class="btn btn-full btn-cinza" style="margin-top:10px" onclick="window.print()">🖨 Imprimir</button>`;
+  try{
+    const snap=await getDocs(query(collection(db,COL_FISC),where("local","==",local)));
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+    document.getElementById(`cnt-${histId}`).textContent=docs.length?`${docs.length} registro(s)`:"";
+    document.getElementById(`lista-${histId}`).innerHTML=!docs.length
+      ?'<p class="hist-vazio">Nenhum registro.</p>'
+      :docs.map(d=>{const r=d;return`<div class="hist-item">
+          <div class="hist-tipo">🔍 ${r.local}</div>
+          <div class="hist-data">📅 ${r.data} · ${r.hora}${r.horafim?" – "+r.horafim:""}</div>
+          <div class="hist-usuario">👮 ${r.servidor}</div>
+          <div class="hist-corpo">${r.obs||"Sem observações"}\nSupervisor: ${r.supervisorNome}</div>
+        </div>`;}).join("");
+  }catch(err){document.getElementById(`lista-${histId}`).innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+/* ══ ORDEM DE SERVIÇO ══ */
+window.registrarOS=async function(tipo){
+  const p=tipo==="temporaria"?"temp":"perm";
+  const num=v(`os-${p}-num`),srv=v(`os-${p}-servidor`),mat=v(`os-${p}-mat`),
+        ini=v(`os-${p}-inicio`),desc=v(`os-${p}-desc`);
+  const fim=tipo==="temporaria"?v("os-temp-fim"):"indeterminado";
+  if(!num||!srv||!ini)return alerta("Preencha Nº, servidor e data início.","erro");
+  try{
+    await addDoc(collection(db,COL_OS),{
+      tipo,numero:num,servidor:srv,matricula:mat,dataInicio:ini,dataFim:fim,descricao:desc,
+      statusOS:"ativa", // ativa | concluida | cancelada
+      supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",
+      criadoEm:serverTimestamp()
+    });
+    alerta(`O.S ${num} registrada com sucesso!`,"ok");
+    ["num","servidor","mat","inicio","fim","desc"].forEach(c=>{const el=document.getElementById(`os-${p}-${c}`);if(el)el.value="";});
+    // vai direto para o histórico após registrar
+    ir(`hist-os-${tipo}`);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+async function renderHistOS(tipo){
+  const lista=document.getElementById(`lista-os-${tipo}`),cont=document.getElementById(`contador-os-${tipo}`);
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+
+  // barra de seleção para exclusão
+  const barraId=`os-sel-bar-${tipo}`;
+  let barra=document.getElementById(barraId);
+  if(!barra){
+    barra=document.createElement("div");
+    barra.id=barraId;
+    barra.style.cssText="display:none;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.4);border-radius:8px;padding:10px 12px;margin-bottom:10px;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap";
+    lista.parentNode.insertBefore(barra,lista);
+  }
+  barra.innerHTML=`
+    <span id="os-sel-cnt-${tipo}" style="font-size:.8rem;color:#f1948a;font-family:'Oswald',sans-serif;letter-spacing:1px">0 selecionada(s)</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-perigo" onclick="excluirOSSelecionadas('${tipo}')">🗑 Excluir</button>
+      <button class="btn btn-sm btn-cinza"  onclick="desmarcarOS('${tipo}')">✕ Cancelar</button>
+    </div>`;
+
+  const osSelecionadas=new Set();
+  window[`osSel_${tipo}`]=osSelecionadas;
+
+  try{
+    const snap=await getDocs(query(collection(db,COL_OS),where("tipo","==",tipo)));
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+    cont.textContent=docs.length?`${docs.length} O.S registrada(s)`:"";
+
+    // busca usuários aprovados para select
+    let usuariosOpts='<option value="">Selecione usuário...</option>';
+    let usuariosWA=[];
+    try{
+      const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
+      uSnap.docs.forEach(d=>{
+        const u=d.data();
+        usuariosOpts+=`<option value="${u.email}" data-nome="${u.nome}">${u.nome}</option>`;
+        usuariosWA.push({nome:u.nome,email:u.email});
+      });
+    }catch(e){}
+
+    // busca servidores do plantão (têm número de telefone eventualmente)
+    let srvOpts='<option value="">Selecione servidor...</option>';
+    try{
+      const sSnap=await getDocs(collection(db,COL_SERV));
+      sSnap.docs.forEach(d=>{
+        const s=d.data();
+        if(s.telefone)srvOpts+=`<option value="${s.telefone}" data-nome="${s.nome}">${s.nome} — ${s.telefone}</option>`;
+      });
+    }catch(e){}
+
+    lista.innerHTML=docs.length?docs.map(d=>{
+      const ic=tipo==="temporaria"?"⏳":"♾";
+      const sColor=d.statusOS==="concluida"?"#7dcea0":d.statusOS==="cancelada"?"#f1948a":"#e8c96b";
+      const sLabel=d.statusOS==="concluida"?"✅ Concluída":d.statusOS==="cancelada"?"❌ Cancelada":"🟡 Ativa";
+      const descEsc=(d.descricao||"").replace(/'/g,"\\'");
+      return`<div class="hist-item" id="os-card-${d.id}" style="position:relative">
+        <!-- CHECKBOX SELEÇÃO -->
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <input type="checkbox" class="os-chk" data-id="${d.id}"
+            style="width:18px;height:18px;accent-color:#c0392b;flex-shrink:0;margin-top:3px;cursor:pointer"
+            onchange="toggleOSSel('${tipo}','${d.id}',this.checked)">
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <div class="hist-tipo" style="margin:0">${ic} O.S ${d.numero}</div>
+              <span style="font-size:.68rem;font-family:'Oswald',sans-serif;letter-spacing:1px;color:${sColor}">${sLabel}</span>
+            </div>
+            <div class="hist-data">📅 Início: ${d.dataInicio} · Fim: ${d.dataFim||"indeterminado"}</div>
+            <div class="hist-usuario">👮 ${d.servidor} · Mat: ${d.matricula||"—"}</div>
+            <div class="hist-corpo" style="margin-bottom:8px">${d.descricao||"Sem descrição"}\nSupervisor: ${d.supervisorNome}</div>
+
+            <!-- STATUS -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+              <button class="btn btn-sm btn-verde"  onclick="alterarStatusOS('${d.id}','concluida','${tipo}')">✅ Concluir</button>
+              <button class="btn btn-sm btn-perigo" onclick="alterarStatusOS('${d.id}','cancelada','${tipo}')">❌ Cancelar</button>
+              <button class="btn btn-sm" style="background:rgba(30,100,200,.3);border-color:rgba(30,100,200,.5);color:#90c2fa;font-size:.62rem"
+                onclick="alterarStatusOS('${d.id}','ativa','${tipo}')">🔄 Reativar</button>
+            </div>
+
+            <!-- ENVIO -->
+            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px">
+              <div style="font-family:'Oswald',sans-serif;font-size:.68rem;letter-spacing:2px;color:var(--cinza);margin-bottom:8px">📤 ENVIAR O.S</div>
+
+              <!-- WHATSAPP APENAS -->
+              <div>
+                <div style="font-size:.65rem;color:var(--cinza);margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:1px">📱 ENVIAR VIA WHATSAPP</div>
+                <input type="tel" id="os-wa-${d.id}" placeholder="DDD + número (ex: 81999887766)"
+                  style="margin:0 0 5px;font-size:.82rem">
+                <button class="btn btn-full btn-sm" style="background:linear-gradient(135deg,#25d366,#128c7e);border-color:#25d366;color:#fff"
+                  onclick="enviarOSWhatsApp('${d.id}','${d.numero}','${d.servidor}','${d.dataInicio}','${d.dataFim||"indeterminado"}','${tipo}','${descEsc}')">
+                  💬 Enviar pelo WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;}).join("")
+    :'<p class="hist-vazio">Nenhuma O.S registrada ainda.</p>';
+
+    // eventos checkbox
+    lista.querySelectorAll(".os-chk").forEach(chk=>{
+      chk.addEventListener("change",()=>{});// já tem onchange inline
+    });
+
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+window.toggleOSSel=function(tipo,id,checked){
+  const sel=window[`osSel_${tipo}`];if(!sel)return;
+  if(checked)sel.add(id);else sel.delete(id);
+  const n=sel.size;
+  const barra=document.getElementById(`os-sel-bar-${tipo}`);
+  if(barra)barra.style.display=n>0?"flex":"none";
+  const cnt=document.getElementById(`os-sel-cnt-${tipo}`);
+  if(cnt)cnt.textContent=`${n} selecionada(s)`;
+};
+
+window.desmarcarOS=function(tipo){
+  const sel=window[`osSel_${tipo}`];if(sel)sel.clear();
+  document.querySelectorAll(".os-chk").forEach(c=>c.checked=false);
+  const barra=document.getElementById(`os-sel-bar-${tipo}`);
+  if(barra)barra.style.display="none";
+};
+
+window.excluirOSSelecionadas=async function(tipo){
+  const sel=window[`osSel_${tipo}`];
+  if(!sel||!sel.size)return;
+  if(!confirm(`Excluir ${sel.size} O.S permanentemente?`))return;
+  try{
+    for(const id of sel)await deleteDoc(doc(db,COL_OS,id));
+    alerta(`${sel.size} O.S excluída(s).`,"aviso");
+    renderHistOS(tipo);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+window.enviarOSWhatsApp=async function(id,numero,servidor,dataInicio,dataFim,tipo,desc){
+  const tel=(document.getElementById(`os-wa-${id}`)?.value||"").replace(/\D/g,"");
+  if(!tel||tel.length<10)return alerta("Digite um número de WhatsApp válido com DDD.","erro");
+  const ic=tipo==="temporaria"?"⏳":"♾";
+  const txt=
+    `${ic} *ORDEM DE SERVIÇO — ${tipo.toUpperCase()}*\n\n`+
+    `*Nº:* ${numero}\n`+
+    `*Servidor:* ${servidor}\n`+
+    `*Período:* ${dataInicio} a ${dataFim}\n`+
+    (desc?`*Descrição:* ${desc}\n`:"")+
+    `\n*Emitido por:* ${usuarioLogado?.nome||""}\n`+
+    `*Polícia Municipal de Caruaru*`;
+  window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(txt)}`,"_blank");
+
+  // tenta enviar notificação in-app para o usuário que tem esse número
+  try{
+    const sSnap=await getDocs(query(collection(db,COL_SERV),where("telefone","==",tel)));
+    if(!sSnap.empty){
+      const srv=sSnap.docs[0].data();
+      if(srv.email){
+        await enviarNotificacao(srv.email,`${ic} Nova O.S — ${numero}`,
+          `Servidor: ${servidor}\nPeríodo: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`);
+      }
+    }
+    // também tenta por e-mail do usuário cadastrado que tem o mesmo nome
+    const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
+    uSnap.docs.forEach(async d=>{
+      const u=d.data();
+      if(u.nome?.toLowerCase()===servidor.toLowerCase()&&u.email){
+        await enviarNotificacao(u.email,`${ic} Nova O.S — ${numero}`,
+          `Período: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`);
+      }
+    });
+  }catch(e){}
+};
+
+/* ══ ARMAS MULTI ══ */
+function iniciarArmas(){
+  const cont=document.getElementById("armas-linhas");
+  if(cont.children.length===0){contadorArmas=0;adicionarLinhaArma();}
+}
+function adicionarLinhaArma(){
+  contadorArmas++;const n=contadorArmas,cont=document.getElementById("armas-linhas"),div=document.createElement("div");
+  div.className="arma-linha";div.id="arma-linha-"+n;
+  div.innerHTML=`<div class="arma-linha-header">
+    <span class="arma-linha-num">Item ${n}</span>
+    ${n>1?`<button class="btn-remover-linha" data-num="${n}">✕ Remover</button>`:""}
+  </div>
+  <select id="tipoArma_${n}"><option>Tonfas</option><option>Sparks</option><option>Coletes</option><option>Algemas</option><option>Pistolas</option><option>Calibre 12</option></select>
+  <input type="number" id="qtdArma_${n}" placeholder="Quantidade">
+  <textarea id="obsArma_${n}" placeholder="Observações"></textarea>`;
+  div.querySelector("[data-num]")?.addEventListener("click",e=>document.getElementById("arma-linha-"+e.target.dataset.num)?.remove());
+  cont.appendChild(div);
+}
+window.adicionarLinhaArma=adicionarLinhaArma;
+
+/* ══ HISTÓRICO LOCAL ══ */
+const CHAVE="pmc_historico";
+function carregarHist(){try{return JSON.parse(localStorage.getItem(CHAVE))||[];}catch{return[];}}
+function salvarLocal(tipo,dados){
+  const h=carregarHist();h.unshift({tipo,dados,data:agora()});
+  localStorage.setItem(CHAVE,JSON.stringify(h));atualizarBadge();
+}
+function atualizarBadge(){document.getElementById("badge-hist").textContent=carregarHist().length;}
+function renderHistorico(){
+  const h=carregarHist();
+  document.getElementById("hist-contador").textContent=h.length?`${h.length} registro(s)`:"";
+  document.getElementById("historico-lista").innerHTML=h.length
+    ?h.map(r=>`<div class="hist-item"><div class="hist-tipo">${r.tipo}</div><div class="hist-data">🕐 ${r.data}</div><div class="hist-corpo">${r.dados}</div></div>`).join("")
+    :'<p class="hist-vazio">Nenhum envio ainda.</p>';
+}
+window.limparHistorico=function(){if(!confirm("Apagar histórico?"))return;localStorage.removeItem(CHAVE);atualizarBadge();renderHistorico();};
+window.imprimirHistorico=function(){
+  if(!carregarHist().length)return alerta("Histórico vazio.","aviso");
+  document.getElementById("print-meta").innerHTML=`Gerado em: ${agora()}<br>Total: ${carregarHist().length} registro(s)`;
+  window.print();
+};
+
+/* ══ AUDITORIA FIREBASE ══ */
+async function salvarAuditoria(tipo,dados){
+  if(!usuarioLogado)return;
+  try{await addDoc(collection(db,COL_AUDITORIA),{tipo,dados,
+    usuarioNome:usuarioLogado.nome,usuarioEmail:usuarioLogado.email,
+    matricula:usuarioLogado.matricula,criadoEm:serverTimestamp()});}
+  catch(err){console.warn("Auditoria:",err.message);}
+}
+
+/* ══ ENVIOS ARMARIA ══ */
+window.enviarArmas=async function(){
+  const linhas=document.querySelectorAll(".arma-linha");
+  if(!linhas.length)return alerta("Adicione pelo menos um item.","erro");
+  let resumo="";
+  linhas.forEach((l,i)=>{const n=l.id.replace("arma-linha-","");
+    resumo+=`— Item ${i+1}: ${v("tipoArma_"+n)} | Qtd: ${v("qtdArma_"+n)}`+(v("obsArma_"+n)?` | Obs: ${v("obsArma_"+n)}`:"")+"\n";});
+  resumo=resumo.trim();salvarLocal("Armas",resumo);await salvarAuditoria("Armas",resumo);
+  window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Armas&body=${encodeURIComponent("Armas:\n"+resumo)}`;
+};
+window.enviarMunicao=async function(){
+  const resumo=`Tipo: ${v("tipoMunicao")}\nQuantidade: ${v("qtdMunicao")}\nObs: ${v("obsMunicao")}`;
+  salvarLocal("Munições",resumo);await salvarAuditoria("Munições",resumo);
+  window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Munições&body=${encodeURIComponent("Munições:\n"+resumo)}`;
+};
+window.enviarViatura=async function(){
+  const resumo=`Identificação: ${v("viatura")}\nObs: ${v("obsViatura")}`;
+  salvarLocal("Viaturas",resumo);await salvarAuditoria("Viaturas",resumo);
+  window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Viaturas&body=${encodeURIComponent("Viatura:\n"+resumo)}`;
+};
+
+/* ══ FILTRO HOME ══ */
+const MENU_BTNS=[
+  {id:"btn-checklist",      label:"armaria armas municoes viaturas"},
+  {id:"btn-inspetoria",     label:"inspetoria plantao fiscalizacao ordem servico os"},
+  {id:"btn-administrativo", label:"administrativo banco fotos escala plantão"},
+  {id:"btn-videomonitor",   label:"video monitoramento"},
+  {id:"btn-inteligencia",   label:"inteligencia inteligência"},
+  {id:"btn-comando",        label:"comando"},
+  {id:"btn-patrimonio",     label:"patrimônio patrimonio"},
+  {id:"btn-tecnologia",     label:"tecnologia"},
+];
+
+window.filtrarMenu=function(){
+  const q=(document.getElementById("home-search")?.value||"").toLowerCase().trim();
+  let algumVisivel=false;
+  MENU_BTNS.forEach(({id,label})=>{
+    const btn=document.getElementById(id);
+    if(!btn)return;
+    const mostra=!q||label.includes(q);
+    btn.style.display=mostra?"":"none";
+    if(mostra)algumVisivel=true;
+  });
+  document.getElementById("home-search-nenhum").style.display=
+    (q&&!algumVisivel)?"block":"none";
+};
+
+/* ══ FILTRO ADMIN — USUÁRIOS ══ */
+let todosUsuariosCache=[];
+
+window.filtrarUsuarios=function(){
+  const q=(v("filtro-usuario-nome")||"").toLowerCase();
+  if(!q){renderUsuarios(todosUsuariosCache);return;}
+  renderUsuarios(todosUsuariosCache.filter(u=>
+    u.nome?.toLowerCase().includes(q)||u.matricula?.toLowerCase().includes(q)));
+};
+
+function renderUsuarios(docs){
+  const lista=document.getElementById("admin-lista");
+  if(!docs.length){lista.innerHTML='<p class="hist-vazio">Nenhum usuário encontrado.</p>';return;}
+  lista.innerHTML=docs.map(({id,u})=>{
+    const sc=u.status==="aprovado"?"status-ok":u.status==="rejeitado"?"status-erro":"status-aviso";
+    const sl=u.status==="aprovado"?"✓ Aprovado":u.status==="rejeitado"?"✕ Rejeitado":"⏳ Pendente";
+    const perms=u.permissoes||{};
+    const permLabels={checklist:"🛡️ Armaria",historico:"📋 Histórico",inspetoria:"🏛 Inspetoria",
+      administrativo:"📁 Administrativo",videomonitor:"📹 Vídeo Monit.",
+      inteligencia:"🔎 Inteligência",comando:"⭐ Comando",patrimonio:"🏛 Patrimônio",tecnologia:"💻 Tecnologia"};
+    const permHTML=PERMISSOES.map(p=>`
+      <div class="perm-item">
+        <input type="checkbox" id="perm-${id}-${p}" ${perms[p]!==false?"checked":""} onchange="salvarPermissao('${id}','${p}',this.checked)">
+        <label for="perm-${id}-${p}">${permLabels[p]||p}</label>
+      </div>`).join("");
+    return`<div class="hist-item">
+      <div class="hist-tipo">${u.nome}</div>
+      <div class="hist-data">📧 ${u.email} · Mat: ${u.matricula}</div>
+      <div class="hist-corpo" style="margin-bottom:6px">CPF: ${u.cpf}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+        <span class="badge ${sc}">${sl}</span>
+        ${u.status!=="aprovado"?`<button class="btn btn-sm btn-verde" data-id="${id}" data-acao="aprovar">Aprovar</button>`:""}
+        ${u.status!=="rejeitado"?`<button class="btn btn-sm btn-perigo" data-id="${id}" data-acao="rejeitar">Rejeitar</button>`:""}
+        <button class="btn btn-sm" style="background:rgba(192,57,43,.3);border-color:rgba(192,57,43,.5);color:#f1948a;font-size:.65rem"
+          data-id="${id}" data-acao="remover">🗑 Remover</button>
+      </div>
+      <div class="perm-box"><div class="perm-titulo">🔑 Permissões</div>${permHTML}</div>
+    </div>`;
+  }).join("");
+  lista.querySelectorAll("[data-acao]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      const id=btn.dataset.id,acao=btn.dataset.acao;
+      if(acao==="remover"){if(!confirm("Remover usuário?"))return;
+        await deleteDoc(doc(db,COL_USUARIOS,id));alerta("Removido.","aviso");carregarAdmin();return;}
+      if(acao==="rejeitar"&&!confirm("Rejeitar?"))return;
+      await updateDoc(doc(db,COL_USUARIOS,id),{status:acao==="aprovar"?"aprovado":"rejeitado"});
+      alerta(acao==="aprovar"?"Aprovado!":"Rejeitado.",acao==="aprovar"?"ok":"aviso");carregarAdmin();
+    });
+  });
+}
+
+/* ══ FILTRO ADMIN — SERVIDORES ══ */
+let todosServidoresAdminCache=[];
+
+window.filtrarServidores=function(){
+  const q=(v("filtro-servidor-nome")||"").toLowerCase();
+  renderServidoresAdmin(q?todosServidoresAdminCache.filter(s=>
+    s.nome?.toLowerCase().includes(q)||s.matricula?.toLowerCase().includes(q)):todosServidoresAdminCache);
+};
+
+function renderServidoresAdmin(docs){
+  const lista=document.getElementById("admin-servidores-lista");
+  const cont=document.getElementById("cnt-servidores");
+  cont.textContent=docs.length?`${docs.length} servidor(es)`:"";
+  lista.innerHTML=docs.length?docs.map(s=>`
+    <div class="hist-item">
+      <div class="hist-tipo">${s.nome}</div>
+      <div class="hist-data">Mat: ${s.matricula}${s.cargo?" · "+s.cargo:""}${s.email?"\n📧 "+s.email:""}${s.telefone?"\n📱 "+s.telefone:""}</div>
+      <div style="margin-top:6px"><button class="btn btn-sm btn-perigo" data-del="${s.id}">🗑 Remover</button></div>
+    </div>`).join("")
+  :'<p class="hist-vazio">Nenhum servidor.</p>';
+  lista.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      if(!confirm("Remover servidor?"))return;
+      await deleteDoc(doc(db,COL_SERV,btn.dataset.del));
+      alerta("Removido.","aviso");carregarServidoresAdmin();servidoresCache=[];
+    });
+  });
+}
+
+/* ══ FILTRO ADMIN INIT ══ */
+const COL_NOTIF="notificacoes";
+let notifInterval=null;
+let ultimaNotifTs=0;
+
+// Sirene wee-woo (2 tons alternados)
+function tocarSirene(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const toca=(freq,inicio,dur)=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.type="sawtooth";
+      // glide de freq para criar efeito wee-woo
+      osc.frequency.setValueAtTime(freq,ctx.currentTime+inicio);
+      osc.frequency.linearRampToValueAtTime(freq*1.4,ctx.currentTime+inicio+dur*0.5);
+      osc.frequency.linearRampToValueAtTime(freq,ctx.currentTime+inicio+dur);
+      gain.gain.setValueAtTime(0,ctx.currentTime+inicio);
+      gain.gain.linearRampToValueAtTime(0.3,ctx.currentTime+inicio+0.05);
+      gain.gain.setValueAtTime(0.3,ctx.currentTime+inicio+dur-0.08);
+      gain.gain.linearRampToValueAtTime(0,ctx.currentTime+inicio+dur);
+      osc.start(ctx.currentTime+inicio);
+      osc.stop(ctx.currentTime+inicio+dur);
+    };
+    // wee (subindo) — woo (descendo) — wee (subindo)
+    toca(600, 0,   0.35);  // wee
+    toca(900, 0.4, 0.35);  // woo
+    toca(600, 0.8, 0.35);  // wee
+  }catch(e){}
+}
+
+// Vibração 3x
+function vibrar3x(){
+  if(navigator.vibrate)navigator.vibrate([120,80,120,80,120]);
+}
+
+function atualizarBadgeNotif(n){
+  const badge=document.getElementById("sino-badge");
+  const btn=document.getElementById("sino-btn");
+  if(!badge||!btn)return;
+  if(n>0){
+    badge.textContent=n>99?"99+":n;
+    badge.classList.add("visivel");
+    btn.classList.add("tem-notif"); // dourado vibrando em loop
+  }else{
+    badge.classList.remove("visivel");
+    btn.classList.remove("tem-notif"); // cinza parado
+  }
+}
+
+window.toggleNotif=function(){
+  const painel=document.getElementById("notif-painel");
+  if(!painel)return;
+  painel.classList.toggle("aberto");
+  if(painel.classList.contains("aberto"))renderNotificacoes();
+};
+
+async function renderNotificacoes(){
+  if(!usuarioLogado)return;
+  const lista=document.getElementById("notif-lista");
+  lista.innerHTML='<p class="notif-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(
+      collection(db,COL_NOTIF),where("destEmail","==",usuarioLogado.email)));
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+    const naolidas=docs.filter(d=>!d.lida).length;
+    atualizarBadgeNotif(naolidas);
+    if(!docs.length){lista.innerHTML='<p class="notif-vazio">Sem notificações.</p>';return;}
+    lista.innerHTML=docs.map(d=>{
+      // ícone por tipo de notificação
+      const icone=d.titulo?.includes("Plantão")?"👮":
+                  d.titulo?.includes("O.S")?"📄":
+                  d.titulo?.includes("Cadastro")?"✅":"🔔";
+      return`<div class="notif-card ${d.lida?"lida":""}" onclick="marcarLida('${d.id}')">
+        ${!d.lida?'<div class="n-ponto"></div>':""}
+        <div class="n-icone">${icone}</div>
+        <div class="n-titulo">${d.titulo}</div>
+        <div class="n-corpo">${d.corpo}</div>
+        <div class="n-hora">🕐 ${d.criadoEm?.toDate?d.criadoEm.toDate().toLocaleString("pt-BR"):d.hora||""}</div>
+      </div>`;}).join("");
+  }catch(err){lista.innerHTML=`<p class="notif-vazio">Erro: ${err.message}</p>`;}
+}
+
+window.marcarLida=async function(id){
+  try{await updateDoc(doc(db,COL_NOTIF,id),{lida:true});renderNotificacoes();}catch(e){}
+};
+
+window.marcarTodasLidas=async function(){
+  if(!usuarioLogado)return;
+  try{
+    const snap=await getDocs(query(collection(db,COL_NOTIF),
+      where("destEmail","==",usuarioLogado.email),where("lida","==",false)));
+    for(const d of snap.docs)await updateDoc(doc(db,COL_NOTIF,d.id),{lida:true});
+    renderNotificacoes();alerta("Todas marcadas como lidas.","ok");
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+window.limparNotificacoes=async function(){
+  if(!usuarioLogado)return;
+  if(!confirm("Apagar todas as notificações?"))return;
+  try{
+    const snap=await getDocs(query(collection(db,COL_NOTIF),where("destEmail","==",usuarioLogado.email)));
+    for(const d of snap.docs)await deleteDoc(doc(db,COL_NOTIF,d.id));
+    renderNotificacoes();atualizarBadgeNotif(0);alerta("Notificações limpas.","aviso");
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+// Envia notificação para um usuário específico (salva no Firebase)
+async function enviarNotificacao(destEmail,titulo,corpo){
+  if(!destEmail)return;
+  try{
+    await addDoc(collection(db,COL_NOTIF),{
+      destEmail,titulo,corpo,lida:false,
+      hora:agora(),criadoEm:serverTimestamp()
+    });
+  }catch(e){console.warn("Notif:",e.message);}
+}
+
+// Polling: verifica novas notificações a cada 30s
+function iniciarPollingNotif(){
+  if(notifInterval)clearInterval(notifInterval);
+  verificarNovasNotif();
+  notifInterval=setInterval(verificarNovasNotif,30000);
+}
+
+async function verificarNovasNotif(){
+  if(!usuarioLogado)return;
+  try{
+    const snap=await getDocs(query(collection(db,COL_NOTIF),
+      where("destEmail","==",usuarioLogado.email),where("lida","==",false)));
+    const n=snap.size;
+    atualizarBadgeNotif(n);
+    // detecta notificação nova
+    const maxTs=Math.max(...snap.docs.map(d=>d.data().criadoEm?.seconds||0),0);
+    if(maxTs>ultimaNotifTs&&ultimaNotifTs>0){
+      // toca sirene wee-woo
+      tocarSirene();
+      // vibra 3x
+      vibrar3x();
+      // chacoalha o sino
+      const btn=document.getElementById("sino-btn");
+      if(btn){
+        btn.classList.remove("sino-anim");
+        void btn.offsetWidth; // reflow para reiniciar animação
+        btn.classList.add("sino-anim");
+        setTimeout(()=>btn.classList.remove("sino-anim"),700);
+      }
+      // re-renderiza painel se aberto
+      if(document.getElementById("notif-painel")?.classList.contains("aberto"))
+        renderNotificacoes();
+    }
+    if(maxTs>0)ultimaNotifTs=maxTs;
+  }catch(e){}
+}
+
+/* ══ BANCO DE FOTOS (localStorage) ══ */
+const CHAVE_FOTOS = "pmc_fotos";
+let fotoAtual = null; // {dataUrl, nome}
+let fotosSelecionadas = new Set();
+
+function carregarFotos(){
+  try{ return JSON.parse(localStorage.getItem(CHAVE_FOTOS))||[]; }catch{ return []; }
+}
+function salvarFotos(arr){ localStorage.setItem(CHAVE_FOTOS, JSON.stringify(arr)); }
+
+function iniciarFotos(){
+  document.getElementById("foto-preview-area").style.display="none";
+  document.getElementById("foto-input").value="";
+  fotoAtual=null; fotosSelecionadas.clear();
+  atualizarToolbarFotos();
+  renderFotos();
+}
+
+window.processarFotos=function(input){
+  const file=input.files[0]; if(!file)return;
+  if(file.size>5*1024*1024){ alerta("Foto maior que 5MB. Escolha outra.","erro"); return; }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    fotoAtual={dataUrl:e.target.result, nome:file.name};
+    document.getElementById("foto-preview-img").src=e.target.result;
+    document.getElementById("foto-preview-area").style.display="block";
+    document.getElementById("foto-titulo").value="";
+  };
+  reader.readAsDataURL(file);
+};
+
+window.salvarFoto=function(){
+  if(!fotoAtual)return;
+  const titulo=v("foto-titulo")||"Sem título";
+  const modulo=v("foto-modulo")||"Geral";
+  const fotos=carregarFotos();
+  fotos.unshift({
+    id: Date.now().toString(),
+    dataUrl: fotoAtual.dataUrl,
+    titulo, modulo,
+    usuario: usuarioLogado?.nome||"",
+    email:   usuarioLogado?.email||"",
+    data:    agora()
+  });
+  salvarFotos(fotos);
+  alerta("Foto salva!","ok");
+  cancelarFoto();
+  renderFotos();
+};
+
+window.cancelarFoto=function(){
+  fotoAtual=null;
+  document.getElementById("foto-preview-area").style.display="none";
+  document.getElementById("foto-input").value="";
+};
+
+window.renderFotos=function(){
+  const q   =(v("foto-filtro")||"").toLowerCase();
+  const mod =(v("foto-filtro-modulo")||"");
+  const isAdmin=(usuarioLogado?.email===undefined)?false:true;
+  let fotos=carregarFotos();
+  // usuário comum vê só as próprias
+  if(!_ehAdmin()) fotos=fotos.filter(f=>f.email===usuarioLogado?.email);
+  if(q)   fotos=fotos.filter(f=>f.titulo?.toLowerCase().includes(q)||f.modulo?.toLowerCase().includes(q));
+  if(mod) fotos=fotos.filter(f=>f.modulo===mod);
+
+  document.getElementById("foto-contador").textContent=fotos.length?`${fotos.length} foto(s)`:"";
+  const grid=document.getElementById("foto-grid");
+  if(!fotos.length){ grid.innerHTML='<p class="hist-vazio" style="grid-column:1/-1">Nenhuma foto.</p>'; return; }
+  grid.innerHTML=fotos.map(f=>{
+    const sel=fotosSelecionadas.has(f.id);
+    return`<div class="foto-card${sel?" selecionada":""}" data-id="${f.id}">
+      <div class="foto-check">${sel?"✓":""}</div>
+      <img src="${f.dataUrl}" alt="${f.titulo}" loading="lazy">
+      <div class="foto-info">
+        <div class="foto-titulo">${f.titulo}</div>
+        <div class="foto-data">${f.modulo} · ${f.data}</div>
+      </div>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".foto-card").forEach(card=>{
+    card.addEventListener("click",()=>toggleFotoSel(card.dataset.id));
+  });
+};
+
+function _ehAdmin(){
+  // verifica se logado é admin pela senha — simplificado
+  return localStorage.getItem("pmc_admin_session")==="1";
+}
+
+function toggleFotoSel(id){
+  if(fotosSelecionadas.has(id)) fotosSelecionadas.delete(id);
+  else fotosSelecionadas.add(id);
+  atualizarToolbarFotos();
+  renderFotos();
+}
+
+function atualizarToolbarFotos(){
+  const n=fotosSelecionadas.size;
+  const tb=document.getElementById("foto-toolbar");
+  const cnt=document.getElementById("foto-sel-cnt");
+  tb.classList.toggle("visivel",n>0);
+  if(cnt)cnt.textContent=`${n} selecionada(s)`;
+}
+
+window.desmarcarFotos=function(){
+  fotosSelecionadas.clear(); atualizarToolbarFotos(); renderFotos();
+};
+
+window.excluirFotosSelecionadas=function(){
+  if(!fotosSelecionadas.size)return;
+  if(!confirm(`Excluir ${fotosSelecionadas.size} foto(s) permanentemente?`))return;
+  let fotos=carregarFotos().filter(f=>!fotosSelecionadas.has(f.id));
+  salvarFotos(fotos); fotosSelecionadas.clear();
+  alerta("Foto(s) excluída(s).","aviso"); renderFotos(); atualizarToolbarFotos();
+};
+
+window.compartilharFotos=function(){
+  const fotos=carregarFotos().filter(f=>fotosSelecionadas.has(f.id));
+  if(!fotos.length)return;
+  const tel=prompt("Digite o número WhatsApp (DDD+número):");
+  if(!tel)return;
+  const txt=`📷 *Banco de Fotos — Polícia Municipal de Caruaru*\n\n`+
+    fotos.map(f=>`📌 ${f.titulo} | ${f.modulo} | ${f.data}`).join("\n")+
+    `\n\nEnviado por: ${usuarioLogado?.nome||""}`;
+  window.open(`https://wa.me/55${tel.replace(/\D/g,"")}?text=${encodeURIComponent(txt)}`,"_blank");
+};
+
+/* ══ ESCALA MENSAL ══ */
+const CHAVE_ESCALA="pmc_escala";
+let escalaMesAtual=new Date().getMonth();
+let escalaAnoAtual=new Date().getFullYear();
+let diaEditando=null;
+
+function carregarEscala(){ try{return JSON.parse(localStorage.getItem(CHAVE_ESCALA))||{};}catch{return{};} }
+function salvarEscalaLocal(obj){ localStorage.setItem(CHAVE_ESCALA,JSON.stringify(obj)); }
+
+function iniciarEscala(){
+  escalaMesAtual=new Date().getMonth();
+  escalaAnoAtual=new Date().getFullYear();
+  renderCalendario();
+  atualizarResumo();
+  // carrega servidores no select do modal
+  carregarSrvSelect();
+}
+
+async function carregarSrvSelect(){
+  const sel=document.getElementById("escala-srv-sel");
+  sel.innerHTML='<option value="">Selecione servidor...</option>';
+  if(!servidoresCache.length){
+    try{
+      const snap=await getDocs(query(collection(db,COL_SERV),where("ativo","==",true)));
+      servidoresCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.nome.localeCompare(b.nome));
+    }catch(e){}
+  }
+  servidoresCache.forEach(s=>{
+    sel.innerHTML+=`<option value="${s.id}" data-nome="${s.nome}">${s.nome} — Mat: ${s.matricula}</option>`;
+  });
+}
+
+window.mudarMes=function(dir){
+  escalaMesAtual+=dir;
+  if(escalaMesAtual>11){escalaMesAtual=0;escalaAnoAtual++;}
+  if(escalaMesAtual<0){escalaMesAtual=11;escalaAnoAtual--;}
+  renderCalendario(); atualizarResumo();
+};
+
+function renderCalendario(){
+  const meses=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  document.getElementById("escala-mes-label").textContent=`${meses[escalaMesAtual]} ${escalaAnoAtual}`;
+  const cal=document.getElementById("escala-cal");
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  const hoje=new Date(); const hj=hoje.getDate(),hm=hoje.getMonth(),ha=hoje.getFullYear();
+
+  // dias da semana header
+  const dows=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  let html=dows.map(d=>`<div class="escala-dow">${d}</div>`).join("");
+
+  const primeiroDia=new Date(escalaAnoAtual,escalaMesAtual,1).getDay();
+  const totalDias=new Date(escalaAnoAtual,escalaMesAtual+1,0).getDate();
+
+  for(let i=0;i<primeiroDia;i++) html+=`<div class="escala-dia vazio"></div>`;
+
+  for(let d=1;d<=totalDias;d++){
+    const isHoje=(d===hj&&escalaMesAtual===hm&&escalaAnoAtual===ha);
+    const entradas=dados[d]||[];
+    const turnos=entradas.map(e=>{
+      const cls=`turno-${e.turno.toLowerCase()}`;
+      const nome=e.nomeServidor?.split(" ")[0]||"";
+      return`<span class="escala-turno ${cls}">${e.turno} ${nome}</span>`;
+    }).join("");
+    html+=`<div class="escala-dia${isHoje?" hoje":""}" data-dia="${d}" onclick="abrirModalEscalaDia(${d})">
+      <div class="dia-num">${d}</div>
+      ${turnos}
+    </div>`;
+  }
+  cal.innerHTML=html;
+}
+
+function atualizarResumo(){
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  const total=Object.values(dados).reduce((acc,arr)=>acc+arr.length,0);
+  const turnos={M:0,T:0,N:0,F:0,E:0};
+  Object.values(dados).forEach(arr=>arr.forEach(e=>{ if(turnos[e.turno]!==undefined)turnos[e.turno]++; }));
+  document.getElementById("escala-resumo").innerHTML=total
+    ?`Total de entradas: <strong>${total}</strong><br>
+      ☀️ Manhã: ${turnos.M} · 🌤 Tarde: ${turnos.T} · 🌙 Noite: ${turnos.N}<br>
+      🏖 Folga: ${turnos.F} · ⚡ Extra: ${turnos.E}`
+    :"Nenhuma entrada este mês.";
+}
+
+window.abrirModalEscalaDia=function(dia){
+  diaEditando=dia;
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const escala=carregarEscala();
+  const entradas=(escala[chave]||{})[dia]||[];
+  document.getElementById("escala-modal-titulo").textContent=`📅 Dia ${String(dia).padStart(2,"0")}`;
+  document.getElementById("escala-obs-sel").value="";
+
+  // lista entradas existentes
+  const lista=document.getElementById("escala-modal-lista");
+  lista.innerHTML=entradas.length
+    ?`<div style="font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:1px;color:var(--cinza);margin-bottom:6px">ENTRADAS SALVAS</div>`+
+      entradas.map((e,i)=>{
+        const cls=`turno-${e.turno.toLowerCase()}`;
+        return`<div style="display:flex;justify-content:space-between;align-items:center;
+          background:rgba(255,255,255,.05);border-radius:6px;padding:6px 8px;margin-bottom:4px">
+          <div>
+            <span class="escala-turno ${cls}" style="font-size:.65rem">${e.turno}</span>
+            <span style="font-size:.78rem;margin-left:6px">${e.nomeServidor}</span>
+            <div style="font-size:.65rem;color:var(--cinza)">${e.jornada||""}${e.obs?" · "+e.obs:""}</div>
+          </div>
+          <button class="btn-remover-linha" onclick="removerEntradaEscala(${i})">✕</button>
+        </div>`;
+      }).join("")
+    :"";
+  document.getElementById("escala-modal").classList.add("aberto");
+};
+
+window.fecharModalEscala=function(){
+  document.getElementById("escala-modal").classList.remove("aberto");
+  diaEditando=null;
+};
+
+window.salvarDiaEscala=function(){
+  if(diaEditando===null)return;
+  const srvSel=document.getElementById("escala-srv-sel");
+  const srvId=srvSel.value;
+  const srvNome=srvSel.options[srvSel.selectedIndex]?.text?.split(" — ")[0]||"";
+  const turno=v("escala-turno-sel")||"M";
+  const jornada=v("escala-jornada-sel")||"Ordinário";
+  const obs=v("escala-obs-sel");
+  if(!srvId)return alerta("Selecione um servidor.","erro");
+
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  if(!escala[chave])escala[chave]={};
+  if(!escala[chave][diaEditando])escala[chave][diaEditando]=[];
+  escala[chave][diaEditando].push({srvId,nomeServidor:srvNome,turno,jornada,obs,criadoEm:agora()});
+  salvarEscalaLocal(escala);
+  alerta("Entrada salva!","ok");
+  renderCalendario(); atualizarResumo();
+  abrirModalEscalaDia(diaEditando); // recarrega modal com nova entrada
+};
+
+window.removerEntradaEscala=function(idx){
+  if(!confirm("Remover esta entrada?"))return;
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  escala[chave][diaEditando].splice(idx,1);
+  salvarEscalaLocal(escala);
+  renderCalendario(); atualizarResumo();
+  abrirModalEscalaDia(diaEditando);
+};
+
+window.publicarEscala=async function(){
+  if(!confirm("Publicar escala? Todos os servidores receberão notificação."))return;
+  const meses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  // envia notificação para cada servidor que tem e-mail
+  const srvEmails=new Map();
+  Object.entries(dados).forEach(([dia,entradas])=>{
+    entradas.forEach(e=>{
+      const srv=servidoresCache.find(s=>s.id===e.srvId);
+      if(srv?.email){
+        if(!srvEmails.has(srv.email))srvEmails.set(srv.email,[]);
+        srvEmails.get(srv.email).push(`Dia ${dia}: ${e.turno} — ${e.jornada}${e.obs?" ("+e.obs+")":""}`);
+      }
+    });
+  });
+  for(const [email,dias] of srvEmails){
+    await enviarNotificacao(email,`📅 Escala ${meses[escalaMesAtual]}/${escalaAnoAtual} publicada`,
+      `Seus dias na escala:\n${dias.join("\n")}\n\nAcesse o app para ver detalhes.`);
+  }
+  alerta(`Escala publicada! ${srvEmails.size} servidor(es) notificado(s).`,"ok");
+};
+
+window.exportarEscala=function(){
+  const meses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  if(!Object.keys(dados).length){alerta("Escala vazia para este mês.","aviso");return;}
+  let txt=`📅 *ESCALA — ${meses[escalaMesAtual].toUpperCase()} ${escalaAnoAtual}*\n`;
+  txt+=`*Polícia Municipal de Caruaru*\n\n`;
+  Object.entries(dados).sort(([a],[b])=>Number(a)-Number(b)).forEach(([dia,entradas])=>{
+    txt+=`*Dia ${String(dia).padStart(2,"0")}:*\n`;
+    entradas.forEach(e=>{ txt+=`  ${e.turno} — ${e.nomeServidor} (${e.jornada})${e.obs?" · "+e.obs:""}\n`; });
+  });
+  txt+=`\nGerado em: ${agora()}`;
+  const tel=prompt("WhatsApp para enviar (DDD+número):");
+  if(!tel)return;
+  window.open(`https://wa.me/55${tel.replace(/\D/g,"")}?text=${encodeURIComponent(txt)}`,"_blank");
+};
+
+/* ══ INIT ══ */
+let _toques=0,_toqueTimer=null;
+
+window.contarToque=function(){
+  _toques++;
+  clearTimeout(_toqueTimer);
+  // feedback visual sutil a cada toque
+  const h=document.getElementById("titulo-principal");
+  h.style.opacity=".7";
+  setTimeout(()=>h.style.opacity="1",120);
+
+  if(_toques>=5){
+    _toques=0;
+    // pequena vibração se disponível
+    if(navigator.vibrate)navigator.vibrate([40,30,40]);
+    ir("admin-login");
+    return;
+  }
+  // reseta se ficar 2s sem tocar
+  _toqueTimer=setTimeout(()=>{_toques=0;},2000);
+};
+
+/* ══ INIT ══ */
+atualizarBadge();atualizarMenu();
+// Registra Service Worker para PWA
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+
+<script>
+(() => {
+  const installBtn = document.getElementById('pwa-install-btn');
+  const statusEl = document.getElementById('pwa-status');
+  let deferredPrompt = null;
+  function showStatus(msg){
+    if(!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.classList.add('visivel');
+  }
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) installBtn.classList.add('visivel');
+    showStatus('Aplicativo pronto para instalação.');
+  });
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        showStatus('Use o menu do navegador para instalar este aplicativo.');
+        return;
+      }
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      showStatus(choice && choice.outcome === 'accepted' ? 'Instalação iniciada.' : 'Instalação cancelada.');
+      deferredPrompt = null;
+      installBtn.classList.remove('visivel');
+    });
+  }
+  window.addEventListener('appinstalled', () => {
+    if (installBtn) installBtn.classList.remove('visivel');
+    showStatus('Aplicativo instalado com sucesso.');
+  });
+})();
+</script>
+
+</body>
+</html>
