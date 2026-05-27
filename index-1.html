@@ -1,0 +1,2808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polícia Municipal de Caruaru</title>
+<!-- ══ SEGURANÇA ══ -->
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:;">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0b1f3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PMC Caruaru">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap');
+:root{
+  --azul-escuro:#0b1f3a;--azul-medio:#1c3d73;--azul-claro:#2e5aa7;
+  --dourado:#c9a84c;--dourado-claro:#e8c96b;--branco:#f0f4ff;
+  --cinza:#8a9bb5;--vermelho:#c0392b;--verde:#1e8449;--amarelo:#d4ac0d;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3',sans-serif;color:var(--branco);background-color:var(--azul-escuro);
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(44,90,167,.15) 0%,transparent 60%),
+  radial-gradient(ellipse at 80% 20%,rgba(201,168,76,.08) 0%,transparent 50%);
+  min-height:100vh;padding:20px 16px 60px;}
+h1{font-family:'Oswald',sans-serif;font-size:1.6rem;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--dourado);text-align:center;margin-bottom:4px;}
+.subtitulo{text-align:center;font-size:.75rem;letter-spacing:3px;text-transform:uppercase;color:var(--cinza);margin-bottom:8px;}
+.container{max-width:420px;margin:auto;}
+
+/* ALERTA */
+.alerta-box{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;
+  font-family:'Oswald',sans-serif;font-size:.9rem;letter-spacing:1px;z-index:9999;opacity:0;pointer-events:none;
+  transition:opacity .3s;max-width:340px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.5);width:90%;}
+.alerta-box.ativa{opacity:1;}
+.alerta-box.ok{background:#1e8449;color:#fff;}
+.alerta-box.erro{background:var(--vermelho);color:#fff;}
+.alerta-box.aviso{background:var(--amarelo);color:#000;}
+
+#usuario-logado{display:none;text-align:center;font-size:.75rem;color:var(--dourado);
+  font-family:'Oswald',sans-serif;letter-spacing:2px;margin-bottom:4px;}
+#btn-sair{display:none;}
+
+/* MENU */
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.btn{padding:12px 10px;
+  background:linear-gradient(135deg,#1e3f6e,#152d52);
+  color:var(--branco);border:1px solid rgba(100,160,255,.3);border-radius:8px;
+  font-family:'Oswald',sans-serif;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.btn:hover{background:linear-gradient(135deg,#2a5299,#1e3f6e);border-color:var(--dourado);color:var(--dourado-claro);}
+.btn-full{grid-column:1/-1;}
+.btn-sm{padding:5px 10px;font-size:.72rem;width:auto;}
+.btn-dourado{background:linear-gradient(135deg,var(--dourado),#a07830);color:var(--azul-escuro);border-color:var(--dourado-claro);font-weight:600;}
+.btn-dourado:hover{background:linear-gradient(135deg,var(--dourado-claro),var(--dourado));color:var(--azul-escuro);}
+.btn-perigo{background:linear-gradient(135deg,var(--vermelho),#7b241c);border-color:rgba(192,57,43,.5);color:#fff;}
+.btn-verde{background:linear-gradient(135deg,var(--verde),#145a32);border-color:rgba(30,132,73,.5);color:var(--branco);}
+.btn-verde:hover{background:linear-gradient(135deg,#27ae60,var(--verde));border-color:#27ae60;}
+.btn-cinza{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--cinza);}
+.btn-bloqueado{opacity:.22!important;cursor:not-allowed!important;filter:grayscale(.7);}
+.btn-bloqueado:hover{background:linear-gradient(135deg,#1e3f6e,#152d52)!important;
+  border-color:rgba(100,160,255,.3)!important;color:var(--branco)!important;}
+.aviso-login{display:none;text-align:center;font-size:.72rem;color:var(--amarelo);letter-spacing:1px;
+  font-family:'Oswald',sans-serif;margin:2px 0 8px;grid-column:1/-1;}
+
+/* MÓDULOS + INSPETORIA — mesma base do .btn */
+.mod-btn,.insp-btn{
+  background:linear-gradient(135deg,#1e3f6e,#152d52)!important;
+  border:1px solid rgba(100,160,255,.3)!important;
+  color:var(--branco)!important;letter-spacing:1.5px;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.mod-btn:hover,.insp-btn:hover{
+  background:linear-gradient(135deg,#2a5299,#1e3f6e)!important;
+  border-color:var(--dourado)!important;color:var(--dourado-claro)!important;
+}
+/* borda colorida só aparece quando NÃO bloqueado */
+.insp-btn:not(.btn-bloqueado){border-left:3px solid #5dade2!important;}
+.mod-adm:not(.btn-bloqueado) {border-left:3px solid #4caf7d!important;}
+.mod-vid:not(.btn-bloqueado) {border-left:3px solid #a78bfa!important;}
+.mod-int:not(.btn-bloqueado) {border-left:3px solid #f87171!important;}
+.mod-cmd:not(.btn-bloqueado) {border-left:3px solid #fbbf24!important;}
+.mod-pat:not(.btn-bloqueado) {border-left:3px solid #60a5fa!important;}
+.mod-tec:not(.btn-bloqueado) {border-left:3px solid #34d399!important;}
+.mod-fot:not(.btn-bloqueado) {border-left:3px solid #f472b6!important;}
+.mod-esc:not(.btn-bloqueado) {border-left:3px solid #38bdf8!important;}
+
+/* BANCO DE FOTOS */
+.foto-upload-area{
+  border:2px dashed rgba(201,168,76,.4);border-radius:10px;
+  padding:20px;text-align:center;cursor:pointer;
+  background:rgba(255,255,255,.04);transition:all .2s;margin-bottom:12px;
+}
+.foto-upload-area:hover{border-color:var(--dourado);background:rgba(201,168,76,.08);}
+.foto-upload-area .upload-icone{font-size:2.5rem;margin-bottom:6px;}
+.foto-upload-area p{font-size:.8rem;color:var(--cinza);font-family:'Oswald',sans-serif;letter-spacing:1px;}
+.foto-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.foto-card{position:relative;border-radius:8px;overflow:hidden;
+  border:2px solid transparent;cursor:pointer;transition:all .2s;background:#111;}
+.foto-card.selecionada{border-color:var(--vermelho)!important;}
+.foto-card img{width:100%;height:130px;object-fit:cover;display:block;}
+.foto-card .foto-info{padding:6px 8px;background:rgba(0,0,0,.6);}
+.foto-card .foto-titulo{font-size:.72rem;font-family:'Oswald',sans-serif;
+  letter-spacing:1px;color:var(--dourado);margin-bottom:2px;}
+.foto-card .foto-data{font-size:.62rem;color:var(--cinza);}
+.foto-card .foto-check{position:absolute;top:6px;right:6px;
+  width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);
+  border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:.7rem;}
+.foto-card.selecionada .foto-check{background:var(--vermelho);border-color:var(--vermelho);}
+.foto-toolbar{display:none;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.4);
+  border-radius:8px;padding:8px 12px;margin-bottom:10px;
+  justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
+.foto-toolbar.visivel{display:flex;}
+
+/* ESCALA MENSAL */
+.escala-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.escala-mes-nav{display:flex;align-items:center;gap:10px;}
+.escala-mes-label{font-family:'Oswald',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--dourado);}
+.escala-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:12px;}
+.escala-dow{font-family:'Oswald',sans-serif;font-size:.6rem;letter-spacing:1px;
+  color:var(--cinza);text-align:center;padding:4px 0;text-transform:uppercase;}
+.escala-dia{min-height:52px;border-radius:6px;padding:4px;cursor:pointer;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  transition:all .2s;position:relative;}
+.escala-dia:hover{border-color:var(--dourado);background:rgba(201,168,76,.08);}
+.escala-dia.vazio{background:transparent;border-color:transparent;cursor:default;}
+.escala-dia.hoje{border-color:var(--dourado)!important;}
+.escala-dia .dia-num{font-family:'Oswald',sans-serif;font-size:.75rem;color:var(--cinza);margin-bottom:2px;}
+.escala-dia.hoje .dia-num{color:var(--dourado);}
+.escala-turno{font-size:.55rem;padding:1px 3px;border-radius:3px;
+  font-family:'Oswald',sans-serif;letter-spacing:.5px;margin:1px 0;display:block;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.turno-m{background:rgba(30,132,73,.35);color:#7dcea0;}
+.turno-t{background:rgba(230,126,34,.35);color:#f0b27a;}
+.turno-n{background:rgba(44,90,167,.5);color:#90c2fa;}
+.turno-f{background:rgba(192,57,43,.35);color:#f1948a;}
+.turno-e{background:rgba(167,139,250,.35);color:#c4b5fd;}
+
+/* MODAL ESCALA */
+.escala-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;
+  display:none;align-items:center;justify-content:center;padding:16px;}
+.escala-modal-overlay.aberto{display:flex;}
+.escala-modal-box{background:#0f2744;border:1px solid rgba(201,168,76,.3);border-radius:12px;
+  padding:18px;width:100%;max-width:360px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);}
+
+/* BARRA DE PESQUISA DA HOME */
+.home-search-wrap{position:relative;margin-bottom:10px;grid-column:1/-1;}
+.home-search-wrap input{
+  padding-left:38px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(100,160,255,.3);border-radius:8px;color:var(--branco);
+  font-size:.85rem;margin:0;
+}
+.home-search-icone{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  font-size:.9rem;pointer-events:none;z-index:1;
+}
+.home-btn-hidden{display:none!important;}
+.home-search-nenhum{text-align:center;color:var(--cinza);font-size:.8rem;
+  padding:8px 0;grid-column:1/-1;}
+
+/* SEÇÕES */
+.secao{display:none;animation:fadeIn .25s ease;}
+.secao.ativa{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.secao-titulo{font-family:'Oswald',sans-serif;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dourado);border-bottom:1px solid rgba(201,168,76,.3);padding-bottom:8px;margin:16px 0 14px;}
+input,textarea,select{width:100%;padding:10px 12px;margin:5px 0;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--branco);
+  font-family:'Source Sans 3',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+input:focus,textarea:focus,select:focus{border-color:var(--dourado);}
+select option{background:var(--azul-escuro);}
+textarea{resize:vertical;min-height:70px;}
+.btn-voltar{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--cinza);
+  font-size:.75rem;padding:7px 14px;margin-bottom:4px;width:auto;letter-spacing:1px;}
+.btn-voltar:hover{border-color:var(--cinza);color:var(--branco);background:transparent;}
+.campo-label{font-family:'Oswald',sans-serif;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--cinza);display:block;margin:8px 0 2px;}
+
+/* ARMAS MULTI */
+.arma-linha{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:10px;margin-bottom:8px;}
+.arma-linha-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.arma-linha-num{font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:2px;color:var(--dourado);text-transform:uppercase;}
+.btn-remover-linha{background:transparent;border:1px solid rgba(192,57,43,.4);color:var(--vermelho);border-radius:4px;
+  padding:2px 8px;font-size:.7rem;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s;}
+.btn-remover-linha:hover{background:var(--vermelho);color:var(--branco);}
+.btn-add-linha{width:100%;padding:9px;background:rgba(201,168,76,.1);border:1px dashed rgba(201,168,76,.4);
+  border-radius:6px;color:var(--dourado);font-family:'Oswald',sans-serif;font-size:.85rem;
+  letter-spacing:1px;cursor:pointer;transition:all .2s;margin:4px 0 10px;}
+.btn-add-linha:hover{background:rgba(201,168,76,.2);border-color:var(--dourado);}
+
+/* HISTÓRICO */
+.hist-scroll{max-height:420px;overflow-y:auto;padding-right:4px;}
+.hist-scroll::-webkit-scrollbar{width:4px;}
+.hist-scroll::-webkit-scrollbar-thumb{background:var(--azul-claro);border-radius:4px;}
+.hist-item{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.15);
+  border-left:3px solid var(--dourado);border-radius:6px;padding:10px 12px;margin-bottom:8px;}
+.hist-item .hist-tipo{font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--dourado);margin-bottom:4px;}
+.hist-item .hist-data{font-size:.7rem;color:var(--cinza);margin-bottom:4px;}
+.hist-item .hist-usuario{font-size:.72rem;color:var(--dourado-claro);margin-bottom:6px;}
+.hist-item .hist-corpo{font-size:.82rem;line-height:1.5;color:rgba(240,244,255,.85);white-space:pre-line;}
+.hist-vazio{text-align:center;color:var(--cinza);font-size:.85rem;padding:30px 0;}
+.hist-contador{font-size:.75rem;color:var(--cinza);text-align:right;margin-bottom:8px;}
+.hist-acoes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.badge{display:inline-block;background:var(--azul-claro);color:var(--branco);font-size:.65rem;
+  font-family:'Oswald',sans-serif;letter-spacing:1px;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;}
+.badge.status-ok{background:var(--verde);}
+.badge.status-erro{background:var(--vermelho);}
+.badge.status-aviso{background:var(--amarelo);color:#000;}
+
+/* CHECKBOX AUDITORIA */
+.hist-item .audit-check{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;vertical-align:middle;}
+.audit-sel-bar{display:none;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);
+  border-radius:8px;padding:10px;margin-bottom:10px;gap:8px;align-items:center;justify-content:space-between;}
+.audit-sel-bar.visivel{display:flex;}
+
+/* ADMIN TABS */
+.admin-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:14px;}
+.tab-btn{padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;
+  font-family:'Oswald',sans-serif;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;
+  color:var(--cinza);cursor:pointer;transition:all .2s;text-align:center;}
+.tab-btn.ativa{background:rgba(201,168,76,.15);border-color:var(--dourado);color:var(--dourado);}
+.tab-painel{display:none;}
+.tab-painel.ativa{display:block;}
+
+/* FILTROS */
+.filtros-box{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:12px;margin-bottom:10px;}
+.filtros-box label{font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--cinza);display:block;margin:8px 0 2px;}
+.filtros-box label:first-child{margin-top:0;}
+.filtros-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+
+/* PLANTÃO */
+.plantao-cabecalho{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.plantao-contador{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;}
+.cnt-item{border-radius:8px;padding:10px 4px;text-align:center;border:1px solid rgba(255,255,255,.1);cursor:pointer;}
+.cnt-item span{font-family:'Oswald',sans-serif;font-size:1.6rem;display:block;}
+.cnt-item small{font-size:.65rem;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.7);}
+.cnt-verde{background:rgba(30,132,73,.2);border-color:rgba(30,132,73,.4);}
+.cnt-vermelho{background:rgba(192,57,43,.2);border-color:rgba(192,57,43,.4);}
+.cnt-laranja{background:rgba(230,126,34,.2);border-color:rgba(230,126,34,.4);}
+
+/* SERVIDOR CARD */
+.servidor-card{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.15);border-radius:8px;
+  padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;}
+.servidor-card:hover{border-color:var(--dourado);background:rgba(201,168,76,.08);}
+.sc-nome{font-family:'Oswald',sans-serif;font-size:.9rem;letter-spacing:1px;}
+.sc-mat{font-size:.72rem;color:var(--cinza);margin-top:2px;}
+.sc-status{font-size:.7rem;font-family:'Oswald',sans-serif;letter-spacing:1px;padding:3px 8px;border-radius:20px;}
+.sc-presente{background:rgba(30,132,73,.3);color:#7dcea0;}
+.sc-ausente{background:rgba(192,57,43,.3);color:#f1948a;}
+.sc-atrasado{background:rgba(230,126,34,.3);color:#f0b27a;}
+.sc-pendente{background:rgba(255,255,255,.08);color:var(--cinza);}
+
+/* MARCAÇÃO CHECKBOX */
+.marcacao-group{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:10px 12px;margin:6px 0;}
+.marcacao-title{font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:2px;color:var(--cinza);
+  text-transform:uppercase;margin-bottom:8px;}
+.marcacao-item{display:flex;align-items:center;gap:10px;padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);}
+.marcacao-item:last-child{border-bottom:none;}
+.marcacao-item label{font-size:.85rem;color:var(--branco);flex:1;cursor:pointer;}
+.marcacao-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;flex-shrink:0;}
+.marcacao-item input[type=radio]{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;flex-shrink:0;}
+
+/* BOTÕES CONFIRMAÇÃO PLANTÃO */
+.btns-confirmar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0;}
+.btn-conf{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:14px 4px;border-radius:10px;border:2px solid transparent;cursor:pointer;
+  font-family:'Oswald',sans-serif;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;
+  transition:all .2s;gap:4px;width:100%;}
+.btn-conf-presente{background:rgba(30,132,73,.25);border-color:rgba(30,132,73,.6);color:#7dcea0;font-size:1.4rem;}
+.btn-conf-presente:hover{background:rgba(30,132,73,.45);border-color:#27ae60;}
+.btn-conf-ausente{background:rgba(192,57,43,.25);border-color:rgba(192,57,43,.6);color:#f1948a;font-size:1.4rem;}
+.btn-conf-ausente:hover{background:rgba(192,57,43,.45);border-color:#e74c3c;}
+.btn-conf-atrasado{background:rgba(230,126,34,.25);border-color:rgba(230,126,34,.6);color:#f0b27a;font-size:1.4rem;}
+.btn-conf-atrasado:hover{background:rgba(230,126,34,.45);border-color:#e67e22;}
+.btn-conf.selecionado{transform:scale(1.05);box-shadow:0 0 12px rgba(255,255,255,.15);}
+
+/* PERMISSÕES */
+.perm-box{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:12px;margin-top:8px;}
+.perm-titulo{font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--dourado);margin-bottom:8px;}
+.perm-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.perm-item:last-child{border-bottom:none;}
+.perm-item label{font-size:.82rem;color:var(--branco);flex:1;cursor:pointer;}
+.perm-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--dourado);cursor:pointer;margin:0;flex-shrink:0;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;
+  display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal-box{background:#0f2744;border:1px solid rgba(201,168,76,.3);border-radius:12px;
+  padding:18px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.6);
+  max-height:92vh;overflow-y:auto;}
+.modal-nome{font-family:'Oswald',sans-serif;font-size:1.05rem;letter-spacing:2px;color:var(--dourado);}
+.modal-mat{font-size:.75rem;color:var(--cinza);margin-top:2px;}
+
+.admin-lock{text-align:center;padding:16px 0 4px;font-size:2.2rem;}
+.divisor{border:none;border-top:1px solid rgba(255,255,255,.08);margin:10px 0;grid-column:1/-1;}
+.nota{font-size:.75rem;color:var(--cinza);text-align:center;margin-top:10px;line-height:1.5;}
+
+/* BOTÕES MÓDULOS — padrão azul escuro uniforme */
+.mod-btn{
+  background:linear-gradient(135deg,#1c3d73,#0b1f3a)!important;
+  border-color:rgba(201,168,76,.3)!important;
+  color:var(--branco)!important;
+  letter-spacing:1.5px;
+  transition:all .2s;
+}
+.mod-btn:hover{
+  background:linear-gradient(135deg,#2e5aa7,#1c3d73)!important;
+  border-color:var(--dourado)!important;
+  color:var(--dourado-claro)!important;
+}
+/* cores de destaque sutis por módulo — apenas na borda esquerda */
+.mod-adm  { border-left:3px solid rgba(80,200,120,.6)!important; }
+.mod-vid  { border-left:3px solid rgba(130,100,255,.6)!important; }
+.mod-int  { border-left:3px solid rgba(255,100,100,.6)!important; }
+.mod-cmd  { border-left:3px solid rgba(255,200,50,.6)!important;  }
+.insp-btn { border-left:3px solid rgba(100,180,255,.6)!important; }
+
+/* OPACIDADE BLOQUEADO */
+.btn-bloqueado{opacity:.25!important;cursor:not-allowed!important;filter:grayscale(.5);}
+.btn-bloqueado:hover{transform:none!important;}
+
+/* SINO DE NOTIFICAÇÕES */
+.sino-wrap{display:flex;justify-content:center;margin-bottom:8px;}
+#sino-btn{
+  background:none;border:none;cursor:pointer;padding:6px 14px;
+  font-size:2.2rem;transition:all .3s;position:relative;
+  filter:grayscale(1) opacity(.35);
+}
+#sino-btn.tem-notif{
+  filter:drop-shadow(0 0 12px rgba(201,168,76,.9));
+  animation:sino-vibrar 0.8s ease-in-out infinite;
+}
+#sino-btn:hover{transform:scale(1.1);}
+#sino-badge{
+  position:absolute;top:2px;right:6px;
+  background:var(--vermelho);color:#fff;
+  border-radius:50%;min-width:20px;height:20px;
+  font-size:.65rem;font-family:'Oswald',sans-serif;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+  border:2px solid var(--azul-escuro);z-index:2;
+}
+#sino-badge.visivel{display:flex;}
+
+/* Vibração contínua enquanto tem notificação — 3 chacoalhos por ciclo */
+@keyframes sino-vibrar{
+  0%  {transform:rotate(0)   scale(1);}
+  8%  {transform:rotate(-18deg) scale(1.05);}
+  16% {transform:rotate(16deg)  scale(1.05);}
+  24% {transform:rotate(-12deg) scale(1.02);}
+  32% {transform:rotate(10deg)  scale(1.02);}
+  40% {transform:rotate(-6deg)  scale(1);}
+  48% {transform:rotate(0)   scale(1);}
+  /* pausa antes de repetir */
+  100%{transform:rotate(0)   scale(1);}
+}
+/* animação única de chacoalho (ao chegar nova notif) */
+@keyframes sino-shake{
+  0%,100%{transform:rotate(0);}
+  15%{transform:rotate(-20deg);}30%{transform:rotate(18deg);}
+  45%{transform:rotate(-14deg);}60%{transform:rotate(12deg);}
+  75%{transform:rotate(-6deg);}
+}
+.sino-anim{animation:sino-shake .6s ease!important;}
+
+/* PAINEL NOTIFICAÇÕES — desliza de cima */
+#notif-painel{
+  display:none;
+  background:#0c1e38;
+  border:1px solid rgba(201,168,76,.3);
+  border-radius:12px;
+  margin-bottom:12px;
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+  animation:slideDown .25s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+#notif-painel.aberto{display:block;}
+.notif-toolbar{
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(201,168,76,.12);
+  padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.2);
+  flex-wrap:wrap;gap:6px;
+}
+.notif-toolbar-titulo{font-family:'Oswald',sans-serif;font-size:.85rem;letter-spacing:2px;color:var(--dourado);}
+.notif-lista-wrap{max-height:340px;overflow-y:auto;padding:8px;}
+.notif-lista-wrap::-webkit-scrollbar{width:3px;}
+.notif-lista-wrap::-webkit-scrollbar-thumb{background:var(--azul-claro);border-radius:3px;}
+.notif-card{
+  background:rgba(255,255,255,.06);
+  border-left:4px solid var(--dourado);
+  border-radius:8px;padding:10px 12px;margin-bottom:6px;
+  cursor:pointer;transition:all .2s;position:relative;
+}
+.notif-card:last-child{margin-bottom:0;}
+.notif-card.lida{border-left-color:var(--cinza);opacity:.55;}
+.notif-card:hover{background:rgba(201,168,76,.1);}
+.notif-card .n-icone{font-size:1.1rem;margin-bottom:3px;}
+.notif-card .n-titulo{font-family:'Oswald',sans-serif;font-size:.74rem;letter-spacing:1px;
+  color:var(--dourado);text-transform:uppercase;padding-right:14px;margin-bottom:3px;}
+.notif-card.lida .n-titulo{color:var(--cinza);}
+.notif-card .n-corpo{font-size:.78rem;line-height:1.5;color:rgba(240,244,255,.82);white-space:pre-line;}
+.notif-card .n-hora{font-size:.62rem;color:var(--cinza);margin-top:5px;}
+.n-ponto{position:absolute;top:10px;right:10px;width:9px;height:9px;
+  background:var(--dourado);border-radius:50%;box-shadow:0 0 6px rgba(201,168,76,.8);}
+.notif-vazio{text-align:center;color:var(--cinza);font-size:.82rem;padding:20px 0;}
+
+/* MAPA */
+.mapa-box{width:100%;height:200px;border-radius:8px;border:1px solid rgba(201,168,76,.2);
+  margin:10px 0;overflow:hidden;}
+.mapa-box iframe{width:100%;height:100%;border:none;}
+.localizacao-info{font-size:.75rem;color:var(--cinza);text-align:center;margin-bottom:8px;}
+
+/* IMPRESSÃO */
+@media print{
+  body{background:#fff!important;color:#000!important;padding:10px!important;}
+  .no-print{display:none!important;}
+  h1{color:#0b1f3a!important;}.subtitulo{color:#555!important;}
+  .hist-item{background:#f9f9f9!important;border:1px solid #ccc!important;
+    border-left:3px solid #c9a84c!important;page-break-inside:avoid;}
+  .hist-item .hist-tipo{color:#0b1f3a!important;}
+  .hist-item .hist-data,.hist-item .hist-usuario{color:#666!important;}
+  .hist-item .hist-corpo{color:#222!important;}
+  .secao-titulo{color:#0b1f3a!important;border-color:#c9a84c!important;}
+  .print-header{display:flex!important;justify-content:space-between;
+    border-bottom:2px solid #0b1f3a;padding-bottom:10px;margin-bottom:16px;}
+  .print-meta{font-size:.75rem;color:#555;text-align:right;}
+  .hist-scroll{max-height:none!important;overflow:visible!important;}
+  #notif-painel,#sino-btn,#sino-badge{display:none!important;}
+}
+.print-header{display:none;}
+
+/* PWA + BOTÕES PROTEGIDOS */
+.btn-login-nitido.btn-bloqueado{
+  opacity:.32 !important;
+  filter:grayscale(.85) saturate(.75) blur(1.15px) !important;
+  text-shadow:none !important;
+  box-shadow:none !important;
+}
+.btn-login-nitido.btn-bloqueado:hover{
+  transform:none !important;
+  color:var(--branco) !important;
+}
+.pwa-install-wrap{display:flex;justify-content:center;margin:0 0 12px;}
+#pwa-install-btn{display:none;min-height:46px;width:100%;max-width:420px;}
+#pwa-install-btn.visivel{display:block;}
+.pwa-status{display:none;text-align:center;font-size:.72rem;color:var(--cinza);margin:-4px 0 10px;font-family:'Oswald',sans-serif;letter-spacing:1px;}
+.pwa-status.visivel{display:block;}
+
+</style>
+
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="PMC Caruaru">
+<meta name="application-name" content="PMC Caruaru">
+<meta name="theme-color" content="#0b1f3a">
+<meta name="description" content="Aplicação da Polícia Municipal de Caruaru preparada como PWA instalável.">
+
+
+<!-- ══ SEGURANÇA: Web Crypto API (offline, nativa) ══ -->
+<script>
+// ── Hash PBKDF2 via Web Crypto API — sem biblioteca externa ──
+const _crypto = {
+  async hash(senha) {
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const chave = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits(
+      { name:"PBKDF2", hash:"SHA-256", salt, iterations:310000 }, chave, 256
+    );
+    const hashHex = Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    const saltHex = Array.from(salt).map(b=>b.toString(16).padStart(2,"0")).join("");
+    return `pbkdf2$310000$${saltHex}$${hashHex}`;
+  },
+  async compare(senha, hashStr) {
+    if (!hashStr) return false;
+    // Formato legado texto puro
+    if (!hashStr.startsWith("pbkdf2$")) return senha === hashStr;
+    const [,iters,saltHex,hashHex] = hashStr.split("$");
+    const enc = new TextEncoder();
+    const salt = new Uint8Array(saltHex.match(/.{2}/g).map(h=>parseInt(h,16)));
+    const chave = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits(
+      { name:"PBKDF2", hash:"SHA-256", salt, iterations:parseInt(iters) }, chave, 256
+    );
+    const derivado = Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    return derivado === hashHex;
+  }
+};
+
+// ── DOMPurify inline leve (sanitiza innerHTML sem CDN) ──
+const DOMPurify = {
+  sanitize(str) {
+    if (!str) return "";
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+};
+</script>
+</head>
+<body>
+<div id="alerta-global" class="alerta-box"></div>
+<div class="container">
+
+<h1 id="titulo-principal" onclick="contarToque()" style="cursor:default;user-select:none">🌟 Polícia Municipal</h1>
+<p class="subtitulo">Caruaru · Sistema Operacional</p>
+<div id="usuario-logado"></div>
+
+<!-- SINO DE NOTIFICAÇÕES -->
+<div class="sino-wrap" id="sino-wrap" style="display:none">
+  <button id="sino-btn" onclick="toggleNotif()" title="Notificações">
+    🔔
+    <span id="sino-badge"></span>
+  </button>
+</div>
+
+<!-- PAINEL DE NOTIFICAÇÕES -->
+<div id="notif-painel">
+  <div class="notif-toolbar">
+    <span class="notif-toolbar-titulo">🔔 Notificações</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-cinza" onclick="marcarTodasLidas()" style="font-size:.62rem;padding:4px 8px">✓ Lidas</button>
+      <button class="btn btn-sm btn-perigo" onclick="limparNotificacoes()" style="font-size:.62rem;padding:4px 8px">🗑</button>
+    </div>
+  </div>
+  <div class="notif-lista-wrap">
+    <div id="notif-lista"><p class="notif-vazio">Sem notificações.</p></div>
+  </div>
+</div>
+
+<!-- ══ MENU ══ -->
+<div id="menu">
+
+<div class="pwa-install-wrap no-print">
+  <button id="pwa-install-btn" class="btn btn-dourado" type="button">Instalar aplicativo</button>
+</div>
+<div id="pwa-status" class="pwa-status no-print">Abra no navegador e use “Instalar aplicativo” para adicionar à tela inicial.</div>
+
+  <button id="btn-sair" class="btn btn-full btn-cinza no-print" style="margin-bottom:10px" onclick="sair()">Sair da conta</button>
+  <div class="menu-grid">
+    <button class="btn" onclick="ir('cadastro')">Cadastro</button>
+    <button class="btn" onclick="ir('login')">Login</button>
+    <p class="aviso-login" id="aviso-login">🔒 Faça login para acessar</p>
+
+    <!-- BARRA DE PESQUISA DA HOME -->
+    <div class="home-search-wrap">
+      <span class="home-search-icone">🔍</span>
+      <input type="text" id="home-search" placeholder="Pesquisar módulo..." oninput="filtrarMenu()" autocomplete="off">
+    </div>
+    <p id="home-search-nenhum" class="home-search-nenhum" style="display:none">Nenhum módulo encontrado.</p>
+
+    <button id="btn-checklist"      class="btn btn-full"              onclick="irProtegido('checklist','checklist')">🛡️ Armaria</button>
+    <button id="btn-inspetoria"     class="btn btn-full mod-btn insp-btn" onclick="irProtegido('inspetoria','inspetoria')">🏛 Inspetoria</button>
+    <button id="btn-administrativo" class="btn btn-full mod-btn mod-adm" onclick="irProtegido('administrativo','administrativo')">📁 Administrativo</button>
+    <button id="btn-videomonitor"   class="btn btn-full mod-btn mod-vid" onclick="irProtegido('videomonitor','videomonitor')">📹 Vídeo Monitoramento</button>
+    <button id="btn-inteligencia"   class="btn btn-full mod-btn mod-int" onclick="irProtegido('inteligencia','inteligencia')">🔎 Inteligência</button>
+    <button id="btn-comando"        class="btn btn-full mod-btn mod-cmd" onclick="irProtegido('comando','comando')">⭐ Comando</button>
+    <button id="btn-patrimonio"     class="btn btn-full mod-btn mod-pat btn-login-nitido" onclick="irProtegido('patrimonio','patrimonio')">🏛 Patrimônio</button>
+    <button id="btn-tecnologia"     class="btn btn-full mod-btn mod-tec btn-login-nitido" onclick="irProtegido('tecnologia','tecnologia')">💻 Tecnologia</button>
+  </div>
+</div>
+
+<!-- ══ CADASTRO ══ -->
+<div id="cadastro" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">Cadastro</div>
+  <input type="text"     id="nome"      placeholder="Nome completo">
+  <input type="date"     id="data">
+  <input type="text"     id="cpf"       placeholder="CPF">
+  <input type="text"     id="matricula" placeholder="Matrícula">
+  <input type="email"    id="email"     placeholder="E-mail">
+  <input type="password" id="senha"     placeholder="Senha (6 dígitos)" maxlength="6">
+  <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="enviarCadastro()">Enviar Cadastro</button>
+  <p class="nota">Após o cadastro, aguarde a aprovação do administrador.</p>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">Login</div>
+  <input type="email"    id="loginEmail" placeholder="E-mail">
+  <input type="password" id="loginSenha" placeholder="Senha" onkeydown="if(event.key==='Enter') logar()">
+  <button id="btn-entrar" class="btn btn-full btn-dourado" style="margin-top:10px" onclick="logar()">Entrar</button>
+  <p class="nota">Ainda não tem cadastro? Volte ao menu e clique em <strong>Cadastro</strong>.</p>
+</div>
+
+<!-- ══ ARMARIA ══ -->
+<div id="checklist" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">🛡️ Armaria</div>
+  <div class="menu-grid">
+    <button class="btn" onclick="ir('armas')">Armas</button>
+    <button class="btn" onclick="ir('municoes')">Munições</button>
+    <button class="btn btn-full" onclick="ir('viaturas')">Viaturas</button>
+    <button class="btn btn-full btn-dourado" onclick="ir('historico')">
+      Histórico de Envios <span class="badge" id="badge-hist">0</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══ ARMAS ══ -->
+<div id="armas" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('checklist')">← Voltar</button>
+  <div class="secao-titulo">Armas</div>
+  <div id="armas-linhas"></div>
+  <button class="btn-add-linha no-print" onclick="adicionarLinhaArma()">+ Adicionar item</button>
+  <button class="btn btn-full btn-dourado" style="margin-top:4px" onclick="enviarArmas()">Enviar</button>
+</div>
+
+<!-- ══ MUNIÇÕES ══ -->
+<div id="municoes" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('checklist')">← Voltar</button>
+  <div class="secao-titulo">Munições</div>
+  <select id="tipoMunicao"><option>.9</option><option>38</option><option>12</option><option>Cartuchos SPK</option></select>
+  <input type="number" id="qtdMunicao" placeholder="Quantidade">
+  <textarea id="obsMunicao" placeholder="Observações"></textarea>
+  <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="enviarMunicao()">Enviar</button>
+</div>
+
+<!-- ══ VIATURAS ══ -->
+<div id="viaturas" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('checklist')">← Voltar</button>
+  <div class="secao-titulo">Viaturas</div>
+  <input type="text" id="viatura" placeholder="Identificação da viatura">
+  <textarea id="obsViatura" placeholder="Observações"></textarea>
+  <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="enviarViatura()">Enviar</button>
+</div>
+
+<!-- ══ HISTÓRICO ══ -->
+<div id="historico" class="secao">
+  <div class="print-header">
+    <div><strong style="font-size:1.1rem">🌟 Polícia Municipal de Caruaru</strong><br>
+      <span style="font-size:.8rem;color:#555">Histórico de Envios</span></div>
+    <div class="print-meta" id="print-meta"></div>
+  </div>
+  <button class="btn btn-voltar no-print" onclick="ir('checklist')">← Voltar</button>
+  <div class="secao-titulo">Meus Envios</div>
+  <div class="hist-contador" id="hist-contador"></div>
+  <div id="historico-lista" class="hist-scroll"></div>
+  <div class="hist-acoes no-print">
+    <button class="btn btn-verde"  onclick="imprimirHistorico()">🖨 Imprimir</button>
+    <button class="btn btn-perigo" onclick="limparHistorico()">🗑 Limpar</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN LOGIN ══ -->
+<div id="admin-login" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="admin-lock">🔐</div>
+  <div class="secao-titulo" style="text-align:center">Área Restrita</div>
+  <input type="password" id="senhaAdmin" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter') entrarAdmin()">
+  <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="entrarAdmin()">Acessar Painel</button>
+</div>
+
+<!-- ══ PAINEL ADMIN ══ -->
+<div id="admin" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">Painel do Administrador</div>
+  <div class="admin-tabs">
+    <div class="tab-btn ativa" id="tab-btn-cadastros"     onclick="mudarAba('cadastros')">👥 Usuários</div>
+    <div class="tab-btn"       id="tab-btn-servidores"    onclick="mudarAba('servidores')">👮 Servidores</div>
+    <div class="tab-btn"       id="tab-btn-auditoria"     onclick="mudarAba('auditoria')">📋 Auditoria</div>
+    <div class="tab-btn"       id="tab-btn-plantao-admin" onclick="mudarAba('plantao-admin')">🏛 Plantões</div>
+  </div>
+
+  <!-- ABA USUÁRIOS -->
+  <div class="tab-painel ativa" id="tab-cadastros">
+    <p style="font-size:.8rem;color:var(--cinza);margin-bottom:8px">Gerencie usuários, permissões e acesso.</p>
+    <div style="position:relative;margin-bottom:8px">
+      <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none">🔍</span>
+      <input type="text" id="filtro-usuario-nome" placeholder="Pesquisar por nome ou matrícula..."
+        style="padding-left:38px;margin:0" oninput="filtrarUsuarios()">
+    </div>
+    <button class="btn btn-full btn-cinza" style="margin-bottom:8px;font-size:.78rem" id="btn-atualizar-admin">🔄 Atualizar</button>
+    <div id="admin-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  </div>
+
+  <!-- ABA SERVIDORES -->
+  <div class="tab-painel" id="tab-servidores">
+    <p style="font-size:.8rem;color:var(--cinza);margin-bottom:8px">Cadastre servidores para Assunção de Plantão.</p>
+    <div style="position:relative;margin-bottom:8px">
+      <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none">🔍</span>
+      <input type="text" id="filtro-servidor-nome" placeholder="Pesquisar servidor..."
+        style="padding-left:38px;margin:0" oninput="filtrarServidores()">
+    </div>
+    <div class="filtros-box">
+      <label>Nome completo</label><input type="text" id="adm-srv-nome" placeholder="Nome do servidor">
+      <label>Matrícula</label><input type="text" id="adm-srv-mat" placeholder="Matrícula">
+      <label>Cargo / Função</label><input type="text" id="adm-srv-cargo" placeholder="Ex: Inspetor, Guarda...">
+      <label>E-mail (para notificações)</label><input type="email" id="adm-srv-email" placeholder="E-mail do servidor">
+      <label>WhatsApp (DDD + número)</label><input type="tel" id="adm-srv-tel" placeholder="Ex: 81999887766">
+      <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="cadastrarServidor()">+ Cadastrar Servidor</button>
+    </div>
+    <div class="hist-contador" id="cnt-servidores"></div>
+    <div id="admin-servidores-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  </div>
+
+  <!-- ABA AUDITORIA -->
+  <div class="tab-painel" id="tab-auditoria">
+    <div class="audit-sel-bar" id="audit-sel-bar">
+      <span id="audit-sel-count" style="font-size:.8rem;color:var(--dourado);font-family:'Oswald',sans-serif;letter-spacing:1px"></span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-perigo" onclick="removerAuditoriaSelecionados()">🗑 Remover</button>
+        <button class="btn btn-sm btn-cinza"  onclick="desmarcarTodos()">✕ Cancelar</button>
+      </div>
+    </div>
+    <div class="filtros-box">
+      <label>🔍 Nome do usuário</label>
+      <input type="text" id="filtro-nome" placeholder="Ex: João Silva" oninput="filtrarAuditoria()">
+      <label>📅 Data</label>
+      <input type="date" id="filtro-data" onchange="filtrarAuditoria()">
+      <div class="filtros-row">
+        <button class="btn btn-cinza btn-sm" onclick="limparFiltros()">✕ Limpar</button>
+        <button class="btn btn-verde  btn-sm" onclick="window.print()">🖨 Imprimir</button>
+      </div>
+    </div>
+    <div class="hist-contador" id="audit-contador"></div>
+    <div id="auditoria-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  </div>
+
+  <!-- ABA PLANTÕES -->
+  <div class="tab-painel" id="tab-plantao-admin">
+    <div class="filtros-box">
+      <label>🔍 Nome do servidor</label>
+      <input type="text" id="filtro-plantao-nome" placeholder="Ex: João Silva" oninput="carregarPlantaoAdmin()">
+      <label>📅 Data</label>
+      <input type="date" id="filtro-plantao-data" onchange="carregarPlantaoAdmin()">
+      <div class="filtros-row">
+        <button class="btn btn-cinza btn-sm" onclick="document.getElementById('filtro-plantao-nome').value='';document.getElementById('filtro-plantao-data').value='';carregarPlantaoAdmin()">✕ Limpar</button>
+        <button class="btn btn-verde btn-sm" onclick="window.print()">🖨 Imprimir</button>
+      </div>
+    </div>
+    <div class="hist-contador" id="plantao-admin-contador"></div>
+    <div id="plantao-admin-lista" class="hist-scroll"><p class="hist-vazio">Use os filtros para buscar.</p></div>
+  </div>
+</div>
+
+<!-- ══ INSPETORIA ══ -->
+<div id="inspetoria" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">🏛 Inspetoria</div>
+  <div class="menu-grid">
+    <button class="btn btn-full insp-btn" onclick="ir('plantao')">📋 Assunção de Plantão</button>
+    <button class="btn btn-full insp-btn" onclick="ir('fiscalizacao')">🔍 Fiscalização</button>
+    <button class="btn btn-full insp-btn" onclick="ir('ordem-servico')">📄 Ordem de Serviço (O.S)</button>
+  </div>
+</div>
+
+<!-- ══ PLANTÃO ══ -->
+<div id="plantao" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('inspetoria')">← Voltar</button>
+  <div class="secao-titulo">📋 Assunção de Plantão</div>
+
+  <!-- MAPA -->
+  <div id="mapa-plantao" style="display:none;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.2);border-radius:10px;margin-bottom:12px;min-height:70px">
+    <div style="text-align:center;padding:20px;font-size:.75rem;color:var(--cinza)">📍 Carregando localização...</div>
+  </div>
+
+  <!-- DATA E HORÁRIOS -->
+  <div class="plantao-cabecalho">
+    <div><label class="campo-label">Data</label><input type="date" id="plantao-data"></div>
+    <div><label class="campo-label">Jornada</label>
+      <select id="plantao-turno">
+        <option value="">Selecione...</option>
+        <option>Ordinário</option>
+        <option>Extraordinário</option>
+        <option>Compensando Horas</option>
+      </select>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div><label class="campo-label">Hora Entrada</label><input type="time" id="plantao-entrada"></div>
+    <div><label class="campo-label">Hora Saída</label><input type="time" id="plantao-saida"></div>
+  </div>
+
+  <!-- MARCAÇÃO ATESTADO/OUTROS -->
+  <div class="marcacao-group">
+    <div class="marcacao-title">Marcação especial</div>
+    <div class="marcacao-item">
+      <input type="checkbox" id="mark-atestado" onchange="toggleMarcacao('atestado')">
+      <label for="mark-atestado">🏥 Atestado Médico</label>
+    </div>
+    <div class="marcacao-item">
+      <input type="checkbox" id="mark-outros" onchange="toggleMarcacao('outros')">
+      <label for="mark-outros">📎 Outros</label>
+    </div>
+    <textarea id="mark-obs" placeholder="Descreva se necessário..." style="display:none;margin-top:8px;min-height:50px"></textarea>
+  </div>
+
+  <!-- CONTADOR -->
+  <div class="plantao-contador" style="margin-top:12px">
+    <div class="cnt-item cnt-verde"    onclick="ir('hist-presentes')" title="Ver histórico"><span id="cnt-presentes">0</span><small>Presentes</small></div>
+    <div class="cnt-item cnt-vermelho" onclick="ir('hist-ausentes')"  title="Ver histórico"><span id="cnt-ausentes">0</span><small>Ausentes</small></div>
+    <div class="cnt-item cnt-laranja"  onclick="ir('hist-atrasados')" title="Ver histórico"><span id="cnt-atrasados">0</span><small>Atrasados</small></div>
+  </div>
+  <p style="font-size:.68rem;color:var(--cinza);text-align:center;margin:-4px 0 12px">Toque no contador para ver o histórico</p>
+
+  <!-- BUSCA SERVIDOR -->
+  <div class="filtros-box" style="margin-bottom:10px">
+    <label>🔍 Buscar servidor cadastrado</label>
+    <input type="text" id="plantao-busca-nome" placeholder="Nome do servidor" oninput="buscarServidorPlantao()">
+    <input type="text" id="plantao-busca-mat"  placeholder="Matrícula"        oninput="buscarServidorPlantao()" style="margin-top:6px">
+  </div>
+  <div id="plantao-servidores"><p class="hist-vazio">Digite nome ou matrícula para buscar.</p></div>
+</div>
+
+<!-- HISTÓRICOS PLANTÃO -->
+<div id="hist-presentes" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('plantao')">← Voltar</button>
+  <div class="secao-titulo" style="color:#7dcea0">✅ Histórico — Presentes</div>
+  <div class="hist-contador" id="cnt-hist-presentes"></div>
+  <div id="lista-hist-presentes" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  <button class="btn btn-full btn-verde" style="margin-top:10px" onclick="window.print()">🖨 Imprimir</button>
+</div>
+<div id="hist-ausentes" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('plantao')">← Voltar</button>
+  <div class="secao-titulo" style="color:#f1948a">❌ Histórico — Ausentes</div>
+  <div class="hist-contador" id="cnt-hist-ausentes"></div>
+  <div id="lista-hist-ausentes" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  <button class="btn btn-full btn-perigo" style="margin-top:10px" onclick="window.print()">🖨 Imprimir</button>
+</div>
+<div id="hist-atrasados" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('plantao')">← Voltar</button>
+  <div class="secao-titulo" style="color:#f0b27a">⏰ Histórico — Atrasados</div>
+  <div class="hist-contador" id="cnt-hist-atrasados"></div>
+  <div id="lista-hist-atrasados" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  <button class="btn btn-full" style="margin-top:10px;background:linear-gradient(135deg,#e67e22,#a04000);border-color:#e67e22;color:#fff" onclick="window.print()">🖨 Imprimir</button>
+</div>
+
+<!-- ══ FISCALIZAÇÃO ══ -->
+<div id="fiscalizacao" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('inspetoria')">← Voltar</button>
+  <div class="secao-titulo">🔍 Fiscalização</div>
+  <div class="menu-grid">
+    <button class="btn insp-btn" onclick="ir('fisc-prefeitura')">🏢 Prefeitura</button>
+    <button class="btn insp-btn" onclick="ir('fisc-rendeiras')">🧵 Rendeiras</button>
+    <button class="btn insp-btn" onclick="ir('fisc-marco')">📍 Marco Zero</button>
+    <button class="btn insp-btn" onclick="ir('fisc-saldanha')">🏛 Saldanha da Gama</button>
+    <button class="btn insp-btn" onclick="ir('fisc-po')">🚶 Patrulhamento (P.O)</button>
+    <button class="btn insp-btn" onclick="ir('fisc-pv')">🚗 Patrulhamento (P.V)</button>
+  </div>
+</div>
+<div id="fisc-prefeitura" class="secao" data-local="Prefeitura"></div>
+<div id="fisc-rendeiras"  class="secao" data-local="Rendeiras"></div>
+<div id="fisc-marco"      class="secao" data-local="Marco Zero"></div>
+<div id="fisc-saldanha"   class="secao" data-local="Saldanha da Gama"></div>
+<div id="fisc-po"         class="secao" data-local="Patrulhamento (P.O)"></div>
+<div id="fisc-pv"         class="secao" data-local="Patrulhamento Viatura (P.V)"></div>
+<div id="hist-fisc-prefeitura" class="secao"></div>
+<div id="hist-fisc-rendeiras"  class="secao"></div>
+<div id="hist-fisc-marco"      class="secao"></div>
+<div id="hist-fisc-saldanha"   class="secao"></div>
+<div id="hist-fisc-po"         class="secao"></div>
+<div id="hist-fisc-pv"         class="secao"></div>
+
+<!-- ══ ORDEM DE SERVIÇO ══ -->
+<div id="ordem-servico" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('inspetoria')">← Voltar</button>
+  <div class="secao-titulo">📄 Ordem de Serviço (O.S)</div>
+  <div class="menu-grid">
+    <button class="btn insp-btn" onclick="ir('os-temporaria')">⏳ Temporária</button>
+    <button class="btn insp-btn" onclick="ir('os-permanente')">♾ Permanente</button>
+  </div>
+</div>
+<div id="os-temporaria" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('ordem-servico')">← Voltar</button>
+  <div class="secao-titulo">⏳ O.S — Temporária</div>
+  <label class="campo-label">Nº da O.S</label><input type="text" id="os-temp-num" placeholder="Ex: 2024/001">
+  <label class="campo-label">Servidor</label><input type="text" id="os-temp-servidor" placeholder="Nome do servidor">
+  <label class="campo-label">Matrícula</label><input type="text" id="os-temp-mat" placeholder="Matrícula">
+  <label class="campo-label">Data de Início</label><input type="date" id="os-temp-inicio">
+  <label class="campo-label">Data de Término</label><input type="date" id="os-temp-fim">
+  <label class="campo-label">Descrição</label><textarea id="os-temp-desc" placeholder="Descreva a ordem de serviço..."></textarea>
+  <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="registrarOS('temporaria')">💾 Registrar O.S</button>
+  <button class="btn btn-full btn-cinza"   style="margin-top:6px;font-size:.78rem" onclick="ir('hist-os-temporaria')">📋 Ver Histórico</button>
+</div>
+<div id="os-permanente" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('ordem-servico')">← Voltar</button>
+  <div class="secao-titulo">♾ O.S — Permanente</div>
+  <label class="campo-label">Nº da O.S</label><input type="text" id="os-perm-num" placeholder="Ex: 2024/002">
+  <label class="campo-label">Servidor</label><input type="text" id="os-perm-servidor" placeholder="Nome do servidor">
+  <label class="campo-label">Matrícula</label><input type="text" id="os-perm-mat" placeholder="Matrícula">
+  <label class="campo-label">Data de Início</label><input type="date" id="os-perm-inicio">
+  <label class="campo-label">Descrição</label><textarea id="os-perm-desc" placeholder="Descreva a ordem de serviço..."></textarea>
+  <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="registrarOS('permanente')">💾 Registrar O.S</button>
+  <button class="btn btn-full btn-cinza"   style="margin-top:6px;font-size:.78rem" onclick="ir('hist-os-permanente')">📋 Ver Histórico</button>
+</div>
+<div id="hist-os-temporaria" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('os-temporaria')">← Voltar</button>
+  <div class="secao-titulo">⏳ Histórico — O.S Temporária</div>
+  <div class="hist-contador" id="contador-os-temporaria"></div>
+  <div id="lista-os-temporaria" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  <button class="btn btn-full btn-cinza" style="margin-top:10px" onclick="window.print()">🖨 Imprimir</button>
+</div>
+<div id="hist-os-permanente" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('os-permanente')">← Voltar</button>
+  <div class="secao-titulo">♾ Histórico — O.S Permanente</div>
+  <div class="hist-contador" id="contador-os-permanente"></div>
+  <div id="lista-os-permanente" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+  <button class="btn btn-full btn-cinza" style="margin-top:10px" onclick="window.print()">🖨 Imprimir</button>
+</div>
+
+<!-- ══ MODAL PLANTÃO ══ -->
+<div id="modal-plantao" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-nome" id="modal-srv-nome" style="text-align:center;margin-bottom:2px"></div>
+    <div class="modal-mat"  id="modal-srv-mat"  style="text-align:center;margin-bottom:14px"></div>
+
+    <!-- BOTÕES DE CONFIRMAÇÃO -->
+    <div class="btns-confirmar">
+      <button class="btn-conf btn-conf-presente" id="btn-conf-presente" onclick="selecionarStatus('presente')">
+        ✅<span>Presente</span>
+      </button>
+      <button class="btn-conf btn-conf-ausente" id="btn-conf-ausente" onclick="selecionarStatus('ausente')">
+        ❌<span>Ausente</span>
+      </button>
+      <button class="btn-conf btn-conf-atrasado" id="btn-conf-atrasado" onclick="selecionarStatus('atrasado')">
+        ⏰<span>Atrasado</span>
+      </button>
+    </div>
+    <div id="modal-status-label" style="text-align:center;font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:2px;color:var(--cinza);margin-bottom:10px">
+      Selecione o status acima
+    </div>
+
+    <label class="campo-label">Observação (opcional)</label>
+    <textarea id="modal-plantao-obs" placeholder="Ex: chegou às 06h15..." style="min-height:50px;margin-bottom:12px"></textarea>
+    <button class="btn btn-full btn-dourado" onclick="confirmarPlantao()">✔ Confirmar Registro</button>
+    <button class="btn btn-full btn-cinza" style="margin-top:6px;font-size:.75rem" onclick="fecharModalPlantao()">Cancelar</button>
+  </div>
+</div>
+
+<!-- ══ ADMINISTRATIVO ══ -->
+<div id="administrativo" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">📁 Administrativo</div>
+  <div class="menu-grid">
+    <button id="btn-fotos" class="btn btn-full mod-btn mod-fot btn-login-nitido" onclick="irProtegido('fotos','fotos')">📷 Banco de Fotos</button>
+    <button id="btn-escala" class="btn btn-full mod-btn mod-esc btn-login-nitido" onclick="irProtegido('escala','escala')">📅 Escala / Plantão</button>
+    <p style="color:var(--cinza);font-size:.75rem;text-align:center;padding:10px 0;grid-column:1/-1">
+      Mais sub-menus serão adicionados em breve.
+    </p>
+  </div>
+</div>
+
+<!-- ══ VÍDEO MONITORAMENTO ══ -->
+<div id="videomonitor" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">📹 Vídeo Monitoramento</div>
+  <p style="color:var(--cinza);font-size:.85rem;text-align:center;padding:20px 0">
+    Sub-menus serão adicionados em breve.
+  </p>
+</div>
+
+<!-- ══ INTELIGÊNCIA ══ -->
+<div id="inteligencia" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">🔎 Inteligência</div>
+  <p style="color:var(--cinza);font-size:.85rem;text-align:center;padding:20px 0">
+    Sub-menus serão adicionados em breve.
+  </p>
+</div>
+
+<!-- ══ COMANDO ══ -->
+<div id="comando" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">⭐ Comando</div>
+  <p style="color:var(--cinza);font-size:.85rem;text-align:center;padding:20px 0">
+    Sub-menus serão adicionados em breve.
+  </p>
+</div>
+
+<!-- ══ EDITAR USUÁRIO ══ -->
+<div id="editar-usuario" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('admin')">← Voltar</button>
+  <div class="secao-titulo">✏️ Editar Usuário</div>
+  <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+    <div id="edit-usr-info" style="font-size:.78rem;color:var(--cinza)">Carregando...</div>
+  </div>
+  <label class="campo-label">Nome completo</label>
+  <input type="text" id="edit-usr-nome" placeholder="Nome completo">
+  <label class="campo-label">E-mail</label>
+  <input type="email" id="edit-usr-email" placeholder="E-mail">
+  <label class="campo-label">Matrícula</label>
+  <input type="text" id="edit-usr-mat" placeholder="Matrícula">
+  <label class="campo-label">CPF</label>
+  <input type="text" id="edit-usr-cpf" placeholder="CPF">
+  <label class="campo-label">Nova senha (deixe vazio para não alterar)</label>
+  <input type="password" id="edit-usr-senha" placeholder="Nova senha (6 dígitos)" maxlength="6">
+  <label class="campo-label">Data de Nascimento</label>
+  <input type="date" id="edit-usr-nasc">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+    <button class="btn btn-perigo" onclick="ir('admin')">✕ Cancelar</button>
+    <button class="btn btn-verde"  onclick="salvarEdicaoUsuario()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- ══ EDITAR SERVIDOR ══ -->
+<div id="editar-servidor" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('admin')">← Voltar</button>
+  <div class="secao-titulo">✏️ Editar Servidor</div>
+  <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+    <div id="edit-srv-info" style="font-size:.78rem;color:var(--cinza)">Carregando...</div>
+  </div>
+  <label class="campo-label">Nome completo</label>
+  <input type="text"  id="edit-srv-nome"  placeholder="Nome do servidor">
+  <label class="campo-label">Matrícula</label>
+  <input type="text"  id="edit-srv-mat"   placeholder="Matrícula">
+  <label class="campo-label">Cargo / Função</label>
+  <input type="text"  id="edit-srv-cargo" placeholder="Ex: Inspetor, Guarda...">
+  <label class="campo-label">E-mail</label>
+  <input type="email" id="edit-srv-email" placeholder="E-mail do servidor">
+  <label class="campo-label">WhatsApp (DDD + número)</label>
+  <input type="tel"   id="edit-srv-tel"   placeholder="Ex: 81999887766">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+    <button class="btn btn-perigo" onclick="ir('admin')">✕ Cancelar</button>
+    <button class="btn btn-verde"  onclick="salvarEdicaoServidor()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- ══ EDITAR PLANTÃO ══ -->
+<div id="editar-plantao-reg" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('admin')">← Voltar</button>
+  <div class="secao-titulo">✏️ Editar Registro de Plantão</div>
+  <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+    <div id="edit-plt-info" style="font-size:.78rem;color:var(--cinza)">Carregando...</div>
+  </div>
+  <label class="campo-label">Status</label>
+  <select id="edit-plt-status">
+    <option value="presente">✅ Presente</option>
+    <option value="ausente">❌ Ausente</option>
+    <option value="atrasado">⏰ Atrasado</option>
+  </select>
+  <label class="campo-label">Jornada</label>
+  <select id="edit-plt-jornada">
+    <option>Ordinário</option>
+    <option>Extraordinário</option>
+    <option>Compensando Horas</option>
+  </select>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div><label class="campo-label">Hora Entrada</label><input type="time" id="edit-plt-entrada"></div>
+    <div><label class="campo-label">Hora Saída</label><input type="time" id="edit-plt-saida"></div>
+  </div>
+  <label class="campo-label">Observação</label>
+  <textarea id="edit-plt-obs" placeholder="Observação..."></textarea>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+    <button class="btn btn-perigo" onclick="ir('admin')">✕ Cancelar</button>
+    <button class="btn btn-verde"  onclick="salvarEdicaoPlantao()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- ══ BANCO DE FOTOS ══ -->
+<div id="fotos" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">📷 Banco de Fotos</div>
+
+  <!-- UPLOAD -->
+  <div class="foto-upload-area" onclick="document.getElementById('foto-input').click()">
+    <div class="upload-icone">📷</div>
+    <p>Toque para selecionar foto</p>
+    <p style="font-size:.7rem;margin-top:2px">JPG, PNG — máx 5MB</p>
+  </div>
+  <input type="file" id="foto-input" accept="image/*" multiple style="display:none" onchange="processarFotos(this)">
+
+  <!-- CAMPOS DA FOTO -->
+  <div id="foto-preview-area" style="display:none">
+    <img id="foto-preview-img" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:200px;object-fit:cover">
+    <label class="campo-label">Título / Descrição</label>
+    <input type="text" id="foto-titulo" placeholder="Ex: Fiscalização Marco Zero">
+    <label class="campo-label">Módulo relacionado</label>
+    <select id="foto-modulo">
+      <option value="">Geral</option>
+      <option>Armaria</option><option>Inspetoria</option>
+      <option>Fiscalização</option><option>Ordem de Serviço</option>
+      <option>Administrativo</option><option>Vídeo Monitoramento</option>
+      <option>Inteligência</option><option>Comando</option>
+      <option>Patrimônio</option><option>Tecnologia</option>
+    </select>
+    <button class="btn btn-full btn-dourado" style="margin-top:8px" onclick="salvarFoto()">💾 Salvar Foto</button>
+    <button class="btn btn-full btn-cinza" style="margin-top:4px;font-size:.75rem" onclick="cancelarFoto()">✕ Cancelar</button>
+  </div>
+
+  <!-- TOOLBAR SELEÇÃO -->
+  <div class="foto-toolbar" id="foto-toolbar">
+    <span id="foto-sel-cnt" style="font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:1px;color:#f1948a">0 selecionada(s)</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-perigo" onclick="excluirFotosSelecionadas()">🗑 Excluir</button>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,#25d366,#128c7e);border-color:#25d366;color:#fff;font-size:.7rem" onclick="compartilharFotos()">📤 WhatsApp</button>
+      <button class="btn btn-sm btn-cinza" onclick="desmarcarFotos()">✕</button>
+    </div>
+  </div>
+
+  <!-- FILTRO -->
+  <div style="position:relative;margin-bottom:10px">
+    <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none">🔍</span>
+    <input type="text" id="foto-filtro" placeholder="Filtrar por título ou módulo..."
+      style="padding-left:38px;margin:0" oninput="renderFotos()">
+  </div>
+  <select id="foto-filtro-modulo" style="margin-bottom:10px" onchange="renderFotos()">
+    <option value="">Todos os módulos</option>
+    <option>Armaria</option><option>Inspetoria</option>
+    <option>Fiscalização</option><option>Ordem de Serviço</option>
+    <option>Administrativo</option><option>Vídeo Monitoramento</option>
+    <option>Inteligência</option><option>Comando</option>
+    <option>Patrimônio</option><option>Tecnologia</option>
+  </select>
+
+  <div class="hist-contador" id="foto-contador"></div>
+  <div id="foto-grid" class="foto-grid"><p class="hist-vazio" style="grid-column:1/-1">Nenhuma foto ainda.</p></div>
+</div>
+
+<!-- ══ ESCALA MENSAL ══ -->
+<div id="escala" class="secao">
+  <button class="btn btn-voltar no-print" onclick="voltar()">← Voltar</button>
+  <div class="secao-titulo">📅 Escala / Plantão</div>
+
+  <!-- NAVEGAÇÃO MÊS -->
+  <div class="escala-header">
+    <div class="escala-mes-nav">
+      <button class="btn btn-sm btn-cinza" onclick="mudarMes(-1)">‹</button>
+      <span class="escala-mes-label" id="escala-mes-label">Mai 2026</span>
+      <button class="btn btn-sm btn-cinza" onclick="mudarMes(1)">›</button>
+    </div>
+    <button class="btn btn-sm btn-dourado" onclick="publicarEscala()">📢 Publicar</button>
+  </div>
+
+  <!-- LEGENDA -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+    <span class="escala-turno turno-m" style="font-size:.65rem;padding:3px 6px">M Manhã</span>
+    <span class="escala-turno turno-t" style="font-size:.65rem;padding:3px 6px">T Tarde</span>
+    <span class="escala-turno turno-n" style="font-size:.65rem;padding:3px 6px">N Noite</span>
+    <span class="escala-turno turno-f" style="font-size:.65rem;padding:3px 6px">F Folga</span>
+    <span class="escala-turno turno-e" style="font-size:.65rem;padding:3px 6px">E Extra</span>
+  </div>
+
+  <!-- CALENDÁRIO -->
+  <div class="escala-cal" id="escala-cal"></div>
+
+  <!-- RESUMO DO MÊS -->
+  <div style="background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px;margin-top:4px">
+    <div style="font-family:'Oswald',sans-serif;font-size:.75rem;letter-spacing:2px;color:var(--dourado);margin-bottom:8px">📊 RESUMO DO MÊS</div>
+    <div id="escala-resumo" style="font-size:.8rem;color:var(--cinza)">Selecione um dia para ver detalhes.</div>
+  </div>
+
+  <!-- AÇÕES -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+    <button class="btn btn-verde"  onclick="exportarEscala()">📤 Exportar WhatsApp</button>
+    <button class="btn btn-cinza"  onclick="window.print()">🖨 Imprimir</button>
+  </div>
+</div>
+
+<!-- MODAL ESCALA DIA -->
+<div class="escala-modal-overlay" id="escala-modal">
+  <div class="escala-modal-box">
+    <div style="font-family:'Oswald',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--dourado);margin-bottom:12px" id="escala-modal-titulo">Dia 01</div>
+
+    <label class="campo-label">Servidor</label>
+    <select id="escala-srv-sel" style="margin-bottom:6px">
+      <option value="">Selecione servidor...</option>
+    </select>
+
+    <label class="campo-label">Turno</label>
+    <select id="escala-turno-sel">
+      <option value="M">☀️ Manhã (06h–14h)</option>
+      <option value="T">🌤 Tarde (14h–22h)</option>
+      <option value="N">🌙 Noite (22h–06h)</option>
+      <option value="F">🏖 Folga</option>
+      <option value="E">⚡ Extra</option>
+    </select>
+
+    <label class="campo-label">Tipo de Jornada</label>
+    <select id="escala-jornada-sel">
+      <option>Ordinário</option>
+      <option>Extraordinário</option>
+      <option>Compensando Horas</option>
+    </select>
+
+    <label class="campo-label">Observação</label>
+    <textarea id="escala-obs-sel" placeholder="Ex: cobrir falta, plantão especial..." style="min-height:50px"></textarea>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+      <button class="btn btn-perigo" onclick="fecharModalEscala()">✕ Cancelar</button>
+      <button class="btn btn-verde"  onclick="salvarDiaEscala()">💾 Salvar</button>
+    </div>
+
+    <!-- ENTRADAS JÁ SALVAS NESTE DIA -->
+    <div id="escala-modal-lista" style="margin-top:12px"></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc,
+         updateDoc, deleteDoc, query, where, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyCIW7CeYfeEYBxfjxPdCvRvu3IkWIKvcd8",
+  authDomain:"policia-caruaru.firebaseapp.com",
+  projectId:"policia-caruaru",
+  storageBucket:"policia-caruaru.firebasestorage.app",
+  messagingSenderId:"929007613716",
+  appId:"1:929007613716:web:11009e8a2dce37dc503401"
+};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+// ⚠ SENHA_ADMIN removida do código — verificação via documento restrito no Firestore (coleção: config_admin)
+const COL_USUARIOS="usuarios";
+const COL_AUDITORIA="auditoria";
+const COL_PLANTAO="plantao";
+const COL_SERV="servidores_plantao";
+const COL_FISC="fiscalizacao";
+const COL_OS="ordens_servico";
+const PERMISSOES=["checklist","historico","inspetoria","administrativo","videomonitor","inteligencia","comando","patrimonio","tecnologia","fotos","escala"];
+const FISC_MAP={
+  "fisc-prefeitura":"Prefeitura","fisc-rendeiras":"Rendeiras","fisc-marco":"Marco Zero",
+  "fisc-saldanha":"Saldanha da Gama","fisc-po":"Patrulhamento (P.O)","fisc-pv":"Patrulhamento Viatura (P.V)"
+};
+
+let usuarioLogado=null,contadorArmas=0,todosRegistros=[],servidoresCache=[],
+    plantaoStatusAtual=null,servidorSelecionado=null,
+    registrosPlantaoLocal={},auditoriaSelecionados=new Set(),
+    editandoId=null; // id do doc sendo editado
+
+/* ══ TELAS ══ */
+const TELAS=["cadastro","login","checklist","armas","municoes","viaturas","historico",
+  "admin-login","admin","inspetoria","plantao","hist-presentes","hist-ausentes","hist-atrasados",
+  "fiscalizacao","fisc-prefeitura","fisc-rendeiras","fisc-marco","fisc-saldanha","fisc-po","fisc-pv",
+  "hist-fisc-prefeitura","hist-fisc-rendeiras","hist-fisc-marco","hist-fisc-saldanha","hist-fisc-po","hist-fisc-pv",
+  "ordem-servico","os-temporaria","os-permanente","hist-os-temporaria","hist-os-permanente",
+  "administrativo","videomonitor","inteligencia","comando","patrimonio","tecnologia",
+  "editar-usuario","editar-servidor","editar-plantao-reg",
+  "fotos","escala"];
+
+/* ══ NAVEGAÇÃO ══ */
+function ir(id){
+  TELAS.forEach(t=>document.getElementById(t)?.classList.remove("ativa"));
+  document.getElementById("menu").style.display="none";
+  document.getElementById(id)?.classList.add("ativa");
+  if(id==="historico")      renderHistorico();
+  if(id==="armas")          iniciarArmas();
+  if(id==="admin")          {carregarAdmin();carregarServidoresAdmin();carregarAuditoria();}
+  if(id==="plantao")        iniciarPlantao();
+  if(id==="hist-presentes") renderHistStatus("presente");
+  if(id==="hist-ausentes")  renderHistStatus("ausente");
+  if(id==="hist-atrasados") renderHistStatus("atrasado");
+  if(Object.keys(FISC_MAP).includes(id)) iniciarFiscTela(id);
+  if(id.startsWith("hist-fisc-")) renderHistFisc(id);
+  if(id==="fotos")           iniciarFotos();
+  if(id==="escala")          iniciarEscala();
+}
+
+function irProtegido(destino,permissao){
+  if(!usuarioLogado){alerta("Faça login para acessar esta área.","aviso");
+    document.getElementById("aviso-login").style.display="block";return;}
+  const perms=usuarioLogado.permissoes||{};
+  if(perms[permissao]===false){alerta("Você não tem permissão para esta área.","erro");return;}
+  ir(destino);
+}
+
+function voltar(){
+  TELAS.forEach(t=>document.getElementById(t)?.classList.remove("ativa"));
+  document.getElementById("menu").style.display="block";
+  atualizarBadge();atualizarMenu();
+}
+window.ir=ir;window.irProtegido=irProtegido;window.voltar=voltar;
+
+/* ══ MENU ══ */
+function atualizarMenu(){
+  const logado=!!usuarioLogado,perms=usuarioLogado?.permissoes||{};
+  const botoes=[
+    {id:"btn-checklist",      perm:"checklist"},
+    {id:"btn-inspetoria",     perm:"inspetoria"},
+    {id:"btn-administrativo", perm:"administrativo"},
+    {id:"btn-videomonitor",   perm:"videomonitor"},
+    {id:"btn-inteligencia",   perm:"inteligencia"},
+    {id:"btn-comando",        perm:"comando"},
+    {id:"btn-patrimonio",     perm:"patrimonio"},
+    {id:"btn-tecnologia",     perm:"tecnologia"},
+    {id:"btn-fotos",          perm:"fotos"},
+    {id:"btn-escala",         perm:"escala"},
+  ];
+  botoes.forEach(({id,perm})=>{
+    const btn=document.getElementById(id);if(!btn)return;
+    const bloqueado=!logado||perms[perm]===false;
+    btn.classList.toggle("btn-bloqueado",bloqueado);
+  });
+  document.getElementById("aviso-login").style.display=logado?"none":"block";
+  document.getElementById("btn-sair").style.display=logado?"block":"none";
+  document.getElementById("usuario-logado").style.display=logado?"block":"none";
+}
+
+/* ══ UTILS ══ */
+function v(id){return(document.getElementById(id)?.value||"").trim();}
+function alerta(msg,tipo){
+  const el=document.getElementById("alerta-global");
+  el.textContent=msg;el.className="alerta-box ativa "+(tipo||"ok");
+  clearTimeout(window._at);window._at=setTimeout(()=>el.classList.remove("ativa"),4500);
+}
+// Sanitiza qualquer string antes de inserir via innerHTML (evita XSS)
+function safe(str){
+  if(typeof DOMPurify!=="undefined") return DOMPurify.sanitize(str||"");
+  return (str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function setBtnLoad(id,on,label="Entrar"){
+  const b=document.getElementById(id);if(!b)return;
+  b.disabled=on;b.textContent=on?"Aguarde...":label;
+}
+function tsStr(ts){if(!ts)return"";const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleString("pt-BR");}
+function tsData(ts){if(!ts)return"";const d=ts.toDate?ts.toDate():new Date(ts);return d.toISOString().slice(0,10);}
+function agora(){return new Date().toLocaleString("pt-BR");}
+
+/* ══ MAPA / GEOLOCALIZAÇÃO ══ */
+function obterLocalizacao(){
+  const box=document.getElementById("mapa-plantao");
+  const info=document.getElementById("loc-info");
+  if(!box||!info)return;
+  box.style.display="block";
+  if(!navigator.geolocation){
+    info.innerHTML='📍 Geolocalização não suportada neste navegador.';return;
+  }
+  info.textContent='📍 Obtendo localização...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude.toFixed(6),lng=pos.coords.longitude.toFixed(6);
+    const url=`https://maps.google.com/maps?q=${lat},${lng}&z=16`;
+    box.innerHTML=`
+      <div style="text-align:center;padding:12px">
+        <div style="font-size:.75rem;color:var(--cinza);margin-bottom:8px">📍 Lat: ${lat} · Lng: ${lng}</div>
+        <a href="${url}" target="_blank" rel="noopener"
+           style="display:inline-block;padding:10px 20px;background:rgba(66,133,244,.2);border:1px solid rgba(66,133,244,.5);
+           border-radius:8px;color:#90c2fa;font-family:'Oswald',sans-serif;font-size:.8rem;letter-spacing:1px;
+           text-decoration:none;text-transform:uppercase">
+          🗺 Abrir no Google Maps
+        </a>
+        <div style="font-size:.65rem;color:var(--cinza);margin-top:6px">Toque para ver sua localização</div>
+      </div>`;
+  },err=>{
+    box.innerHTML=`<div style="text-align:center;padding:12px;font-size:.75rem;color:var(--cinza)">
+      📍 Localização não disponível — verifique as permissões do navegador.</div>`;
+  },{enableHighAccuracy:true,timeout:10000});
+}
+
+/* ══ CADASTRO ══ */
+window.enviarCadastro=async function(){
+  const nome=v("nome"),nasc=v("data"),cpf=v("cpf"),mat=v("matricula"),
+        email=v("email").toLowerCase(),senha=v("senha");
+  if(!nome||!nasc||!cpf||!mat||!email||!senha)return alerta("Preencha todos os campos.","erro");
+  if(senha.length!==6)return alerta("Senha deve ter 6 dígitos.","erro");
+  try{
+    const dup=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
+    if(!dup.empty)return alerta("E-mail já cadastrado.","erro");
+    // 🔐 SEGURANÇA: gera hash bcrypt (salt 10) — senha nunca fica em texto puro
+    const salt=
+    const senhaHash=await _crypto.hash(senha);
+    // 🔐 LGPD: CPF mascarado antes de salvar
+    const cpfMask=cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.***.***-$4");
+    await addDoc(collection(db,COL_USUARIOS),{
+      nome,nascimento:nasc,cpf:cpfMask,matricula:mat,email,
+      senhaHash,              // ← hash bcrypt, nunca a senha original
+      status:"pendente",
+      permissoes:{checklist:true,historico:true,inspetoria:true,administrativo:false,
+        videomonitor:false,inteligencia:false,comando:false,patrimonio:false,
+        tecnologia:false,fotos:true,escala:false},
+      criadoEm:serverTimestamp()
+    });
+    alerta("Cadastro enviado! Aguarde aprovação do administrador.","ok");
+    ["nome","data","cpf","matricula","email","senha"].forEach(id=>document.getElementById(id).value="");
+    setTimeout(()=>{window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Novo%20cadastro%20pendente&body=`+
+      encodeURIComponent(`Novo cadastro:\n\nNome: ${nome}\nE-mail: ${email}\nMatrícula: ${mat}`);},1500);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+/* ══ LOGIN ══ */
+window.logar=async function(){
+  const email=v("loginEmail").toLowerCase(),senha=v("loginSenha");
+  if(!email||!senha)return alerta("Preencha e-mail e senha.","erro");
+  setBtnLoad("btn-entrar",true);
+  try{
+    // Busca apenas pelo e-mail; a senha NÃO vai mais para a query
+    const snap=await getDocs(query(collection(db,COL_USUARIOS),where("email","==",email)));
+    if(snap.empty){alerta("E-mail ou senha incorretos.","erro");return setBtnLoad("btn-entrar",false);}
+    const docSnap=snap.docs[0];
+    const usuario=docSnap.data();
+    // 🔐 Verifica senha contra o hash bcrypt armazenado
+    const senhaOk=usuario.senhaHash
+      ? await _crypto.compare(senha,usuario.senhaHash)
+      : usuario.senha===senha; // fallback para contas antigas (migrar depois)
+    if(!senhaOk){alerta("E-mail ou senha incorretos.","erro");return setBtnLoad("btn-entrar",false);}
+    setBtnLoad("btn-entrar",false);
+    if(usuario.status==="pendente")return alerta("Cadastro aguarda aprovação.","aviso");
+    if(usuario.status==="rejeitado")return alerta("Cadastro rejeitado. Contate o administrador.","erro");
+    usuarioLogado={...usuario,id:docSnap.id};
+    document.getElementById("loginEmail").value="";document.getElementById("loginSenha").value="";
+    const nome1=usuario.nome.split(" ")[0];
+    document.getElementById("usuario-logado").textContent=`✓ ${nome1}`;
+    document.getElementById("sino-wrap").style.display="flex";
+    iniciarPollingNotif();
+    alerta(`Bem-vindo, ${nome1}!`,"ok");voltar();
+  }catch(err){alerta("Erro: "+err.message,"erro");setBtnLoad("btn-entrar",false);}
+};
+window.sair=function(){
+  usuarioLogado=null;
+  if(notifInterval){clearInterval(notifInterval);notifInterval=null;}
+  document.getElementById("sino-wrap").style.display="none";
+  document.getElementById("notif-painel").classList.remove("aberto");
+  atualizarBadgeNotif(0);
+  voltar();
+};
+
+/* ══ ADMIN LOGIN ══ */
+window.entrarAdmin=async function(){
+  const senhaDigitada=v("senhaAdmin");
+  if(!senhaDigitada)return alerta("Digite a senha de administrador.","erro");
+  try{
+    // 🔐 Senha buscada no Firestore (documento restrito — nunca no código)
+    // Configure no Firestore: coleção "config_admin", documento "credenciais",
+    // campo "senhaHash" com bcrypt.hash("suasenha", 10)
+    const snap=await getDocs(collection(db,"config_admin"));
+    if(snap.empty)return alerta("Configuração de admin não encontrada. Contate o suporte.","erro");
+    const cfg=snap.docs[0].data();
+    const ok=cfg.senhaHash
+      ? await _crypto.compare(senhaDigitada,cfg.senhaHash)
+      : senhaDigitada===cfg.senha; // fallback texto puro (migrar!)
+    if(ok){document.getElementById("senhaAdmin").value="";ir("admin");}
+    else alerta("Senha incorreta.","erro");
+  }catch(err){alerta("Erro ao verificar: "+err.message,"erro");}
+};
+
+/* ══ ADMIN ABAS ══ */
+window.mudarAba=function(aba){
+  ["cadastros","servidores","auditoria","plantao-admin"].forEach(a=>{
+    document.getElementById("tab-"+a)?.classList.remove("ativa");
+    document.getElementById("tab-btn-"+a)?.classList.remove("ativa");
+  });
+  document.getElementById("tab-"+aba)?.classList.add("ativa");
+  document.getElementById("tab-btn-"+aba)?.classList.add("ativa");
+  if(aba==="plantao-admin")carregarPlantaoAdmin();
+  if(aba==="auditoria")carregarAuditoria();
+  if(aba==="servidores")carregarServidoresAdmin();
+};
+
+/* ══ ADMIN USUÁRIOS ══ */
+async function carregarAdmin(){
+  const lista=document.getElementById("admin-lista");
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(collection(db,COL_USUARIOS),orderBy("criadoEm","desc")));
+    if(snap.empty){lista.innerHTML='<p class="hist-vazio">Nenhum cadastro.</p>';return;}
+    lista.innerHTML=snap.docs.map(d=>{
+      const u=d.data(),id=d.id;
+      const sc=u.status==="aprovado"?"status-ok":u.status==="rejeitado"?"status-erro":"status-aviso";
+      const sl=u.status==="aprovado"?"✓ Aprovado":u.status==="rejeitado"?"✕ Rejeitado":"⏳ Pendente";
+      const perms=u.permissoes||{checklist:true,historico:true,inspetoria:true,administrativo:false,videomonitor:false,inteligencia:false,comando:false};
+      const permLabels={checklist:"🔫 Armaria",historico:"📋 Histórico",inspetoria:"🏛 Inspetoria",
+        administrativo:"📁 Administrativo",videomonitor:"📹 Vídeo Monitoramento",
+        inteligencia:"🔎 Inteligência",comando:"⭐ Comando"};
+      const permHTML=PERMISSOES.map(p=>`
+        <div class="perm-item">
+          <input type="checkbox" id="perm-${id}-${p}" ${perms[p]!==false?"checked":""} onchange="salvarPermissao('${id}','${p}',this.checked)">
+          <label for="perm-${id}-${p}">${permLabels[p]||p}</label>
+        </div>`).join("");
+      return`<div class="hist-item">
+        <div class="hist-tipo">${u.nome}</div>
+        <div class="hist-data">📧 ${u.email} · Mat: ${u.matricula}</div>
+        <div class="hist-corpo" style="margin-bottom:6px">CPF: ${u.cpf}</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <span class="badge ${sc}">${sl}</span>
+          ${u.status!=="aprovado"?`<button class="btn btn-sm btn-verde" data-id="${id}" data-acao="aprovar">Aprovar</button>`:""}
+          ${u.status!=="rejeitado"?`<button class="btn btn-sm btn-perigo" data-id="${id}" data-acao="rejeitar">Rejeitar</button>`:""}
+          <button class="btn btn-sm" style="background:rgba(192,57,43,.3);border-color:rgba(192,57,43,.5);color:#f1948a;font-size:.65rem"
+            data-id="${id}" data-acao="remover">🗑 Remover</button>
+        </div>
+        <div class="perm-box"><div class="perm-titulo">🔑 Permissões</div>${permHTML}</div>
+      </div>`;
+    }).join("");
+    lista.querySelectorAll("[data-acao]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const id=btn.dataset.id,acao=btn.dataset.acao;
+        if(acao==="remover"){if(!confirm("Remover usuário permanentemente?"))return;
+          await deleteDoc(doc(db,COL_USUARIOS,id));alerta("Usuário removido.","aviso");carregarAdmin();return;}
+        if(acao==="rejeitar"&&!confirm("Confirmar rejeição?"))return;
+        await updateDoc(doc(db,COL_USUARIOS,id),{status:acao==="aprovar"?"aprovado":"rejeitado"});
+        alerta(acao==="aprovar"?"Usuário aprovado!":"Usuário rejeitado.",acao==="aprovar"?"ok":"aviso");
+        carregarAdmin();
+      });
+    });
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+window.salvarPermissao=async function(uid,permissao,valor){
+  try{await updateDoc(doc(db,COL_USUARIOS,uid),{[`permissoes.${permissao}`]:valor});
+    alerta(`Permissão "${permissao}" ${valor?"liberada":"bloqueada"}.`,valor?"ok":"aviso");}
+  catch(err){alerta("Erro: "+err.message,"erro");}
+};
+document.getElementById("btn-atualizar-admin").addEventListener("click",carregarAdmin);
+
+/* ══ ADMIN SERVIDORES ══ */
+window.cadastrarServidor=async function(){
+  const nome=v("adm-srv-nome"),mat=v("adm-srv-mat"),cargo=v("adm-srv-cargo"),
+        email=v("adm-srv-email"),tel=v("adm-srv-tel").replace(/\D/g,"");
+  if(!nome||!mat)return alerta("Preencha nome e matrícula.","erro");
+  try{
+    const dup=await getDocs(query(collection(db,COL_SERV),where("matricula","==",mat)));
+    if(!dup.empty)return alerta("Matrícula já cadastrada.","erro");
+    await addDoc(collection(db,COL_SERV),{nome,matricula:mat,cargo,email,telefone:tel,ativo:true,criadoEm:serverTimestamp()});
+    alerta("Servidor cadastrado!","ok");
+    ["adm-srv-nome","adm-srv-mat","adm-srv-cargo","adm-srv-email","adm-srv-tel"].forEach(id=>document.getElementById(id).value="");
+    carregarServidoresAdmin();servidoresCache=[];
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+async function carregarServidoresAdmin(){
+  const lista=document.getElementById("admin-servidores-lista");
+  const cont=document.getElementById("cnt-servidores");
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(collection(db,COL_SERV),orderBy("nome")));
+    cont.textContent=snap.size?`${snap.size} servidor(es)`:"";
+    if(snap.empty){lista.innerHTML='<p class="hist-vazio">Nenhum servidor.</p>';return;}
+    lista.innerHTML=snap.docs.map(d=>{const s=d.data(),id=d.id;
+      return`<div class="hist-item">
+        <div class="hist-tipo">${s.nome}</div>
+        <div class="hist-data">Mat: ${s.matricula}${s.cargo?" · "+s.cargo:""}${s.email?"\n📧 "+s.email:""}${s.telefone?"\n📱 "+s.telefone:""}</div>
+        <div style="margin-top:6px"><button class="btn btn-sm btn-perigo" data-del="${id}">🗑 Remover</button></div>
+      </div>`;}).join("");
+    lista.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        if(!confirm("Remover servidor?"))return;
+        await deleteDoc(doc(db,COL_SERV,btn.dataset.del));
+        alerta("Servidor removido.","aviso");carregarServidoresAdmin();servidoresCache=[];
+      });
+    });
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+/* ══ AUDITORIA ══ */
+async function carregarAuditoria(){
+  const lista=document.getElementById("auditoria-lista");
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(collection(db,COL_AUDITORIA),orderBy("criadoEm","desc")));
+    todosRegistros=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderAuditoria(todosRegistros);
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+function renderAuditoria(registros){
+  const lista=document.getElementById("auditoria-lista");
+  const cont=document.getElementById("audit-contador");
+  cont.textContent=registros.length?`${registros.length} registro(s)`:"";
+  auditoriaSelecionados.clear();atualizarBarraSel();
+  lista.innerHTML=registros.length
+    ?registros.map(r=>`<div class="hist-item">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <input type="checkbox" class="audit-check" data-id="${r.id}" onchange="toggleAuditSel('${r.id}',this.checked)">
+          <div class="hist-tipo" style="margin:0">${r.tipo}</div>
+        </div>
+        <div class="hist-data">🕐 ${tsStr(r.criadoEm)}</div>
+        <div class="hist-usuario">👮 ${r.usuarioNome} · ${r.matricula}</div>
+        <div class="hist-corpo">${r.dados}</div>
+      </div>`).join("")
+    :'<p class="hist-vazio">Nenhum registro.</p>';
+}
+window.filtrarAuditoria=function(){
+  const nome=v("filtro-nome").toLowerCase(),data=v("filtro-data");
+  renderAuditoria(todosRegistros.filter(r=>
+    (!nome||r.usuarioNome?.toLowerCase().includes(nome))&&(!data||tsData(r.criadoEm)===data)));
+};
+window.limparFiltros=function(){
+  document.getElementById("filtro-nome").value="";document.getElementById("filtro-data").value="";
+  renderAuditoria(todosRegistros);
+};
+window.toggleAuditSel=function(id,checked){
+  if(checked)auditoriaSelecionados.add(id);else auditoriaSelecionados.delete(id);
+  atualizarBarraSel();
+};
+function atualizarBarraSel(){
+  const bar=document.getElementById("audit-sel-bar");
+  const cnt=document.getElementById("audit-sel-count");
+  const n=auditoriaSelecionados.size;
+  bar.classList.toggle("visivel",n>0);
+  cnt.textContent=n>0?`${n} selecionado(s)`:"";
+}
+window.desmarcarTodos=function(){
+  auditoriaSelecionados.clear();atualizarBarraSel();
+  document.querySelectorAll(".audit-check").forEach(c=>c.checked=false);
+};
+window.removerAuditoriaSelecionados=async function(){
+  if(!auditoriaSelecionados.size)return;
+  if(!confirm(`Remover ${auditoriaSelecionados.size} registro(s) de auditoria?`))return;
+  try{
+    for(const id of auditoriaSelecionados)await deleteDoc(doc(db,COL_AUDITORIA,id));
+    alerta("Registros removidos.","aviso");carregarAuditoria();
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+/* ══ PLANTÕES ADMIN ══ */
+async function carregarPlantaoAdmin(){
+  const lista=document.getElementById("plantao-admin-lista");
+  const cont=document.getElementById("plantao-admin-contador");
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const filtNome=v("filtro-plantao-nome").toLowerCase(),filtData=v("filtro-plantao-data");
+    const snap=await getDocs(query(collection(db,COL_PLANTAO),orderBy("criadoEm","desc")));
+    let regs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(filtNome)regs=regs.filter(r=>r.servidorNome?.toLowerCase().includes(filtNome));
+    if(filtData)regs=regs.filter(r=>r.data===filtData);
+    cont.textContent=regs.length?`${regs.length} registro(s)`:"";
+    lista.innerHTML=regs.length
+      ?regs.map(r=>{const ic=r.status==="presente"?"✅":r.status==="ausente"?"❌":"⏰";
+        return`<div class="hist-item">
+          <div class="hist-tipo">${ic} ${r.status?.toUpperCase()}</div>
+          <div class="hist-data">📅 ${r.data} · ${r.jornada||r.turno||""}</div>
+          <div class="hist-data">🕐 Entrada: ${r.entrada||"—"} · Saída: ${r.saida||"—"}</div>
+          <div class="hist-usuario">👮 ${r.servidorNome} · Mat: ${r.servidorMat}</div>
+          <div class="hist-corpo">${r.obs?"Obs: "+r.obs+"\n":""}${r.marcacao?"Marcação: "+r.marcacao+"\n":""}Supervisor: ${r.supervisorNome}\n🕐 Registrado: ${tsStr(r.criadoEm)}</div>
+        </div>`;}).join("")
+      :'<p class="hist-vazio">Nenhum registro.</p>';
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+window.carregarPlantaoAdmin=carregarPlantaoAdmin;
+
+/* ══ PLANTÃO ══ */
+function iniciarPlantao(){
+  const hoje=new Date().toISOString().slice(0,10);
+  document.getElementById("plantao-data").value=hoje;
+  document.getElementById("plantao-busca-nome").value="";
+  document.getElementById("plantao-busca-mat").value="";
+  document.getElementById("mark-atestado").checked=false;
+  document.getElementById("mark-outros").checked=false;
+  document.getElementById("mark-obs").style.display="none";
+  document.getElementById("mark-obs").value="";
+  atualizarContadorPlantao();
+  obterLocalizacao();
+  // carrega lista completa de servidores imediatamente
+  renderListaPlantao();
+}
+
+window.toggleMarcacao=function(tipo){
+  const atestado=document.getElementById("mark-atestado").checked;
+  const outros=document.getElementById("mark-outros").checked;
+  const obs=document.getElementById("mark-obs");
+  // só um de cada vez
+  if(tipo==="atestado"&&atestado)document.getElementById("mark-outros").checked=false;
+  if(tipo==="outros"&&outros)document.getElementById("mark-atestado").checked=false;
+  obs.style.display=(atestado||outros)?"block":"none";
+};
+
+async function buscarServidorPlantao(){
+  const nome=v("plantao-busca-nome").toLowerCase(),mat=v("plantao-busca-mat").toLowerCase();
+  const lista=document.getElementById("plantao-servidores");
+  if(!nome&&!mat){renderListaPlantao();return;}
+  if(!servidoresCache.length){
+    try{
+      // sem orderBy para evitar erro de índice
+      const snap=await getDocs(query(collection(db,COL_SERV),where("ativo","==",true)));
+      servidoresCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.nome.localeCompare(b.nome));
+    }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;return;}
+  }
+  const filtrados=servidoresCache.filter(s=>
+    (!nome||s.nome?.toLowerCase().includes(nome))&&(!mat||s.matricula?.toLowerCase().includes(mat)));
+  if(!filtrados.length){lista.innerHTML='<p class="hist-vazio">Servidor não cadastrado. Contate o administrador.</p>';return;}
+  renderCardsServidores(filtrados,lista);
+}
+
+async function renderListaPlantao(){
+  const lista=document.getElementById("plantao-servidores");
+  if(!servidoresCache.length){
+    try{
+      const snap=await getDocs(query(collection(db,COL_SERV),where("ativo","==",true)));
+      servidoresCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.nome.localeCompare(b.nome));
+    }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro ao carregar servidores.</p>`;return;}
+  }
+  if(!servidoresCache.length){lista.innerHTML='<p class="hist-vazio">Nenhum servidor cadastrado ainda.</p>';return;}
+  renderCardsServidores(servidoresCache,lista);
+}
+
+function renderCardsServidores(servidores,lista){
+  const dataP=v("plantao-data"),jornadaP=v("plantao-turno");
+  // separa por status para mostrar registrados no topo
+  const presentes=[],ausentes=[],atrasados=[],pendentes=[];
+  servidores.forEach(s=>{
+    const reg=registrosPlantaoLocal[`${s.id}_${dataP}_${jornadaP}`];
+    if(!reg)pendentes.push({...s,reg:null});
+    else if(reg.status==="presente")presentes.push({...s,reg});
+    else if(reg.status==="ausente")ausentes.push({...s,reg});
+    else atrasados.push({...s,reg});
+  });
+  const todos=[...presentes,...atrasados,...ausentes,...pendentes];
+  lista.innerHTML=todos.map(s=>{
+    const reg=s.reg;
+    let borderColor="rgba(201,168,76,.15)",bgColor="rgba(255,255,255,.05)",statusHtml;
+    if(reg?.status==="presente"){borderColor="rgba(30,132,73,.5)";bgColor="rgba(30,132,73,.12)";
+      statusHtml=`<span class="sc-status sc-presente">✅ Presente</span>`;}
+    else if(reg?.status==="ausente"){borderColor="rgba(192,57,43,.5)";bgColor="rgba(192,57,43,.12)";
+      statusHtml=`<span class="sc-status sc-ausente">❌ Ausente</span>`;}
+    else if(reg?.status==="atrasado"){borderColor="rgba(230,126,34,.5)";bgColor="rgba(230,126,34,.12)";
+      statusHtml=`<span class="sc-status sc-atrasado">⏰ Atrasado</span>`;}
+    else statusHtml=`<span class="sc-status sc-pendente">— pendente</span>`;
+    return`<div class="servidor-card" data-sid="${s.id}"
+        style="border-color:${borderColor};background:${bgColor}">
+      <div><div class="sc-nome">${s.nome}</div><div class="sc-mat">Mat: ${s.matricula}${s.cargo?" · "+s.cargo:""}</div></div>
+      ${statusHtml}
+    </div>`;
+  }).join("");
+  lista.querySelectorAll(".servidor-card").forEach(card=>{
+    card.addEventListener("click",()=>{
+      const srv=servidoresCache.find(s=>s.id===card.dataset.sid);
+      if(srv)abrirModalPlantao(srv);
+    });
+  });
+}
+window.buscarServidorPlantao=buscarServidorPlantao;
+
+function abrirModalPlantao(servidor){
+  if(!v("plantao-data"))return alerta("Selecione a data.","erro");
+  if(!v("plantao-turno"))return alerta("Selecione a jornada.","erro");
+  servidorSelecionado=servidor;plantaoStatusAtual=null;
+  document.getElementById("modal-srv-nome").textContent=servidor.nome;
+  document.getElementById("modal-srv-mat").textContent=`Mat: ${servidor.matricula}`;
+  document.getElementById("modal-plantao-obs").value="";
+  document.getElementById("modal-status-label").textContent="Selecione o status acima";
+  document.getElementById("modal-status-label").style.color="var(--cinza)";
+  ["presente","ausente","atrasado"].forEach(s=>
+    document.getElementById("btn-conf-"+s)?.classList.remove("selecionado"));
+  document.getElementById("modal-plantao").style.display="flex";
+}
+
+window.selecionarStatus=function(status){
+  plantaoStatusAtual=status;
+  ["presente","ausente","atrasado"].forEach(s=>
+    document.getElementById("btn-conf-"+s)?.classList.remove("selecionado"));
+  document.getElementById("btn-conf-"+status)?.classList.add("selecionado");
+  const ic=status==="presente"?"✅":status==="ausente"?"❌":"⏰";
+  const cor=status==="presente"?"#7dcea0":status==="ausente"?"#f1948a":"#f0b27a";
+  const lbl=document.getElementById("modal-status-label");
+  lbl.textContent=`${ic} ${status.toUpperCase()} selecionado`;lbl.style.color=cor;
+};
+
+window.confirmarPlantao=async function(){
+  if(!plantaoStatusAtual)return alerta("Selecione um status primeiro.","erro");
+  const obs=v("modal-plantao-obs");
+  const dataP=v("plantao-data"),jornadaP=v("plantao-turno");
+  const entradaP=v("plantao-entrada"),saidaP=v("plantao-saida");
+  const srv=servidorSelecionado;
+  const atestado=document.getElementById("mark-atestado").checked;
+  const outros=document.getElementById("mark-outros").checked;
+  const markObs=v("mark-obs");
+  const marcacao=atestado?"Atestado Médico":outros?"Outros":"";
+  const agora_str=agora();
+  try{
+    await addDoc(collection(db,COL_PLANTAO),{
+      servidorId:srv.id,servidorNome:srv.nome,servidorMat:srv.matricula,
+      servidorEmail:srv.email||"",cargo:srv.cargo||"",
+      data:dataP,jornada:jornadaP,entrada:entradaP,saida:saidaP,
+      status:plantaoStatusAtual,obs,marcacao,markObs,
+      supervisorNome:usuarioLogado?.nome||"",supervisorMat:usuarioLogado?.matricula||"",
+      supervisorEmail:usuarioLogado?.email||"",
+      registradoEm:agora_str,criadoEm:serverTimestamp()
+    });
+    // auditoria
+    await salvarAuditoria("Plantão — "+plantaoStatusAtual.toUpperCase(),
+      `Servidor: ${srv.nome} · Mat: ${srv.matricula}\nData: ${dataP} · Jornada: ${jornadaP}\nEntrada: ${entradaP||"—"} · Saída: ${saidaP||"—"}\n${marcacao?"Marcação: "+marcacao+"\n":""}${obs?"Obs: "+obs+"\n":""}Supervisor: ${usuarioLogado?.nome||""} · ${usuarioLogado?.matricula||""}`);
+    // notificação in-app para o servidor (se tiver e-mail cadastrado)
+    if(srv.email){
+      const ic=plantaoStatusAtual==="presente"?"✅":plantaoStatusAtual==="ausente"?"❌":"⏰";
+      await enviarNotificacao(
+        srv.email,
+        `${ic} Plantão — ${plantaoStatusAtual.toUpperCase()}`,
+        `Data: ${dataP}\nJornada: ${jornadaP}\nEntrada: ${entradaP||"—"} · Saída: ${saidaP||"—"}\n${marcacao?"Marcação: "+marcacao+"\n":""}${obs?"Obs: "+obs+"\n":""}Registrado por: ${usuarioLogado?.nome||""} · Mat: ${usuarioLogado?.matricula||""}`
+      );
+    }
+    registrosPlantaoLocal[`${srv.id}_${dataP}_${jornadaP}`]={status:plantaoStatusAtual};
+    atualizarContadorPlantao();
+    fecharModalPlantao();
+    alerta(`${plantaoStatusAtual.toUpperCase()} registrado — ${srv.nome}`,"ok");
+    // atualiza lista colorida
+    const busNome=v("plantao-busca-nome"),busMat=v("plantao-busca-mat");
+    if(busNome||busMat)buscarServidorPlantao();else renderListaPlantao();
+    // notificação por e-mail
+    enviarNotificacaoPlantao(srv,plantaoStatusAtual,dataP,jornadaP,entradaP,saidaP,marcacao,obs,agora_str);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+function enviarNotificacaoPlantao(srv,status,data,jornada,entrada,saida,marcacao,obs,agora_str){
+  if(!srv.email)return;
+  const ic=status==="presente"?"✅":status==="ausente"?"❌":"⏰";
+  const corpo=
+    `${ic} REGISTRO DE PLANTÃO — ${status.toUpperCase()}\n\n`+
+    `Data: ${data}\nHorário do registro: ${agora_str}\nJornada: ${jornada}\n`+
+    `Entrada: ${entrada||"—"} · Saída: ${saida||"—"}\n\n`+
+    `SERVIDOR FISCALIZADO:\nNome: ${srv.nome}\nMatrícula: ${srv.matricula}\n\n`+
+    `FISCAL RESPONSÁVEL:\nNome: ${usuarioLogado?.nome||""}\nMatrícula: ${usuarioLogado?.matricula||""}\n\n`+
+    (marcacao?`Marcação: ${marcacao}\n`:"")+(obs?`Observação: ${obs}\n`:"")+
+    `\nPolícia Municipal de Caruaru — Sistema Operacional`;
+  setTimeout(()=>{
+    window.location.href=`mailto:${srv.email}?subject=${encodeURIComponent("Registro de Plantão — "+status.toUpperCase())}&body=${encodeURIComponent(corpo)}`;
+  },800);
+}
+
+window.fecharModalPlantao=function(){
+  document.getElementById("modal-plantao").style.display="none";
+  servidorSelecionado=null;plantaoStatusAtual=null;
+};
+
+function atualizarContadorPlantao(){
+  const vals=Object.values(registrosPlantaoLocal);
+  document.getElementById("cnt-presentes").textContent=vals.filter(r=>r.status==="presente").length;
+  document.getElementById("cnt-ausentes").textContent=vals.filter(r=>r.status==="ausente").length;
+  document.getElementById("cnt-atrasados").textContent=vals.filter(r=>r.status==="atrasado").length;
+}
+
+async function renderHistStatus(status){
+  const idL=`lista-hist-${status==="presente"?"presentes":status==="ausente"?"ausentes":"atrasados"}`;
+  const idC=`cnt-hist-${status==="presente"?"presentes":status==="ausente"?"ausentes":"atrasados"}`;
+  const lista=document.getElementById(idL);
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(collection(db,COL_PLANTAO),where("status","==",status),orderBy("criadoEm","desc")));
+    document.getElementById(idC).textContent=snap.size?`${snap.size} registro(s)`:"";
+    lista.innerHTML=snap.empty?'<p class="hist-vazio">Nenhum registro.</p>'
+      :snap.docs.map(d=>{const r=d.data();const ic=status==="presente"?"✅":status==="ausente"?"❌":"⏰";
+        return`<div class="hist-item">
+          <div class="hist-tipo">${ic} ${r.servidorNome}</div>
+          <div class="hist-data">📅 ${r.data} · ${r.jornada||r.turno||""}</div>
+          <div class="hist-data">🕐 Entrada: ${r.entrada||"—"} · Saída: ${r.saida||"—"}</div>
+          <div class="hist-usuario">Mat: ${r.servidorMat}${r.cargo?" · "+r.cargo:""}</div>
+          <div class="hist-corpo">${r.marcacao?"Marcação: "+r.marcacao+"\n":""}${r.obs?"Obs: "+r.obs+"\n":""}Supervisor: ${r.supervisorNome} · ${r.supervisorMat||""}\n🕐 ${r.registradoEm||tsStr(r.criadoEm)}</div>
+        </div>`;}).join("");
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+/* ══ FISCALIZAÇÃO ══ */
+function iniciarFiscTela(id){
+  const local=FISC_MAP[id],histId="hist-"+id,el=document.getElementById(id);
+  const hoje=new Date().toISOString().slice(0,10);
+  el.innerHTML=`
+    <button class="btn btn-voltar no-print" onclick="ir('fiscalizacao')">← Voltar</button>
+    <div class="secao-titulo">🔍 ${local}</div>
+    <label class="campo-label">Servidor(es) designado(s)</label>
+    <input type="text" id="fisc-srv-${id}" placeholder="Nome(s) do(s) servidor(es)">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label class="campo-label">Data</label><input type="date" id="fisc-data-${id}" value="${hoje}"></div>
+      <div><label class="campo-label">Hora Início</label><input type="time" id="fisc-hora-${id}"></div>
+    </div>
+    <label class="campo-label">Hora Fim</label><input type="time" id="fisc-horafim-${id}">
+    <label class="campo-label">Observação</label>
+    <textarea id="fisc-obs-${id}" placeholder="Ocorrências, situação encontrada..."></textarea>
+    <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="registrarFisc('${id}','${local}')">💾 Registrar</button>
+    <button class="btn btn-full btn-cinza"   style="margin-top:6px;font-size:.78rem" onclick="ir('${histId}')">📋 Ver Histórico</button>`;
+}
+window.registrarFisc=async function(tela,local){
+  const srv=v(`fisc-srv-${tela}`),data=v(`fisc-data-${tela}`),hora=v(`fisc-hora-${tela}`);
+  const horafim=v(`fisc-horafim-${tela}`),obs=v(`fisc-obs-${tela}`);
+  if(!srv||!data||!hora)return alerta("Preencha servidor, data e hora início.","erro");
+  try{
+    await addDoc(collection(db,COL_FISC),{local,servidor:srv,data,hora,horafim,obs,
+      supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",criadoEm:serverTimestamp()});
+    alerta(`Fiscalização — ${local} registrada!`,"ok");
+    [`fisc-srv-${tela}`,`fisc-obs-${tela}`,`fisc-hora-${tela}`,`fisc-horafim-${tela}`]
+      .forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+async function renderHistFisc(histId){
+  const tela=histId.replace("hist-",""),local=FISC_MAP[tela],el=document.getElementById(histId);
+  el.innerHTML=`
+    <button class="btn btn-voltar no-print" onclick="ir('${tela}')">← Voltar</button>
+    <div class="secao-titulo">📋 Histórico — ${local}</div>
+    <div class="hist-contador" id="cnt-${histId}"></div>
+    <div id="lista-${histId}" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+    <button class="btn btn-full btn-cinza" style="margin-top:10px" onclick="window.print()">🖨 Imprimir</button>`;
+  try{
+    const snap=await getDocs(query(collection(db,COL_FISC),where("local","==",local)));
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+    document.getElementById(`cnt-${histId}`).textContent=docs.length?`${docs.length} registro(s)`:"";
+    document.getElementById(`lista-${histId}`).innerHTML=!docs.length
+      ?'<p class="hist-vazio">Nenhum registro.</p>'
+      :docs.map(d=>{const r=d;return`<div class="hist-item">
+          <div class="hist-tipo">🔍 ${r.local}</div>
+          <div class="hist-data">📅 ${r.data} · ${r.hora}${r.horafim?" – "+r.horafim:""}</div>
+          <div class="hist-usuario">👮 ${r.servidor}</div>
+          <div class="hist-corpo">${r.obs||"Sem observações"}\nSupervisor: ${r.supervisorNome}</div>
+        </div>`;}).join("");
+  }catch(err){document.getElementById(`lista-${histId}`).innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+/* ══ ORDEM DE SERVIÇO ══ */
+window.registrarOS=async function(tipo){
+  const p=tipo==="temporaria"?"temp":"perm";
+  const num=v(`os-${p}-num`),srv=v(`os-${p}-servidor`),mat=v(`os-${p}-mat`),
+        ini=v(`os-${p}-inicio`),desc=v(`os-${p}-desc`);
+  const fim=tipo==="temporaria"?v("os-temp-fim"):"indeterminado";
+  if(!num||!srv||!ini)return alerta("Preencha Nº, servidor e data início.","erro");
+  try{
+    await addDoc(collection(db,COL_OS),{
+      tipo,numero:num,servidor:srv,matricula:mat,dataInicio:ini,dataFim:fim,descricao:desc,
+      statusOS:"ativa", // ativa | concluida | cancelada
+      supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",
+      criadoEm:serverTimestamp()
+    });
+    alerta(`O.S ${num} registrada com sucesso!`,"ok");
+    ["num","servidor","mat","inicio","fim","desc"].forEach(c=>{const el=document.getElementById(`os-${p}-${c}`);if(el)el.value="";});
+    // vai direto para o histórico após registrar
+    ir(`hist-os-${tipo}`);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+async function renderHistOS(tipo){
+  const lista=document.getElementById(`lista-os-${tipo}`),cont=document.getElementById(`contador-os-${tipo}`);
+  lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+
+  // barra de seleção para exclusão
+  const barraId=`os-sel-bar-${tipo}`;
+  let barra=document.getElementById(barraId);
+  if(!barra){
+    barra=document.createElement("div");
+    barra.id=barraId;
+    barra.style.cssText="display:none;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.4);border-radius:8px;padding:10px 12px;margin-bottom:10px;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap";
+    lista.parentNode.insertBefore(barra,lista);
+  }
+  barra.innerHTML=`
+    <span id="os-sel-cnt-${tipo}" style="font-size:.8rem;color:#f1948a;font-family:'Oswald',sans-serif;letter-spacing:1px">0 selecionada(s)</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-perigo" onclick="excluirOSSelecionadas('${tipo}')">🗑 Excluir</button>
+      <button class="btn btn-sm btn-cinza"  onclick="desmarcarOS('${tipo}')">✕ Cancelar</button>
+    </div>`;
+
+  const osSelecionadas=new Set();
+  window[`osSel_${tipo}`]=osSelecionadas;
+
+  try{
+    const snap=await getDocs(query(collection(db,COL_OS),where("tipo","==",tipo)));
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+    cont.textContent=docs.length?`${docs.length} O.S registrada(s)`:"";
+
+    // busca usuários aprovados para select
+    let usuariosOpts='<option value="">Selecione usuário...</option>';
+    let usuariosWA=[];
+    try{
+      const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
+      uSnap.docs.forEach(d=>{
+        const u=d.data();
+        usuariosOpts+=`<option value="${u.email}" data-nome="${u.nome}">${u.nome}</option>`;
+        usuariosWA.push({nome:u.nome,email:u.email});
+      });
+    }catch(e){}
+
+    // busca servidores do plantão (têm número de telefone eventualmente)
+    let srvOpts='<option value="">Selecione servidor...</option>';
+    try{
+      const sSnap=await getDocs(collection(db,COL_SERV));
+      sSnap.docs.forEach(d=>{
+        const s=d.data();
+        if(s.telefone)srvOpts+=`<option value="${s.telefone}" data-nome="${s.nome}">${s.nome} — ${s.telefone}</option>`;
+      });
+    }catch(e){}
+
+    lista.innerHTML=docs.length?docs.map(d=>{
+      const ic=tipo==="temporaria"?"⏳":"♾";
+      const sColor=d.statusOS==="concluida"?"#7dcea0":d.statusOS==="cancelada"?"#f1948a":"#e8c96b";
+      const sLabel=d.statusOS==="concluida"?"✅ Concluída":d.statusOS==="cancelada"?"❌ Cancelada":"🟡 Ativa";
+      const descEsc=(d.descricao||"").replace(/'/g,"\\'");
+      return`<div class="hist-item" id="os-card-${d.id}" style="position:relative">
+        <!-- CHECKBOX SELEÇÃO -->
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <input type="checkbox" class="os-chk" data-id="${d.id}"
+            style="width:18px;height:18px;accent-color:#c0392b;flex-shrink:0;margin-top:3px;cursor:pointer"
+            onchange="toggleOSSel('${tipo}','${d.id}',this.checked)">
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <div class="hist-tipo" style="margin:0">${ic} O.S ${d.numero}</div>
+              <span style="font-size:.68rem;font-family:'Oswald',sans-serif;letter-spacing:1px;color:${sColor}">${sLabel}</span>
+            </div>
+            <div class="hist-data">📅 Início: ${d.dataInicio} · Fim: ${d.dataFim||"indeterminado"}</div>
+            <div class="hist-usuario">👮 ${d.servidor} · Mat: ${d.matricula||"—"}</div>
+            <div class="hist-corpo" style="margin-bottom:8px">${d.descricao||"Sem descrição"}\nSupervisor: ${d.supervisorNome}</div>
+
+            <!-- STATUS -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+              <button class="btn btn-sm btn-verde"  onclick="alterarStatusOS('${d.id}','concluida','${tipo}')">✅ Concluir</button>
+              <button class="btn btn-sm btn-perigo" onclick="alterarStatusOS('${d.id}','cancelada','${tipo}')">❌ Cancelar</button>
+              <button class="btn btn-sm" style="background:rgba(30,100,200,.3);border-color:rgba(30,100,200,.5);color:#90c2fa;font-size:.62rem"
+                onclick="alterarStatusOS('${d.id}','ativa','${tipo}')">🔄 Reativar</button>
+            </div>
+
+            <!-- ENVIO -->
+            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px">
+              <div style="font-family:'Oswald',sans-serif;font-size:.68rem;letter-spacing:2px;color:var(--cinza);margin-bottom:8px">📤 ENVIAR O.S</div>
+
+              <!-- WHATSAPP APENAS -->
+              <div>
+                <div style="font-size:.65rem;color:var(--cinza);margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:1px">📱 ENVIAR VIA WHATSAPP</div>
+                <input type="tel" id="os-wa-${d.id}" placeholder="DDD + número (ex: 81999887766)"
+                  style="margin:0 0 5px;font-size:.82rem">
+                <button class="btn btn-full btn-sm" style="background:linear-gradient(135deg,#25d366,#128c7e);border-color:#25d366;color:#fff"
+                  onclick="enviarOSWhatsApp('${d.id}','${d.numero}','${d.servidor}','${d.dataInicio}','${d.dataFim||"indeterminado"}','${tipo}','${descEsc}')">
+                  💬 Enviar pelo WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;}).join("")
+    :'<p class="hist-vazio">Nenhuma O.S registrada ainda.</p>';
+
+    // eventos checkbox
+    lista.querySelectorAll(".os-chk").forEach(chk=>{
+      chk.addEventListener("change",()=>{});// já tem onchange inline
+    });
+
+  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+
+window.toggleOSSel=function(tipo,id,checked){
+  const sel=window[`osSel_${tipo}`];if(!sel)return;
+  if(checked)sel.add(id);else sel.delete(id);
+  const n=sel.size;
+  const barra=document.getElementById(`os-sel-bar-${tipo}`);
+  if(barra)barra.style.display=n>0?"flex":"none";
+  const cnt=document.getElementById(`os-sel-cnt-${tipo}`);
+  if(cnt)cnt.textContent=`${n} selecionada(s)`;
+};
+
+window.desmarcarOS=function(tipo){
+  const sel=window[`osSel_${tipo}`];if(sel)sel.clear();
+  document.querySelectorAll(".os-chk").forEach(c=>c.checked=false);
+  const barra=document.getElementById(`os-sel-bar-${tipo}`);
+  if(barra)barra.style.display="none";
+};
+
+window.excluirOSSelecionadas=async function(tipo){
+  const sel=window[`osSel_${tipo}`];
+  if(!sel||!sel.size)return;
+  if(!confirm(`Excluir ${sel.size} O.S permanentemente?`))return;
+  try{
+    for(const id of sel)await deleteDoc(doc(db,COL_OS,id));
+    alerta(`${sel.size} O.S excluída(s).`,"aviso");
+    renderHistOS(tipo);
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+window.enviarOSWhatsApp=async function(id,numero,servidor,dataInicio,dataFim,tipo,desc){
+  const tel=(document.getElementById(`os-wa-${id}`)?.value||"").replace(/\D/g,"");
+  if(!tel||tel.length<10)return alerta("Digite um número de WhatsApp válido com DDD.","erro");
+  const ic=tipo==="temporaria"?"⏳":"♾";
+  const txt=
+    `${ic} *ORDEM DE SERVIÇO — ${tipo.toUpperCase()}*\n\n`+
+    `*Nº:* ${numero}\n`+
+    `*Servidor:* ${servidor}\n`+
+    `*Período:* ${dataInicio} a ${dataFim}\n`+
+    (desc?`*Descrição:* ${desc}\n`:"")+
+    `\n*Emitido por:* ${usuarioLogado?.nome||""}\n`+
+    `*Polícia Municipal de Caruaru*`;
+  window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(txt)}`,"_blank");
+
+  // tenta enviar notificação in-app para o usuário que tem esse número
+  try{
+    const sSnap=await getDocs(query(collection(db,COL_SERV),where("telefone","==",tel)));
+    if(!sSnap.empty){
+      const srv=sSnap.docs[0].data();
+      if(srv.email){
+        await enviarNotificacao(srv.email,`${ic} Nova O.S — ${numero}`,
+          `Servidor: ${servidor}\nPeríodo: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`);
+      }
+    }
+    // também tenta por e-mail do usuário cadastrado que tem o mesmo nome
+    const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
+    uSnap.docs.forEach(async d=>{
+      const u=d.data();
+      if(u.nome?.toLowerCase()===servidor.toLowerCase()&&u.email){
+        await enviarNotificacao(u.email,`${ic} Nova O.S — ${numero}`,
+          `Período: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`);
+      }
+    });
+  }catch(e){}
+};
+
+/* ══ ARMAS MULTI ══ */
+function iniciarArmas(){
+  const cont=document.getElementById("armas-linhas");
+  if(cont.children.length===0){contadorArmas=0;adicionarLinhaArma();}
+}
+function adicionarLinhaArma(){
+  contadorArmas++;const n=contadorArmas,cont=document.getElementById("armas-linhas"),div=document.createElement("div");
+  div.className="arma-linha";div.id="arma-linha-"+n;
+  div.innerHTML=`<div class="arma-linha-header">
+    <span class="arma-linha-num">Item ${n}</span>
+    ${n>1?`<button class="btn-remover-linha" data-num="${n}">✕ Remover</button>`:""}
+  </div>
+  <select id="tipoArma_${n}"><option>Tonfas</option><option>Sparks</option><option>Coletes</option><option>Algemas</option><option>Pistolas</option><option>Calibre 12</option></select>
+  <input type="number" id="qtdArma_${n}" placeholder="Quantidade">
+  <textarea id="obsArma_${n}" placeholder="Observações"></textarea>`;
+  div.querySelector("[data-num]")?.addEventListener("click",e=>document.getElementById("arma-linha-"+e.target.dataset.num)?.remove());
+  cont.appendChild(div);
+}
+window.adicionarLinhaArma=adicionarLinhaArma;
+
+/* ══ HISTÓRICO LOCAL ══ */
+const CHAVE="pmc_historico";
+function carregarHist(){try{return JSON.parse(localStorage.getItem(CHAVE))||[];}catch{return[];}}
+function salvarLocal(tipo,dados){
+  const h=carregarHist();h.unshift({tipo,dados,data:agora()});
+  localStorage.setItem(CHAVE,JSON.stringify(h));atualizarBadge();
+}
+function atualizarBadge(){document.getElementById("badge-hist").textContent=carregarHist().length;}
+function renderHistorico(){
+  const h=carregarHist();
+  document.getElementById("hist-contador").textContent=h.length?`${h.length} registro(s)`:"";
+  document.getElementById("historico-lista").innerHTML=h.length
+    ?h.map(r=>`<div class="hist-item"><div class="hist-tipo">${r.tipo}</div><div class="hist-data">🕐 ${r.data}</div><div class="hist-corpo">${r.dados}</div></div>`).join("")
+    :'<p class="hist-vazio">Nenhum envio ainda.</p>';
+}
+window.limparHistorico=function(){if(!confirm("Apagar histórico?"))return;localStorage.removeItem(CHAVE);atualizarBadge();renderHistorico();};
+window.imprimirHistorico=function(){
+  if(!carregarHist().length)return alerta("Histórico vazio.","aviso");
+  document.getElementById("print-meta").innerHTML=`Gerado em: ${agora()}<br>Total: ${carregarHist().length} registro(s)`;
+  window.print();
+};
+
+/* ══ AUDITORIA FIREBASE ══ */
+async function salvarAuditoria(tipo,dados){
+  if(!usuarioLogado)return;
+  try{await addDoc(collection(db,COL_AUDITORIA),{tipo,dados,
+    usuarioNome:usuarioLogado.nome,usuarioEmail:usuarioLogado.email,
+    matricula:usuarioLogado.matricula,criadoEm:serverTimestamp()});}
+  catch(err){console.warn("Auditoria:",err.message);}
+}
+
+/* ══ ENVIOS ARMARIA ══ */
+window.enviarArmas=async function(){
+  const linhas=document.querySelectorAll(".arma-linha");
+  if(!linhas.length)return alerta("Adicione pelo menos um item.","erro");
+  let resumo="";
+  linhas.forEach((l,i)=>{const n=l.id.replace("arma-linha-","");
+    resumo+=`— Item ${i+1}: ${v("tipoArma_"+n)} | Qtd: ${v("qtdArma_"+n)}`+(v("obsArma_"+n)?` | Obs: ${v("obsArma_"+n)}`:"")+"\n";});
+  resumo=resumo.trim();salvarLocal("Armas",resumo);await salvarAuditoria("Armas",resumo);
+  window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Armas&body=${encodeURIComponent("Armas:\n"+resumo)}`;
+};
+window.enviarMunicao=async function(){
+  const resumo=`Tipo: ${v("tipoMunicao")}\nQuantidade: ${v("qtdMunicao")}\nObs: ${v("obsMunicao")}`;
+  salvarLocal("Munições",resumo);await salvarAuditoria("Munições",resumo);
+  window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Munições&body=${encodeURIComponent("Munições:\n"+resumo)}`;
+};
+window.enviarViatura=async function(){
+  const resumo=`Identificação: ${v("viatura")}\nObs: ${v("obsViatura")}`;
+  salvarLocal("Viaturas",resumo);await salvarAuditoria("Viaturas",resumo);
+  window.location.href=`mailto:valmir.silva.adm@hotmail.com?subject=Viaturas&body=${encodeURIComponent("Viatura:\n"+resumo)}`;
+};
+
+/* ══ FILTRO HOME ══ */
+const MENU_BTNS=[
+  {id:"btn-checklist",      label:"armaria armas municoes viaturas"},
+  {id:"btn-inspetoria",     label:"inspetoria plantao fiscalizacao ordem servico os"},
+  {id:"btn-administrativo", label:"administrativo banco fotos escala plantão"},
+  {id:"btn-videomonitor",   label:"video monitoramento"},
+  {id:"btn-inteligencia",   label:"inteligencia inteligência"},
+  {id:"btn-comando",        label:"comando"},
+  {id:"btn-patrimonio",     label:"patrimônio patrimonio"},
+  {id:"btn-tecnologia",     label:"tecnologia"},
+];
+
+window.filtrarMenu=function(){
+  const q=(document.getElementById("home-search")?.value||"").toLowerCase().trim();
+  let algumVisivel=false;
+  MENU_BTNS.forEach(({id,label})=>{
+    const btn=document.getElementById(id);
+    if(!btn)return;
+    const mostra=!q||label.includes(q);
+    btn.style.display=mostra?"":"none";
+    if(mostra)algumVisivel=true;
+  });
+  document.getElementById("home-search-nenhum").style.display=
+    (q&&!algumVisivel)?"block":"none";
+};
+
+/* ══ FILTRO ADMIN — USUÁRIOS ══ */
+let todosUsuariosCache=[];
+
+window.filtrarUsuarios=function(){
+  const q=(v("filtro-usuario-nome")||"").toLowerCase();
+  if(!q){renderUsuarios(todosUsuariosCache);return;}
+  renderUsuarios(todosUsuariosCache.filter(u=>
+    u.nome?.toLowerCase().includes(q)||u.matricula?.toLowerCase().includes(q)));
+};
+
+function renderUsuarios(docs){
+  const lista=document.getElementById("admin-lista");
+  if(!docs.length){lista.innerHTML='<p class="hist-vazio">Nenhum usuário encontrado.</p>';return;}
+  lista.innerHTML=docs.map(({id,u})=>{
+    const sc=u.status==="aprovado"?"status-ok":u.status==="rejeitado"?"status-erro":"status-aviso";
+    const sl=u.status==="aprovado"?"✓ Aprovado":u.status==="rejeitado"?"✕ Rejeitado":"⏳ Pendente";
+    const perms=u.permissoes||{};
+    const permLabels={checklist:"🛡️ Armaria",historico:"📋 Histórico",inspetoria:"🏛 Inspetoria",
+      administrativo:"📁 Administrativo",videomonitor:"📹 Vídeo Monit.",
+      inteligencia:"🔎 Inteligência",comando:"⭐ Comando",patrimonio:"🏛 Patrimônio",tecnologia:"💻 Tecnologia"};
+    const permHTML=PERMISSOES.map(p=>`
+      <div class="perm-item">
+        <input type="checkbox" id="perm-${id}-${p}" ${perms[p]!==false?"checked":""} onchange="salvarPermissao('${id}','${p}',this.checked)">
+        <label for="perm-${id}-${p}">${permLabels[p]||p}</label>
+      </div>`).join("");
+    return`<div class="hist-item">
+      <div class="hist-tipo">${u.nome}</div>
+      <div class="hist-data">📧 ${u.email} · Mat: ${u.matricula}</div>
+      <div class="hist-corpo" style="margin-bottom:6px">CPF: ${u.cpf}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+        <span class="badge ${sc}">${sl}</span>
+        ${u.status!=="aprovado"?`<button class="btn btn-sm btn-verde" data-id="${id}" data-acao="aprovar">Aprovar</button>`:""}
+        ${u.status!=="rejeitado"?`<button class="btn btn-sm btn-perigo" data-id="${id}" data-acao="rejeitar">Rejeitar</button>`:""}
+        <button class="btn btn-sm" style="background:rgba(192,57,43,.3);border-color:rgba(192,57,43,.5);color:#f1948a;font-size:.65rem"
+          data-id="${id}" data-acao="remover">🗑 Remover</button>
+      </div>
+      <div class="perm-box"><div class="perm-titulo">🔑 Permissões</div>${permHTML}</div>
+    </div>`;
+  }).join("");
+  lista.querySelectorAll("[data-acao]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      const id=btn.dataset.id,acao=btn.dataset.acao;
+      if(acao==="remover"){if(!confirm("Remover usuário?"))return;
+        await deleteDoc(doc(db,COL_USUARIOS,id));alerta("Removido.","aviso");carregarAdmin();return;}
+      if(acao==="rejeitar"&&!confirm("Rejeitar?"))return;
+      await updateDoc(doc(db,COL_USUARIOS,id),{status:acao==="aprovar"?"aprovado":"rejeitado"});
+      alerta(acao==="aprovar"?"Aprovado!":"Rejeitado.",acao==="aprovar"?"ok":"aviso");carregarAdmin();
+    });
+  });
+}
+
+/* ══ FILTRO ADMIN — SERVIDORES ══ */
+let todosServidoresAdminCache=[];
+
+window.filtrarServidores=function(){
+  const q=(v("filtro-servidor-nome")||"").toLowerCase();
+  renderServidoresAdmin(q?todosServidoresAdminCache.filter(s=>
+    s.nome?.toLowerCase().includes(q)||s.matricula?.toLowerCase().includes(q)):todosServidoresAdminCache);
+};
+
+function renderServidoresAdmin(docs){
+  const lista=document.getElementById("admin-servidores-lista");
+  const cont=document.getElementById("cnt-servidores");
+  cont.textContent=docs.length?`${docs.length} servidor(es)`:"";
+  lista.innerHTML=docs.length?docs.map(s=>`
+    <div class="hist-item">
+      <div class="hist-tipo">${s.nome}</div>
+      <div class="hist-data">Mat: ${s.matricula}${s.cargo?" · "+s.cargo:""}${s.email?"\n📧 "+s.email:""}${s.telefone?"\n📱 "+s.telefone:""}</div>
+      <div style="margin-top:6px"><button class="btn btn-sm btn-perigo" data-del="${s.id}">🗑 Remover</button></div>
+    </div>`).join("")
+  :'<p class="hist-vazio">Nenhum servidor.</p>';
+  lista.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      if(!confirm("Remover servidor?"))return;
+      await deleteDoc(doc(db,COL_SERV,btn.dataset.del));
+      alerta("Removido.","aviso");carregarServidoresAdmin();servidoresCache=[];
+    });
+  });
+}
+
+/* ══ FILTRO ADMIN INIT ══ */
+const COL_NOTIF="notificacoes";
+let notifInterval=null;
+let ultimaNotifTs=0;
+
+// Sirene wee-woo (2 tons alternados)
+function tocarSirene(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const toca=(freq,inicio,dur)=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.type="sawtooth";
+      // glide de freq para criar efeito wee-woo
+      osc.frequency.setValueAtTime(freq,ctx.currentTime+inicio);
+      osc.frequency.linearRampToValueAtTime(freq*1.4,ctx.currentTime+inicio+dur*0.5);
+      osc.frequency.linearRampToValueAtTime(freq,ctx.currentTime+inicio+dur);
+      gain.gain.setValueAtTime(0,ctx.currentTime+inicio);
+      gain.gain.linearRampToValueAtTime(0.3,ctx.currentTime+inicio+0.05);
+      gain.gain.setValueAtTime(0.3,ctx.currentTime+inicio+dur-0.08);
+      gain.gain.linearRampToValueAtTime(0,ctx.currentTime+inicio+dur);
+      osc.start(ctx.currentTime+inicio);
+      osc.stop(ctx.currentTime+inicio+dur);
+    };
+    // wee (subindo) — woo (descendo) — wee (subindo)
+    toca(600, 0,   0.35);  // wee
+    toca(900, 0.4, 0.35);  // woo
+    toca(600, 0.8, 0.35);  // wee
+  }catch(e){}
+}
+
+// Vibração 3x
+function vibrar3x(){
+  if(navigator.vibrate)navigator.vibrate([120,80,120,80,120]);
+}
+
+function atualizarBadgeNotif(n){
+  const badge=document.getElementById("sino-badge");
+  const btn=document.getElementById("sino-btn");
+  if(!badge||!btn)return;
+  if(n>0){
+    badge.textContent=n>99?"99+":n;
+    badge.classList.add("visivel");
+    btn.classList.add("tem-notif"); // dourado vibrando em loop
+  }else{
+    badge.classList.remove("visivel");
+    btn.classList.remove("tem-notif"); // cinza parado
+  }
+}
+
+window.toggleNotif=function(){
+  const painel=document.getElementById("notif-painel");
+  if(!painel)return;
+  painel.classList.toggle("aberto");
+  if(painel.classList.contains("aberto"))renderNotificacoes();
+};
+
+async function renderNotificacoes(){
+  if(!usuarioLogado)return;
+  const lista=document.getElementById("notif-lista");
+  lista.innerHTML='<p class="notif-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(
+      collection(db,COL_NOTIF),where("destEmail","==",usuarioLogado.email)));
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+    const naolidas=docs.filter(d=>!d.lida).length;
+    atualizarBadgeNotif(naolidas);
+    if(!docs.length){lista.innerHTML='<p class="notif-vazio">Sem notificações.</p>';return;}
+    lista.innerHTML=docs.map(d=>{
+      // ícone por tipo de notificação
+      const icone=d.titulo?.includes("Plantão")?"👮":
+                  d.titulo?.includes("O.S")?"📄":
+                  d.titulo?.includes("Cadastro")?"✅":"🔔";
+      return`<div class="notif-card ${d.lida?"lida":""}" onclick="marcarLida('${d.id}')">
+        ${!d.lida?'<div class="n-ponto"></div>':""}
+        <div class="n-icone">${icone}</div>
+        <div class="n-titulo">${d.titulo}</div>
+        <div class="n-corpo">${d.corpo}</div>
+        <div class="n-hora">🕐 ${d.criadoEm?.toDate?d.criadoEm.toDate().toLocaleString("pt-BR"):d.hora||""}</div>
+      </div>`;}).join("");
+  }catch(err){lista.innerHTML=`<p class="notif-vazio">Erro: ${err.message}</p>`;}
+}
+
+window.marcarLida=async function(id){
+  try{await updateDoc(doc(db,COL_NOTIF,id),{lida:true});renderNotificacoes();}catch(e){}
+};
+
+window.marcarTodasLidas=async function(){
+  if(!usuarioLogado)return;
+  try{
+    const snap=await getDocs(query(collection(db,COL_NOTIF),
+      where("destEmail","==",usuarioLogado.email),where("lida","==",false)));
+    for(const d of snap.docs)await updateDoc(doc(db,COL_NOTIF,d.id),{lida:true});
+    renderNotificacoes();alerta("Todas marcadas como lidas.","ok");
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+window.limparNotificacoes=async function(){
+  if(!usuarioLogado)return;
+  if(!confirm("Apagar todas as notificações?"))return;
+  try{
+    const snap=await getDocs(query(collection(db,COL_NOTIF),where("destEmail","==",usuarioLogado.email)));
+    for(const d of snap.docs)await deleteDoc(doc(db,COL_NOTIF,d.id));
+    renderNotificacoes();atualizarBadgeNotif(0);alerta("Notificações limpas.","aviso");
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+
+// Envia notificação para um usuário específico (salva no Firebase)
+async function enviarNotificacao(destEmail,titulo,corpo){
+  if(!destEmail)return;
+  try{
+    await addDoc(collection(db,COL_NOTIF),{
+      destEmail,titulo,corpo,lida:false,
+      hora:agora(),criadoEm:serverTimestamp()
+    });
+  }catch(e){console.warn("Notif:",e.message);}
+}
+
+// Polling: verifica novas notificações a cada 30s
+function iniciarPollingNotif(){
+  if(notifInterval)clearInterval(notifInterval);
+  verificarNovasNotif();
+  notifInterval=setInterval(verificarNovasNotif,30000);
+}
+
+async function verificarNovasNotif(){
+  if(!usuarioLogado)return;
+  try{
+    const snap=await getDocs(query(collection(db,COL_NOTIF),
+      where("destEmail","==",usuarioLogado.email),where("lida","==",false)));
+    const n=snap.size;
+    atualizarBadgeNotif(n);
+    // detecta notificação nova
+    const maxTs=Math.max(...snap.docs.map(d=>d.data().criadoEm?.seconds||0),0);
+    if(maxTs>ultimaNotifTs&&ultimaNotifTs>0){
+      // toca sirene wee-woo
+      tocarSirene();
+      // vibra 3x
+      vibrar3x();
+      // chacoalha o sino
+      const btn=document.getElementById("sino-btn");
+      if(btn){
+        btn.classList.remove("sino-anim");
+        void btn.offsetWidth; // reflow para reiniciar animação
+        btn.classList.add("sino-anim");
+        setTimeout(()=>btn.classList.remove("sino-anim"),700);
+      }
+      // re-renderiza painel se aberto
+      if(document.getElementById("notif-painel")?.classList.contains("aberto"))
+        renderNotificacoes();
+    }
+    if(maxTs>0)ultimaNotifTs=maxTs;
+  }catch(e){}
+}
+
+/* ══ BANCO DE FOTOS (localStorage) ══ */
+const CHAVE_FOTOS = "pmc_fotos";
+let fotoAtual = null; // {dataUrl, nome}
+let fotosSelecionadas = new Set();
+
+function carregarFotos(){
+  try{ return JSON.parse(localStorage.getItem(CHAVE_FOTOS))||[]; }catch{ return []; }
+}
+function salvarFotos(arr){ localStorage.setItem(CHAVE_FOTOS, JSON.stringify(arr)); }
+
+function iniciarFotos(){
+  document.getElementById("foto-preview-area").style.display="none";
+  document.getElementById("foto-input").value="";
+  fotoAtual=null; fotosSelecionadas.clear();
+  atualizarToolbarFotos();
+  renderFotos();
+}
+
+window.processarFotos=function(input){
+  const file=input.files[0]; if(!file)return;
+  if(file.size>5*1024*1024){ alerta("Foto maior que 5MB. Escolha outra.","erro"); return; }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    fotoAtual={dataUrl:e.target.result, nome:file.name};
+    document.getElementById("foto-preview-img").src=e.target.result;
+    document.getElementById("foto-preview-area").style.display="block";
+    document.getElementById("foto-titulo").value="";
+  };
+  reader.readAsDataURL(file);
+};
+
+window.salvarFoto=function(){
+  if(!fotoAtual)return;
+  const titulo=v("foto-titulo")||"Sem título";
+  const modulo=v("foto-modulo")||"Geral";
+  const fotos=carregarFotos();
+  fotos.unshift({
+    id: Date.now().toString(),
+    dataUrl: fotoAtual.dataUrl,
+    titulo, modulo,
+    usuario: usuarioLogado?.nome||"",
+    email:   usuarioLogado?.email||"",
+    data:    agora()
+  });
+  salvarFotos(fotos);
+  alerta("Foto salva!","ok");
+  cancelarFoto();
+  renderFotos();
+};
+
+window.cancelarFoto=function(){
+  fotoAtual=null;
+  document.getElementById("foto-preview-area").style.display="none";
+  document.getElementById("foto-input").value="";
+};
+
+window.renderFotos=function(){
+  const q   =(v("foto-filtro")||"").toLowerCase();
+  const mod =(v("foto-filtro-modulo")||"");
+  const isAdmin=(usuarioLogado?.email===undefined)?false:true;
+  let fotos=carregarFotos();
+  // usuário comum vê só as próprias
+  if(!_ehAdmin()) fotos=fotos.filter(f=>f.email===usuarioLogado?.email);
+  if(q)   fotos=fotos.filter(f=>f.titulo?.toLowerCase().includes(q)||f.modulo?.toLowerCase().includes(q));
+  if(mod) fotos=fotos.filter(f=>f.modulo===mod);
+
+  document.getElementById("foto-contador").textContent=fotos.length?`${fotos.length} foto(s)`:"";
+  const grid=document.getElementById("foto-grid");
+  if(!fotos.length){ grid.innerHTML='<p class="hist-vazio" style="grid-column:1/-1">Nenhuma foto.</p>'; return; }
+  grid.innerHTML=fotos.map(f=>{
+    const sel=fotosSelecionadas.has(f.id);
+    return`<div class="foto-card${sel?" selecionada":""}" data-id="${f.id}">
+      <div class="foto-check">${sel?"✓":""}</div>
+      <img src="${f.dataUrl}" alt="${f.titulo}" loading="lazy">
+      <div class="foto-info">
+        <div class="foto-titulo">${f.titulo}</div>
+        <div class="foto-data">${f.modulo} · ${f.data}</div>
+      </div>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".foto-card").forEach(card=>{
+    card.addEventListener("click",()=>toggleFotoSel(card.dataset.id));
+  });
+};
+
+function _ehAdmin(){
+  // verifica se logado é admin pela senha — simplificado
+  return localStorage.getItem("pmc_admin_session")==="1";
+}
+
+function toggleFotoSel(id){
+  if(fotosSelecionadas.has(id)) fotosSelecionadas.delete(id);
+  else fotosSelecionadas.add(id);
+  atualizarToolbarFotos();
+  renderFotos();
+}
+
+function atualizarToolbarFotos(){
+  const n=fotosSelecionadas.size;
+  const tb=document.getElementById("foto-toolbar");
+  const cnt=document.getElementById("foto-sel-cnt");
+  tb.classList.toggle("visivel",n>0);
+  if(cnt)cnt.textContent=`${n} selecionada(s)`;
+}
+
+window.desmarcarFotos=function(){
+  fotosSelecionadas.clear(); atualizarToolbarFotos(); renderFotos();
+};
+
+window.excluirFotosSelecionadas=function(){
+  if(!fotosSelecionadas.size)return;
+  if(!confirm(`Excluir ${fotosSelecionadas.size} foto(s) permanentemente?`))return;
+  let fotos=carregarFotos().filter(f=>!fotosSelecionadas.has(f.id));
+  salvarFotos(fotos); fotosSelecionadas.clear();
+  alerta("Foto(s) excluída(s).","aviso"); renderFotos(); atualizarToolbarFotos();
+};
+
+window.compartilharFotos=function(){
+  const fotos=carregarFotos().filter(f=>fotosSelecionadas.has(f.id));
+  if(!fotos.length)return;
+  const tel=prompt("Digite o número WhatsApp (DDD+número):");
+  if(!tel)return;
+  const txt=`📷 *Banco de Fotos — Polícia Municipal de Caruaru*\n\n`+
+    fotos.map(f=>`📌 ${f.titulo} | ${f.modulo} | ${f.data}`).join("\n")+
+    `\n\nEnviado por: ${usuarioLogado?.nome||""}`;
+  window.open(`https://wa.me/55${tel.replace(/\D/g,"")}?text=${encodeURIComponent(txt)}`,"_blank");
+};
+
+/* ══ ESCALA MENSAL ══ */
+const CHAVE_ESCALA="pmc_escala";
+let escalaMesAtual=new Date().getMonth();
+let escalaAnoAtual=new Date().getFullYear();
+let diaEditando=null;
+
+function carregarEscala(){ try{return JSON.parse(localStorage.getItem(CHAVE_ESCALA))||{};}catch{return{};} }
+function salvarEscalaLocal(obj){ localStorage.setItem(CHAVE_ESCALA,JSON.stringify(obj)); }
+
+function iniciarEscala(){
+  escalaMesAtual=new Date().getMonth();
+  escalaAnoAtual=new Date().getFullYear();
+  renderCalendario();
+  atualizarResumo();
+  // carrega servidores no select do modal
+  carregarSrvSelect();
+}
+
+async function carregarSrvSelect(){
+  const sel=document.getElementById("escala-srv-sel");
+  sel.innerHTML='<option value="">Selecione servidor...</option>';
+  if(!servidoresCache.length){
+    try{
+      const snap=await getDocs(query(collection(db,COL_SERV),where("ativo","==",true)));
+      servidoresCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.nome.localeCompare(b.nome));
+    }catch(e){}
+  }
+  servidoresCache.forEach(s=>{
+    sel.innerHTML+=`<option value="${s.id}" data-nome="${s.nome}">${s.nome} — Mat: ${s.matricula}</option>`;
+  });
+}
+
+window.mudarMes=function(dir){
+  escalaMesAtual+=dir;
+  if(escalaMesAtual>11){escalaMesAtual=0;escalaAnoAtual++;}
+  if(escalaMesAtual<0){escalaMesAtual=11;escalaAnoAtual--;}
+  renderCalendario(); atualizarResumo();
+};
+
+function renderCalendario(){
+  const meses=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  document.getElementById("escala-mes-label").textContent=`${meses[escalaMesAtual]} ${escalaAnoAtual}`;
+  const cal=document.getElementById("escala-cal");
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  const hoje=new Date(); const hj=hoje.getDate(),hm=hoje.getMonth(),ha=hoje.getFullYear();
+
+  // dias da semana header
+  const dows=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  let html=dows.map(d=>`<div class="escala-dow">${d}</div>`).join("");
+
+  const primeiroDia=new Date(escalaAnoAtual,escalaMesAtual,1).getDay();
+  const totalDias=new Date(escalaAnoAtual,escalaMesAtual+1,0).getDate();
+
+  for(let i=0;i<primeiroDia;i++) html+=`<div class="escala-dia vazio"></div>`;
+
+  for(let d=1;d<=totalDias;d++){
+    const isHoje=(d===hj&&escalaMesAtual===hm&&escalaAnoAtual===ha);
+    const entradas=dados[d]||[];
+    const turnos=entradas.map(e=>{
+      const cls=`turno-${e.turno.toLowerCase()}`;
+      const nome=e.nomeServidor?.split(" ")[0]||"";
+      return`<span class="escala-turno ${cls}">${e.turno} ${nome}</span>`;
+    }).join("");
+    html+=`<div class="escala-dia${isHoje?" hoje":""}" data-dia="${d}" onclick="abrirModalEscalaDia(${d})">
+      <div class="dia-num">${d}</div>
+      ${turnos}
+    </div>`;
+  }
+  cal.innerHTML=html;
+}
+
+function atualizarResumo(){
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  const total=Object.values(dados).reduce((acc,arr)=>acc+arr.length,0);
+  const turnos={M:0,T:0,N:0,F:0,E:0};
+  Object.values(dados).forEach(arr=>arr.forEach(e=>{ if(turnos[e.turno]!==undefined)turnos[e.turno]++; }));
+  document.getElementById("escala-resumo").innerHTML=total
+    ?`Total de entradas: <strong>${total}</strong><br>
+      ☀️ Manhã: ${turnos.M} · 🌤 Tarde: ${turnos.T} · 🌙 Noite: ${turnos.N}<br>
+      🏖 Folga: ${turnos.F} · ⚡ Extra: ${turnos.E}`
+    :"Nenhuma entrada este mês.";
+}
+
+window.abrirModalEscalaDia=function(dia){
+  diaEditando=dia;
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const escala=carregarEscala();
+  const entradas=(escala[chave]||{})[dia]||[];
+  document.getElementById("escala-modal-titulo").textContent=`📅 Dia ${String(dia).padStart(2,"0")}`;
+  document.getElementById("escala-obs-sel").value="";
+
+  // lista entradas existentes
+  const lista=document.getElementById("escala-modal-lista");
+  lista.innerHTML=entradas.length
+    ?`<div style="font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:1px;color:var(--cinza);margin-bottom:6px">ENTRADAS SALVAS</div>`+
+      entradas.map((e,i)=>{
+        const cls=`turno-${e.turno.toLowerCase()}`;
+        return`<div style="display:flex;justify-content:space-between;align-items:center;
+          background:rgba(255,255,255,.05);border-radius:6px;padding:6px 8px;margin-bottom:4px">
+          <div>
+            <span class="escala-turno ${cls}" style="font-size:.65rem">${e.turno}</span>
+            <span style="font-size:.78rem;margin-left:6px">${e.nomeServidor}</span>
+            <div style="font-size:.65rem;color:var(--cinza)">${e.jornada||""}${e.obs?" · "+e.obs:""}</div>
+          </div>
+          <button class="btn-remover-linha" onclick="removerEntradaEscala(${i})">✕</button>
+        </div>`;
+      }).join("")
+    :"";
+  document.getElementById("escala-modal").classList.add("aberto");
+};
+
+window.fecharModalEscala=function(){
+  document.getElementById("escala-modal").classList.remove("aberto");
+  diaEditando=null;
+};
+
+window.salvarDiaEscala=function(){
+  if(diaEditando===null)return;
+  const srvSel=document.getElementById("escala-srv-sel");
+  const srvId=srvSel.value;
+  const srvNome=srvSel.options[srvSel.selectedIndex]?.text?.split(" — ")[0]||"";
+  const turno=v("escala-turno-sel")||"M";
+  const jornada=v("escala-jornada-sel")||"Ordinário";
+  const obs=v("escala-obs-sel");
+  if(!srvId)return alerta("Selecione um servidor.","erro");
+
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  if(!escala[chave])escala[chave]={};
+  if(!escala[chave][diaEditando])escala[chave][diaEditando]=[];
+  escala[chave][diaEditando].push({srvId,nomeServidor:srvNome,turno,jornada,obs,criadoEm:agora()});
+  salvarEscalaLocal(escala);
+  alerta("Entrada salva!","ok");
+  renderCalendario(); atualizarResumo();
+  abrirModalEscalaDia(diaEditando); // recarrega modal com nova entrada
+};
+
+window.removerEntradaEscala=function(idx){
+  if(!confirm("Remover esta entrada?"))return;
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  escala[chave][diaEditando].splice(idx,1);
+  salvarEscalaLocal(escala);
+  renderCalendario(); atualizarResumo();
+  abrirModalEscalaDia(diaEditando);
+};
+
+window.publicarEscala=async function(){
+  if(!confirm("Publicar escala? Todos os servidores receberão notificação."))return;
+  const meses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  // envia notificação para cada servidor que tem e-mail
+  const srvEmails=new Map();
+  Object.entries(dados).forEach(([dia,entradas])=>{
+    entradas.forEach(e=>{
+      const srv=servidoresCache.find(s=>s.id===e.srvId);
+      if(srv?.email){
+        if(!srvEmails.has(srv.email))srvEmails.set(srv.email,[]);
+        srvEmails.get(srv.email).push(`Dia ${dia}: ${e.turno} — ${e.jornada}${e.obs?" ("+e.obs+")":""}`);
+      }
+    });
+  });
+  for(const [email,dias] of srvEmails){
+    await enviarNotificacao(email,`📅 Escala ${meses[escalaMesAtual]}/${escalaAnoAtual} publicada`,
+      `Seus dias na escala:\n${dias.join("\n")}\n\nAcesse o app para ver detalhes.`);
+  }
+  alerta(`Escala publicada! ${srvEmails.size} servidor(es) notificado(s).`,"ok");
+};
+
+window.exportarEscala=function(){
+  const meses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const escala=carregarEscala();
+  const chave=`${escalaAnoAtual}-${String(escalaMesAtual+1).padStart(2,"0")}`;
+  const dados=escala[chave]||{};
+  if(!Object.keys(dados).length){alerta("Escala vazia para este mês.","aviso");return;}
+  let txt=`📅 *ESCALA — ${meses[escalaMesAtual].toUpperCase()} ${escalaAnoAtual}*\n`;
+  txt+=`*Polícia Municipal de Caruaru*\n\n`;
+  Object.entries(dados).sort(([a],[b])=>Number(a)-Number(b)).forEach(([dia,entradas])=>{
+    txt+=`*Dia ${String(dia).padStart(2,"0")}:*\n`;
+    entradas.forEach(e=>{ txt+=`  ${e.turno} — ${e.nomeServidor} (${e.jornada})${e.obs?" · "+e.obs:""}\n`; });
+  });
+  txt+=`\nGerado em: ${agora()}`;
+  const tel=prompt("WhatsApp para enviar (DDD+número):");
+  if(!tel)return;
+  window.open(`https://wa.me/55${tel.replace(/\D/g,"")}?text=${encodeURIComponent(txt)}`,"_blank");
+};
+
+/* ══ INIT ══ */
+let _toques=0,_toqueTimer=null;
+
+window.contarToque=function(){
+  _toques++;
+  clearTimeout(_toqueTimer);
+  // feedback visual sutil a cada toque
+  const h=document.getElementById("titulo-principal");
+  h.style.opacity=".7";
+  setTimeout(()=>h.style.opacity="1",120);
+
+  if(_toques>=5){
+    _toques=0;
+    // pequena vibração se disponível
+    if(navigator.vibrate)navigator.vibrate([40,30,40]);
+    ir("admin-login");
+    return;
+  }
+  // reseta se ficar 2s sem tocar
+  _toqueTimer=setTimeout(()=>{_toques=0;},2000);
+};
+
+/* ══ INIT ══ */
+atualizarBadge();atualizarMenu();
+// Registra Service Worker para PWA
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+
+<script>
+(() => {
+  const installBtn = document.getElementById('pwa-install-btn');
+  const statusEl = document.getElementById('pwa-status');
+  let deferredPrompt = null;
+  function showStatus(msg){
+    if(!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.classList.add('visivel');
+  }
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) installBtn.classList.add('visivel');
+    showStatus('Aplicativo pronto para instalação.');
+  });
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        showStatus('Use o menu do navegador para instalar este aplicativo.');
+        return;
+      }
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      showStatus(choice && choice.outcome === 'accepted' ? 'Instalação iniciada.' : 'Instalação cancelada.');
+      deferredPrompt = null;
+      installBtn.classList.remove('visivel');
+    });
+  }
+  window.addEventListener('appinstalled', () => {
+    if (installBtn) installBtn.classList.remove('visivel');
+    showStatus('Aplicativo instalado com sucesso.');
+  });
+})();
+</script>
+
+</body>
+</html>
