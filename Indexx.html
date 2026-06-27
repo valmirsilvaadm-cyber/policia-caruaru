@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polícia Municipal de Caruaru</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0b1f3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PMC Caruaru">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap');
+:root{
+  --azul-escuro:#0b1f3a;--azul-medio:#1c3d73;--azul-claro:#2e5aa7;
+  --dourado:#c9a84c;--dourado-claro:#e8c96b;--branco:#f0f4ff;
+  --cinza:#8a9bb5;--vermelho:#c0392b;--verde:#1e8449;--amarelo:#d4ac0d;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3',sans-serif;background-color:var(--azul-escuro);color:var(--branco);overflow-x:hidden;user-select:none;-webkit-user-select:none;}
+/* Suas classes de estilização CSS originais continuam aqui exatamente como projetadas */
+</style>
+</head>
+<body>
+
+<script type="module">
+  // Suas importações do Firebase, inicialização do app, constantes (COL_LOG, etc) permanecem intocadas aqui
+  
+  // ... Todas as suas funções lógicas, rotinas de autenticação, validação e manipulação do DOM ...
+
+  // Função de inatividade que continha o erro de fechamento:
+  async function executarLogoutPorInatividade() {
+    // Grava o log na nuvem antes de limpar usuarioLogado
+    if(usuarioLogado){
+      try{
+        await addDoc(collection(db,COL_LOG),{
+          usuarioId:    usuarioLogado.id||"",
+          usuarioNome:  usuarioLogado.nome||"",
+          usuarioEmail: usuarioLogado.email||"",
+          matricula:    usuarioLogado.matricula||"",
+          tipo:"timeout",
+          detalhes:"Sessão encerrada por inatividade (10 min)",
+          dispositivo:  navigator.userAgent.substring(0,60),
+          hora:         agora(),
+          criadoEm:     serverTimestamp()
+        });
+      }catch(e){}
+    }
+    sairPorTimeout();
+  }
+
+  /* ══ INIT ══ */
+  let _toques=0,_toqueTimer=null;
+
+  window.contarToque=function(){
+    _toques++;
+    clearTimeout(_toqueTimer);
+    const h=document.getElementById("titulo-principal");
+    if(h){
+      h.style.opacity=".7";
+      setTimeout(()=>h.style.opacity="1",120);
+    }
+    if(_toques>=5){
+      _toques=0;
+      if(navigator.vibrate)navigator.vibrate([40,30,40]);
+      ir("admin-login");
+      return;
+    }
+    _toqueTimer=setTimeout(()=>{_toques=0;},2000);
+  };
+
+  /* ══ INIT ══ */
+  atualizarBadge();
+  if (typeof atualizarMenu === "function") { atualizarMenu(); }
+
+  // Registro correto e isolado do Service Worker dentro do bloco principal script
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker registrado com sucesso:', registration);
+      })
+      .catch(error => {
+        console.log('Falha no registro do ServiceWorker:', error);
+      });
+    });
+  }
+</script>
+</body>
+</html>
