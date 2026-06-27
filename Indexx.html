@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>S.O.S. Prisional</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a202c">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+      background-color: #1a202c;
+      color: #e2e8f0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .page { display: none; }
+    .page.active { display: flex; flex-direction: column; min-height: 100vh; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #4a5568;
+    }
+    .badge-notif {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background-color: #ef4444;
+      color: white;
+      border-radius: 9999px;
+      padding: 0.125rem 0.37rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .offline-bar {
+      display: none;
+      background-color: #b91c1c;
+      color: white;
+      text-align: center;
+      padding: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    body.is-offline .offline-bar { display: block; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 antialiased selection:bg-slate-700">
+
+  <div class="offline-bar" id="offline-bar">Sem conexão com a internet. Modo Offline ativo.</div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: LOGIN -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-login" class="page active items-center justify-center px-4 bg-slate-950">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl text-center">
+      <div class="flex justify-center mb-4">
+        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 text-slate-300">
+          <i class="fa-solid fa-shield-halved text-3xl"></i>
+        </div>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight text-white mb-1">S.O.S. Prisional</h1>
+      <p class="text-xs text-slate-400 mb-6">Insira suas credenciais corporativas</p>
+      
+      <div class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">E-mail Corporativo</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-envelope"></i></span>
+            <input type="email" id="login-email" placeholder="nome.sobrenome@policiapenal.mg.gov.br" class="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:border-slate-700 transition">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Senha</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
+            <input type="password" id="login-senha" placeholder="••••••••" class="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:border-slate-700 transition">
+          </div>
+        </div>
+        <button onclick="realizarLogin()" class="w-full py-3 bg-slate-200 text-slate-950 hover:bg-slate-300 active:scale-[0.99] font-semibold rounded-xl text-sm shadow transition mt-2">
+          Acessar Sistema
+        </button>
+      </div>
+      <p class="text-[10px] text-slate-600 mt-6">Uso restrito a servidores autorizados. Todas as ações são monitoradas.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: HOME -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-home" class="page">
+    <!-- Header -->
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center border border-slate-800" onclick="contarToque()">
+          <i class="fa-solid fa-shield-halved text-slate-400 text-sm" id="titulo-principal"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-white leading-none">S.O.S. Prisional</h2>
+          <span class="text-[10px] text-slate-500" id="user-info-header">Carregando...</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="ir('notificacoes')" class="w-9 h-9 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-xl border border-slate-800 flex items-center justify-center relative transition">
+          <i class="fa-solid fa-bell text-sm"></i>
+          <span id="badge-notif-count" class="badge-notif hidden">0</span>
+        </button>
+        <button onclick="confirmarSair()" class="w-9 h-9 bg-slate-900 hover:bg-red-950/30 text-slate-400 hover:text-red-400 rounded-xl border border-slate-800 flex items-center justify-center transition">
+          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="flex-1 p-4 max-w-md w-full mx-auto space-y-4 pb-24">
+      <!-- Grid de Ações Rápidas -->
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="ir('novo-registro')" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center text-center hover:bg-slate-850 transition group">
+          <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20 mb-3 group-hover:scale-105 transition">
+            <i class="fa-solid fa-plus-circle text-lg"></i>
+          </div>
+          <span class="text-xs font-bold text-slate-200">Novo Registro</span>
+          <span class="text-[10px] text-slate-500 mt-0.5">Criar ocorrência</span>
+        </button>
+
+        <button onclick="ir('lista-registros')" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center text-center hover:bg-slate-850 transition group">
+          <div class="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20 mb-3 group-hover:scale-105 transition">
+            <i class="fa-solid fa-list-check text-lg"></i>
+          </div>
+          <span class="text-xs font-bold text-slate-200">Meus Registros</span>
+          <span class="text-[10px] text-slate-500 mt-0.5">Histórico e status</span>
+        </button>
+
+        <button onclick="ir('consulta-pms')" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center text-center hover:bg-slate-850 transition group">
+          <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center border border-amber-500/20 mb-3 group-hover:scale-105 transition">
+            <i class="fa-solid fa-users text-lg"></i>
+          </div>
+          <span class="text-xs font-bold text-slate-200">Consultar PMs</span>
+          <span class="text-[10px] text-slate-500 mt-0.5">Lista de acautelados</span>
+        </button>
+
+        <button onclick="ir('perfil')" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center text-center hover:bg-slate-850 transition group">
+          <div class="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-xl flex items-center justify-center border border-purple-500/20 mb-3 group-hover:scale-105 transition">
+            <i class="fa-solid fa-user-shield text-lg"></i>
+          </div>
+          <span class="text-xs font-bold text-slate-200">Meu Perfil</span>
+          <span class="text-[10px] text-slate-500 mt-0.5">Dados e plantão</span>
+        </button>
+      </div>
+
+      <!-- Resumos rápidos / Informações -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase">Resumo Operacional</h3>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+            <span class="block text-lg font-extrabold text-white" id="count-total">0</span>
+            <span class="text-[10px] text-slate-500">Total</span>
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+            <span class="block text-lg font-extrabold text-amber-400" id="count-analise">0</span>
+            <span class="text-[10px] text-slate-500">Análise</span>
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-850">
+            <span class="block text-lg font-extrabold text-emerald-400" id="count-concluido">0</span>
+            <span class="text-[10px] text-slate-500">Aprovados</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Nav Bottom -->
+    <nav class="bg-slate-950/80 backdrop-blur-md border-t border-slate-800 fixed bottom-0 left-0 right-0 z-50 px-6 py-2 flex justify-around max-w-md mx-auto">
+      <button onclick="ir('home')" class="flex flex-col items-center gap-1 text-slate-200 py-1">
+        <i class="fa-solid fa-house text-base"></i>
+        <span class="text-[9px] font-medium">Início</span>
+      </button>
+      <button onclick="ir('novo-registro')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1">
+        <i class="fa-solid fa-circle-plus text-base"></i>
+        <span class="text-[9px] font-medium">Novo</span>
+      </button>
+      <button onclick="ir('lista-registros')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1">
+        <i class="fa-solid fa-rectangle-list text-base"></i>
+        <span class="text-[9px] font-medium">Registros</span>
+      </button>
+      <button onclick="ir('perfil')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1">
+        <i class="fa-solid fa-user text-base"></i>
+        <span class="text-[9px] font-medium">Perfil</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: NOVO REGISTRO -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-novo-registro" class="page">
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="ir('home')" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center border border-slate-800"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+        <h2 class="text-sm font-bold text-white">Nova Ocorrência / Movimentação</h2>
+      </div>
+    </header>
+    <main class="flex-1 p-4 max-w-md w-full mx-auto space-y-4 pb-24">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-sm">
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Tipo de Evento</label>
+          <select id="reg-tipo" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 focus:border-slate-700 transition">
+            <option value="">Selecione...</option>
+            <option value="Entrada de Preso">Entrada de Acautelado (PM)</option>
+            <option value="Saída de Preso">Saída / Alvará / Audiência</option>
+            <option value="Falta Disciplinar">Falta Disciplinar</option>
+            <option value="Atendimento Médico">Atendimento Médico / Pronto Socorro</option>
+            <option value="Tentativa de Fuga / Ocorrência">Tentativa de Fuga / Subversão da Ordem</option>
+            <option value="Outros">Outros Eventos de Relevância</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Nome Completo do Acautelado (PM)</label>
+          <input type="text" id="reg-nome" placeholder="Digite o nome completo do militar" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:border-slate-700 transition">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">RE / Matrícula PM</label>
+            <input type="text" id="reg-re" placeholder="Nº RE" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:border-slate-700 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Posto / Graduação</label>
+            <select id="reg-posto" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 focus:border-slate-700 transition">
+              <option value="">Selecione...</option>
+              <option value="Soldado">Soldado</option>
+              <option value="Cabo">Cabo</option>
+              <option value="3º Sargento">3º Sargento</option>
+              <option value="2º Sargento">2º Sargento</option>
+              <option value="1º Sargento">1º Sargento</option>
+              <option value="Subtenente">Subtenente</option>
+              <option value="2º Tenente">2º Tenente</option>
+              <option value="1º Tenente">1º Tenente</option>
+              <option value="Capitão">Capitão</option>
+              <option value="Major">Major</option>
+              <option value="Tenente-Coronel">Tenente-Coronel</option>
+              <option value="Coronel">Coronel</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Pavilhão / Ala / Célula Atual</label>
+          <input type="text" id="reg-localizacao" placeholder="Ex: Ala A - Célula 03" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:border-slate-700 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Descrição Detalhada do Evento</label>
+          <textarea id="reg-descricao" rows="4" placeholder="Descreva pormenorizadamente os fatos, providências adotadas, números de documentos e servidores envolvidos..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 focus:border-slate-700 transition resize-none"></textarea>
+        </div>
+
+        <button onclick="salvarRegistro()" class="w-full py-3 bg-emerald-600 text-white hover:bg-emerald-500 font-bold rounded-xl text-sm shadow transition active:scale-[0.99] flex items-center justify-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i> Enviar Registro Operacional
+        </button>
+      </div>
+    </main>
+    <nav class="bg-slate-950/80 backdrop-blur-md border-t border-slate-800 fixed bottom-0 left-0 right-0 z-50 px-6 py-2 flex justify-around max-w-md mx-auto">
+      <button onclick="ir('home')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-house text-base"></i><span class="text-[9px] font-medium">Início</span></button>
+      <button onclick="ir('novo-registro')" class="flex flex-col items-center gap-1 text-slate-200 py-1"><i class="fa-solid fa-circle-plus text-base"></i><span class="text-[9px] font-medium">Novo</span></button>
+      <button onclick="ir('lista-registros')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-rectangle-list text-base"></i><span class="text-[9px] font-medium">Registros</span></button>
+      <button onclick="ir('perfil')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-user text-base"></i><span class="text-[9px] font-medium">Perfil</span></button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: LISTA DE REGISTROS -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-lista-registros" class="page">
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="ir('home')" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center border border-slate-800"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+        <h2 class="text-sm font-bold text-white">Histórico de Ocorrências</h2>
+      </div>
+    </header>
+    <main class="flex-1 p-4 max-w-md w-full mx-auto space-y-3 pb-24">
+      <div class="flex gap-2">
+        <input type="text" id="filtra-re" oninput="renderizarListaRegistros()" placeholder="Filtrar por RE ou Nome..." class="flex-1 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:border-slate-700 transition">
+        <select id="filtra-status" onchange="renderizarListaRegistros()" class="bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-2 py-2 focus:border-slate-700 transition">
+          <option value="TODOS">Todos</option>
+          <option value="Em Análise">Em Análise</option>
+          <option value="Aprovado">Aprovados</option>
+          <option value="Rejeitado">Rejeitados</option>
+        </select>
+      </div>
+      <div id="container-lista-registros" class="space-y-3"></div>
+    </main>
+    <nav class="bg-slate-950/80 backdrop-blur-md border-t border-slate-800 fixed bottom-0 left-0 right-0 z-50 px-6 py-2 flex justify-around max-w-md mx-auto">
+      <button onclick="ir('home')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-house text-base"></i><span class="text-[9px] font-medium">Início</span></button>
+      <button onclick="ir('novo-registro')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-circle-plus text-base"></i><span class="text-[9px] font-medium">Novo</span></button>
+      <button onclick="ir('lista-registros')" class="flex flex-col items-center gap-1 text-slate-200 py-1"><i class="fa-solid fa-rectangle-list text-base"></i><span class="text-[9px] font-medium">Registros</span></button>
+      <button onclick="ir('perfil')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-user text-base"></i><span class="text-[9px] font-medium">Perfil</span></button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: CONSULTA PMS -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-consulta-pms" class="page">
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="ir('home')" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center border border-slate-800"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+        <h2 class="text-sm font-bold text-white">Efetivo de PMs Acautelados</h2>
+      </div>
+    </header>
+    <main class="flex-1 p-4 max-w-md w-full mx-auto space-y-3 pb-24">
+      <input type="text" id="filtra-pms" oninput="renderizarConsultaPms()" placeholder="Buscar por Nome, RE ou Célula..." class="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:border-slate-700 transition">
+      <div id="container-consulta-pms" class="space-y-2"></div>
+    </main>
+    <nav class="bg-slate-950/80 backdrop-blur-md border-t border-slate-800 fixed bottom-0 left-0 right-0 z-50 px-6 py-2 flex justify-around max-w-md mx-auto">
+      <button onclick="ir('home')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-house text-base"></i><span class="text-[9px] font-medium">Início</span></button>
+      <button onclick="ir('novo-registro')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-circle-plus text-base"></i><span class="text-[9px] font-medium">Novo</span></button>
+      <button onclick="ir('lista-registros')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-rectangle-list text-base"></i><span class="text-[9px] font-medium">Registros</span></button>
+      <button onclick="ir('perfil')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-user text-base"></i><span class="text-[9px] font-medium">Perfil</span></button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: NOTIFICACOES -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-notificacoes" class="page">
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="ir('home')" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center border border-slate-800"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+        <h2 class="text-sm font-bold text-white">Mensagens / Notificações</h2>
+      </div>
+      <button onclick="limparNotificacoes()" class="text-[10px] text-red-400 font-semibold hover:underline">Limpar</button>
+    </header>
+    <main class="flex-1 p-4 max-w-md w-full mx-auto space-y-2 pb-24" id="container-notificacoes"></main>
+    <nav class="bg-slate-950/80 backdrop-blur-md border-t border-slate-800 fixed bottom-0 left-0 right-0 z-50 px-6 py-2 flex justify-around max-w-md mx-auto">
+      <button onclick="ir('home')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-house text-base"></i><span class="text-[9px] font-medium">Início</span></button>
+      <button onclick="ir('novo-registro')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-circle-plus text-base"></i><span class="text-[9px] font-medium">Novo</span></button>
+      <button onclick="ir('lista-registros')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-rectangle-list text-base"></i><span class="text-[9px] font-medium">Registros</span></button>
+      <button onclick="ir('perfil')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-user text-base"></i><span class="text-[9px] font-medium">Perfil</span></button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: PERFIL -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-perfil" class="page">
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="ir('home')" class="w-8 h-8 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center border border-slate-800"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+        <h2 class="text-sm font-bold text-white">Perfil do Operador</h2>
+      </div>
+    </header>
+    <main class="flex-1 p-4 max-w-md w-full mx-auto space-y-4 pb-24">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center space-y-2 shadow">
+        <div class="w-16 h-16 bg-slate-800 text-slate-300 rounded-full border border-slate-700 flex items-center justify-center mx-auto text-2xl font-bold" id="perfil-avatar">U</div>
+        <h3 class="text-base font-bold text-white" id="perfil-nome">Nome do Servidor</h3>
+        <span class="inline-block bg-slate-950 px-2.5 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-950 rounded-full">Policial Penal Ativo</span>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs shadow">
+        <div class="flex justify-between py-1.5 border-b border-slate-850"><span class="text-slate-500">Matrícula</span><span class="font-semibold text-slate-200" id="perfil-matricula">-</span></div>
+        <div class="flex justify-between py-1.5 border-b border-slate-850"><span class="text-slate-500">E-mail</span><span class="font-semibold text-slate-200" id="perfil-email">-</span></div>
+        <div class="flex justify-between py-1.5 border-b border-slate-850"><span class="text-slate-500">Unidade Lotada</span><span class="font-semibold text-slate-200">Presídio de Segurança Máxima</span></div>
+        <div class="flex justify-between py-1.5"><span class="text-slate-500">Sistema Autenticado</span><span class="font-semibold text-slate-400 text-[10px]">Firebase Authed</span></div>
+      </div>
+    </main>
+    <nav class="bg-slate-950/80 backdrop-blur-md border-t border-slate-800 fixed bottom-0 left-0 right-0 z-50 px-6 py-2 flex justify-around max-w-md mx-auto">
+      <button onclick="ir('home')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-house text-base"></i><span class="text-[9px] font-medium">Início</span></button>
+      <button onclick="ir('novo-registro')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-circle-plus text-base"></i><span class="text-[9px] font-medium">Novo</span></button>
+      <button onclick="ir('lista-registros')" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 py-1"><i class="fa-solid fa-rectangle-list text-base"></i><span class="text-[9px] font-medium">Registros</span></button>
+      <button onclick="ir('perfil')" class="flex flex-col items-center gap-1 text-slate-200 py-1"><i class="fa-solid fa-user text-base"></i><span class="text-[9px] font-medium">Perfil</span></button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: ADMIN LOGIN -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-admin-login" class="page items-center justify-center px-4 bg-slate-950">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center shadow-xl">
+      <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center border border-amber-500/20 mx-auto mb-3">
+        <i class="fa-solid fa-unlock text-lg"></i>
+      </div>
+      <h2 class="text-lg font-bold text-white mb-1">Painel do Administrador</h2>
+      <p class="text-[11px] text-slate-400 mb-4">Insira a chave mestra de validação</p>
+      <input type="password" id="admin-key" placeholder="Chave do Administrador" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-center text-sm text-slate-200 placeholder-slate-600 focus:border-slate-700 transition mb-3">
+      <div class="flex gap-2">
+        <button onclick="ir('home')" class="flex-1 py-2 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-700 transition">Voltar</button>
+        <button onclick="validarAdminKey()" class="flex-1 py-2 bg-amber-500 text-slate-950 text-xs font-bold rounded-xl hover:bg-amber-400 transition">Validar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- PAGE: ADMIN DASHBOARD -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="page-admin-dashboard" class="page">
+    <header class="bg-amber-950/40 border-b border-amber-900 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-gavel text-amber-400 text-sm"></i>
+        <h2 class="text-sm font-bold text-amber-200">Painel Superior de Homologação</h2>
+      </div>
+      <button onclick="ir('home')" class="text-xs bg-slate-900 text-slate-300 border border-slate-800 px-3 py-1 rounded-lg hover:bg-slate-800 transition">Sair Admin</button>
+    </header>
+    <main class="flex-1 p-4 max-w-md w-full mx-auto space-y-4 pb-12">
+      <div class="flex justify-between items-center bg-slate-900 border border-slate-800 p-3 rounded-xl">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Aguardando Validação</span>
+        <span id="admin-pendentes-count" class="bg-amber-500/10 text-amber-400 text-[10px] font-extrabold px-2 py-0.5 border border-amber-500/20 rounded-full">0</span>
+      </div>
+      <div id="container-admin-pendentes" class="space-y-3"></div>
+      
+      <hr class="border-slate-800 my-4">
+      
+      <div class="flex justify-between items-center bg-slate-900 border border-slate-800 p-3 rounded-xl">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Logs Globais de Auditoria</span>
+        <button onclick="limparLogsFirebase()" class="text-[10px] text-red-400 hover:underline">Limpar Logs</button>
+      </div>
+      <div id="container-admin-logs" class="bg-slate-950 border border-slate-850 rounded-xl p-2 h-48 overflow-y-auto font-mono text-[9px] text-slate-400 space-y-1"></div>
+    </main>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- FIREBASE & CORE LOGIC SCRIPT -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, getDocs, doc, updateDoc, 
+      query, orderBy, limit, deleteDoc, serverTimestamp, enableIndexedDbPersistence 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Sua configuração Firebase (Configuração Real Embutida)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAs7W8Ww-XlFf88mXF6bHkZ_qY6S7yH1m0",
+      authDomain: "sos-prisional.firebaseapp.com",
+      projectId: "sos-prisional",
+      storageBucket: "sos-prisional.appspot.com",
+      messagingSenderId: "109876543210",
+      appId: "1:109876543210:web:abcdef1234567890"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Habilitar persistência offline se possível
+    try {
+      enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code == 'failed-precondition') {
+          console.log('Persistência falhou: múltiplas abas abertas.');
+        } else if (err.code == 'unimplemented') {
+          console.log('O navegador não suporta persistência.');
+        }
+      });
+    } catch(e) {}
+
+    // Nomes das Coleções
+    const COL_REGISTROS = "registros_operacionais";
+    const COL_LOG        = "logs_auditoria";
+
+    // Constantes locais / Chave Mestra
+    const CHAVE_MESTRA = "PP2024*";
+
+    // Monitoramento de Conexão
+    function atualizarStatusConexao() {
+      if (navigator.onLine) {
+        document.body.classList.remove('is-offline');
+      } else {
+        document.body.classList.add('is-offline');
+      }
+    }
+    window.addEventListener('online', atualizarStatusConexao);
+    window.addEventListener('offline', atualizarStatusConexao);
+    atualizarStatusConexao();
+
+    // Estado Local da Aplicação
+    let usuarioLogado = null;
+    let cacheRegistros = [];
+    let notificacoesLocais = [];
+    let timeoutInatividade = null;
+
+    // Utilitário de Data Formatada
+    function agora() {
+      const d = new Date();
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR');
+    }
+
+    // Gerenciador de Páginas Nativas
+    window.ir = function(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const proxima = document.getElementById('page-' + pageId);
+      if(proxima) {
+        proxima.classList.add('active');
+        window.scrollTo(0, 0);
+      }
+      resetarTimeoutInatividade();
+
+      // Gatilhos específicos de renderização
+      if(pageId === 'home')             { carregarDadosGlobais(); }
+      if(pageId === 'lista-registros')  { renderizarListaRegistros(); }
+      if(pageId === 'consulta-pms')     { renderizarConsultaPms(); }
+      if(pageId === 'notificacoes')     { renderizarNotificacoes(); }
+      if(pageId === 'admin-dashboard') { carregarPainelAdmin(); }
+    };
+
+    // Autenticação Corporativa Simulada Baseada em Regras de Negócio
+    window.realizarLogin = async function() {
+      const email = document.getElementById('login-email').value.trim();
+      const senha = document.getElementById('login-senha').value.trim();
+
+      if(!email || !senha) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+      }
+      if(!email.endsWith("@policiapenal.mg.gov.br")) {
+        alert("Apenas e-mails institucionais '@policiapenal.mg.gov.br' são permitidos.");
+        return;
+      }
+      if(senha.length < 6) {
+        alert("A senha corporativa deve conter no mínimo 6 caracteres.");
+        return;
+      }
+
+      // Extração de metadados do e-mail
+      const parteNome = email.split('@')[0].replace('.', ' ');
+      const nomeFormatado = parteNome.replace(/\b\w/g, c => c.toUpperCase());
+      const matriculaGerada = "MASP " + Math.floor(100000 + Math.random() * 900000) + "-" + Math.floor(Math.random() * 9);
+
+      usuarioLogado = {
+        id: email.replace(/[^a-zA-Z0-9]/g, "_"),
+        nome: nomeFormatado,
+        email: email,
+        matricula: matriculaGerada
+      };
+
+      // Registrar Log no Firebase
+      try {
+        await addDoc(collection(db, COL_LOG), {
+          usuarioId:    usuarioLogado.id,
+          usuarioNome:  usuarioLogado.nome,
+          usuarioEmail: usuarioLogado.email,
+          matricula:    usuarioLogado.matricula,
+          tipo:         "login",
+          detalhes:     "Efetuou login no dispositivo",
+          dispositivo:  navigator.userAgent.substring(0, 60),
+          hora:         agora(),
+          criadoEm:     serverTimestamp()
+        });
+      } catch(e) {
+        console.error("Erro ao salvar log de login: ", e);
+      }
+
+      // Setar dados nos escopos visuais
+      document.getElementById('user-info-header').innerText = `${usuarioLogado.nome} (${usuarioLogado.matricula})`;
+      document.getElementById('perfil-nome').innerText = usuarioLogado.nome;
+      document.getElementById('perfil-matricula').innerText = usuarioLogado.matricula;
+      document.getElementById('perfil-email').innerText = usuarioLogado.email;
+      document.getElementById('perfil-avatar').innerText = usuarioLogado.nome.charAt(0);
+
+      ir('home');
+      adicionarNotificacaoLocal("Acesso Autorizado", `Bem-vindo, ${usuarioLogado.nome}. Mantenha a cautela nas informações.`);
+    };
+
+    window.confirmarSair = function() {
+      if(confirm("Deseja realmente encerrar a sessão atual? All logs serão encerrados.")) {
+        sairPorTimeout();
+      }
+    };
+
+    async function sairPorTimeout() {
+      usuarioLogado = null;
+      document.getElementById('login-email').value = "";
+      document.getElementById('login-senha').value = "";
+      ir('login');
+    }
+
+    // Sincronização e Carregamento do Firestore
+    async function carregarDadosGlobais() {
+      try {
+        const q = query(collection(db, COL_REGISTROS), orderBy("criadoEm", "desc"));
+        const snapshot = await getDocs(q);
+        cacheRegistros = [];
+        snapshot.forEach(docSnap => {
+          cacheRegistros.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        atualizarContadoresHome();
+      } catch(e) {
+        console.error("Erro ao ler registros: ", e);
+      }
+    }
+
+    function atualizarContadoresHome() {
+      document.getElementById('count-total').innerText = cacheRegistros.length;
+      document.getElementById('count-analise').innerText = cacheRegistros.filter(r => r.status === "Em Análise").length;
+      document.getElementById('count-concluido').innerText = cacheRegistros.filter(r => r.status === "Aprovado").length;
+    }
+
+    // Salvamento de Novo Registro Operacional
+    window.salvarRegistro = async function() {
+      const tipo = document.getElementById('reg-tipo').value;
+      const nome = document.getElementById('reg-nome').value.trim();
+      const re = document.getElementById('reg-re').value.trim();
+      const posto = document.getElementById('reg-posto').value;
+      const localizacao = document.getElementById('reg-localizacao').value.trim();
+      const descricao = document.getElementById('reg-descricao').value.trim();
+
+      if(!tipo || !nome || !re || !posto || !localizacao || !descricao) {
+        alert("Todos os campos do formulário são estritamente obrigatórios.");
+        return;
+      }
+
+      const novoReg = {
+        tipo,
+        nome,
+        re,
+        posto,
+        localizacao,
+        descricao,
+        status: "Em Análise",
+        dataHora: agora(),
+        operadorNome: usuarioLogado.nome,
+        operadorMatricula: usuarioLogado.matricula,
+        criadoEm: serverTimestamp()
+      };
+
+      try {
+        await addDoc(collection(db, COL_REGISTROS), novoReg);
+        
+        // Logar ação
+        await addDoc(collection(db, COL_LOG), {
+          usuarioId: usuarioLogado.id,
+          usuarioNome: usuarioLogado.nome,
+          tipo: "novo_registro",
+          detalhes: `Registrou evento para o PM RE ${re}`,
+          hora: agora(),
+          criadoEm: serverTimestamp()
+        });
+
+        alert("Registro enviado com sucesso para a fila de homologação do administrador.");
+        
+        // Limpar formulário
+        document.getElementById('reg-tipo').value = "";
+        document.getElementById('reg-nome').value = "";
+        document.getElementById('reg-re').value = "";
+        document.getElementById('reg-posto').value = "";
+        document.getElementById('reg-localizacao').value = "";
+        document.getElementById('reg-descricao').value = "";
+
+        ir('home');
+      } catch(e) {
+        alert("Erro ao salvar dados no Firebase. O registro será sincronizado quando houver rede.");
+        console.error(e);
+      }
+    };
+
+    // Renderização da Lista de Ocorrências
+    window.renderizarListaRegistros = function() {
+      const termo = document.getElementById('filtra-re').value.toLowerCase();
+      const statusFiltro = document.getElementById('filtra-status').value;
+      const container = document.getElementById('container-lista-registros');
+      container.innerHTML = "";
+
+      let filtrados = cacheRegistros.filter(r => {
+        const bateTermo = r.nome.toLowerCase().includes(termo) || r.re.toLowerCase().includes(termo);
+        const bateStatus = (statusFiltro === "TODOS") || (r.status === statusFiltro);
+        return bateTermo && bateStatus;
+      });
+
+      if(filtrados.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-600 text-xs">Nenhum registro correspondente localizado.</div>`;
+        return;
+      }
+
+      filtrados.forEach(r => {
+        let corStatus = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+        if(r.status === "Aprovado")  corStatus = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+        if(r.status === "Rejeitado") corStatus = "text-red-400 bg-red-500/10 border-red-500/20";
+
+        const div = document.createElement('div');
+        div.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2 text-xs shadow-sm";
+        div.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="bg-slate-950 px-2 py-0.5 border border-slate-800 text-[10px] font-bold rounded text-slate-300">${r.tipo}</span>
+              <h4 class="font-bold text-white mt-1.5">${r.posto} ${r.nome} <span class="text-slate-500 font-normal">(${r.re})</span></h4>
+            </div>
+            <span class="text-[9px] font-extrabold px-2 py-0.5 border rounded-full uppercase ${corStatus}">${r.status}</span>
+          </div>
+          <p class="text-slate-400 leading-relaxed bg-slate-950/40 p-2 border border-slate-850 rounded-lg whitespace-pre-wrap">${r.descricao}</p>
+          <div class="flex justify-between text-[10px] text-slate-500 pt-1">
+            <span><i class="fa-solid fa-map-location-dot"></i> Loc: ${r.localizacao}</span>
+            <span><i class="fa-solid fa-clock"></i> ${r.dataHora}</span>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    };
+
+    // Consulta de Policiais Militares Acautelados
+    window.renderizarConsultaPms = function() {
+      const termo = document.getElementById('filtra-pms').value.toLowerCase();
+      const container = document.getElementById('container-consulta-pms');
+      container.innerHTML = "";
+
+      // Mapeamento dinâmico baseado nos registros aprovados para consolidar localização
+      let mapaPms = {};
+      cacheRegistros.forEach(r => {
+        if(r.status === "Aprovado") {
+          if(r.tipo === "Entrada de Preso") {
+            mapaPms[r.re] = { nome: r.nome, posto: r.posto, localizacao: r.localizacao, re: r.re, ativo: true };
+          } else if(r.tipo === "Saída de Preso") {
+            if(mapaPms[r.re]) mapaPms[r.re].ativo = false;
+          }
+        }
+      });
+
+      let ativos = Object.values(mapaPms).filter(p => p.ativo && (p.nome.toLowerCase().includes(termo) || p.re.toLowerCase().includes(termo) || p.localizacao.toLowerCase().includes(termo)));
+
+      if(ativos.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-600 text-xs">Nenhum militar acautelado no momento.</div>`;
+        return;
+      }
+
+      ativos.forEach(p => {
+        const div = document.createElement('div');
+        div.className = "bg-slate-900 border border-slate-800 p-3 rounded-xl flex justify-between items-center text-xs";
+        div.innerHTML = `
+          <div>
+            <span class="text-[10px] font-bold text-slate-400">${p.posto}</span>
+            <h4 class="font-bold text-white">${p.nome}</h4>
+            <span class="text-[10px] text-slate-500 font-mono">RE: ${p.re}</span>
+          </div>
+          <div class="text-right">
+            <span class="block text-[10px] text-slate-500">Localização</span>
+            <span class="bg-slate-950 border border-slate-800 text-amber-400 font-bold px-2 py-0.5 rounded text-[10px]">${p.localizacao}</span>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    };
+
+    // Sistema Interno de Notificações
+    function adicionarNotificacaoLocal(titulo, msg) {
+      notificacoesLocais.unshift({ titulo, msg, hora: agora().split(' ')[1] });
+      atualizarBadge();
+    }
+
+    function atualizarBadge() {
+      const b = document.getElementById('badge-notif-count');
+      if(notificacoesLocais.length > 0) {
+        b.innerText = notificacoesLocais.length;
+        b.classList.remove('hidden');
+      } else {
+        b.classList.add('hidden');
+      }
+    }
+
+    window.renderizarNotificacoes = function() {
+      const container = document.getElementById('container-notificacoes');
+      container.innerHTML = "";
+      if(notificacoesLocais.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-600 text-xs">Nenhuma mensagem ou aviso.</div>`;
+        return;
+      }
+      notificacoesLocais.forEach(n => {
+        const div = document.createElement('div');
+        div.className = "bg-slate-900 border border-slate-800 p-3 rounded-xl text-xs space-y-1 shadow-sm";
+        div.innerHTML = `
+          <div class="flex justify-between font-bold text-slate-200">
+            <span>${n.titulo}</span>
+            <span class="text-[10px] text-slate-600 font-normal">${n.hora}</span>
+          </div>
+          <p class="text-slate-400 text-[11px] leading-tight">${n.msg}</p>
+        `;
+        container.appendChild(div);
+      });
+    };
+
+    window.limparNotificacoes = function() {
+      notificacoesLocais = [];
+      atualizarBadge();
+      renderizarNotificacoes();
+    };
+
+    // Controle do Painel de Administração Mestre
+    window.validarAdminKey = function() {
+      const k = document.getElementById('admin-key').value;
+      if(k === CHAVE_MESTRA) {
+        document.getElementById('admin-key').value = "";
+        ir('admin-dashboard');
+      } else {
+        alert("Chave mestra de homologação inválida!");
+      }
+    };
+
+    async function carregarPainelAdmin() {
+      const containerP = document.getElementById('container-admin-pendentes');
+      const containerL = document.getElementById('container-admin-logs');
+      containerP.innerHTML = `<div class="text-xs text-slate-500 text-center py-4">Processando...</div>`;
+
+      try {
+        // Renderizar registros pendentes
+        const qR = query(collection(db, COL_REGISTROS), orderBy("criadoEm", "desc"));
+        const snapR = await getDocs(qR);
+        let pendentes = [];
+        snapR.forEach(d => {
+          let data = d.data();
+          if(data.status === "Em Análise") pendentes.push({ id: d.id, ...data });
+        });
+
+        document.getElementById('admin-pendentes-count').innerText = pendentes.length;
+        containerP.innerHTML = "";
+
+        if(pendentes.length === 0) {
+          containerP.innerHTML = `<div class="text-center text-xs text-slate-600 py-4">Nenhum registro aguardando validação superior.</div>`;
+        } else {
+          pendentes.forEach(p => {
+            const div = document.createElement('div');
+            div.className = "bg-slate-900 border border-slate-800 p-3 rounded-xl text-xs space-y-2";
+            div.innerHTML = `
+              <div class="font-bold text-white border-b border-slate-850 pb-1">${p.tipo} - RE: ${p.re}</div>
+              <p class="text-slate-400 text-[11px] whitespace-pre-wrap bg-slate-950 p-2 border border-slate-850 rounded">${p.descricao}</p>
+              <div class="text-[10px] text-slate-500">Por: ${p.operadorNome} | ${p.dataHora}</div>
+              <div class="flex gap-2 pt-1">
+                <button onclick="alterarStatusAdmin('${p.id}', 'Rejeitado')" class="flex-1 py-1 bg-red-950/50 hover:bg-red-900/60 border border-red-800 text-red-400 font-bold rounded text-[11px] transition">Rejeitar</button>
+                <button onclick="alterarStatusAdmin('${p.id}', 'Aprovado')" class="flex-1 py-1 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-800 text-emerald-400 font-bold rounded text-[11px] transition">Homologar</button>
+              </div>
+            `;
+            containerP.appendChild(div);
+          });
+        }
+
+        // Renderizar logs
+        const qL = query(collection(db, COL_LOG), orderBy("criadoEm", "desc"), limit(40));
+        const snapL = await getDocs(qL);
+        containerL.innerHTML = "";
+        snapL.forEach(l => {
+          const d = l.data();
+          const p = document.createElement('p');
+          p.className = "border-b border-slate-900 pb-0.5";
+          p.innerText = `[${d.hora}] [${d.tipo.toUpperCase()}] ${d.usuarioNome || 'Alt'}: ${d.detalhes}`;
+          containerL.appendChild(p);
+        });
+
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    window.alterarStatusAdmin = async function(id, novoStatus) {
+      if(!confirm(`Confirma a alteração do status para [${novoStatus}]?`)) return;
+      try {
+        const docRef = doc(db, COL_REGISTROS, id);
+        await updateDoc(docRef, { status: novoStatus });
+
+        await addDoc(collection(db, COL_LOG), {
+          usuarioId: "ADMINISTRADOR",
+          usuarioNome: "ADMIN MESTRE",
+          tipo: "homologacao",
+          detalhes: `Status do registro ${id} alterado para ${novoStatus}`,
+          hora: agora(),
+          criadoEm: serverTimestamp()
+        });
+
+        alert("Status atualizado com sucesso!");
+        carregarPainelAdmin();
+        carregarDadosGlobais();
+      } catch(e) {
+        console.error(e);
+      }
+    };
+
+    window.limparLogsFirebase = async function() {
+      if(!confirm("Atenção extrema: Deseja expurgar permanentemente todos os logs do Firestore?")) return;
+      try {
+        const snap = await getDocs(collection(db, COL_LOG));
+        for (const d of snap.docs) {
+          await deleteDoc(doc(db, COL_LOG, d.id));
+        }
+        alert("Logs limpos com sucesso.");
+        carregarPainelAdmin();
+      } catch(e) {
+        console.error(e);
+      }
+    };
+
+    // Timeout de Inatividade (Auto Logout - SecSecurity)
+    function resetarTimeoutInatividade() {
+      clearTimeout(timeoutInatividade);
+      if(usuarioLogado) {
+        timeoutInatividade = setTimeout(() => {
+          executarLogoutPorInatividade();
+        }, 10 * 60 * 1000); // 10 Minutos Corporativos
+      }
+    }
+
+    async function executarLogoutPorInatividade() {
+      if(usuarioLogado){
+        try{
+          await addDoc(collection(db, COL_LOG),{
+            usuarioId:    usuarioLogado.id||"",
+            usuarioNome:  usuarioLogado.nome||"",
+            usuarioEmail: usuarioLogado.email||"",
+            matricula:    usuarioLogado.matricula||"",
+            tipo:         "timeout",
+            detalhes:     "Sessão encerrada por inatividade (10 min)",
+            dispositivo:  navigator.userAgent.substring(0, 60),
+            hora:         agora(),
+            criadoEm:     serverTimestamp()
+          });
+        }catch(e){}
+      }
+      sairPorTimeout();
+    }
+
+    /* ══ INIT ══ */
+    let _toques = 0, _toqueTimer = null;
+
+    window.contarToque = function(){
+      _toques++;
+      clearTimeout(_toqueTimer);
+      const h = document.getElementById("titulo-principal");
+      h.style.opacity = ".7";
+      setTimeout(() => h.style.opacity = "1", 120);
+      if(_toques >= 5){
+        _toques = 0;
+        if(navigator.vibrate) navigator.vibrate([40, 30, 40]);
+        ir("admin-login");
+        return;
+      }
+      _toqueTimer = setTimeout(() => { _toques = 0; }, 2000);
+    };
+
+    /* ══ INIT ══ */
+    atualizarBadge(); atualizarMenu();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+        .then(registration => {
+          console.log('ServiceWorker registrado com sucesso:', registration);
+        })
+        .catch(error => {
+          console.log('Falha no registro do ServiceWorker:', error);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
