@@ -1,206 +1,285 @@
 rules_version = '2';
 
-// ══════════════════════════════════════════════════════════════════════════
-// REGRAS DE SEGURANÇA — Polícia Municipal de Caruaru (app)
-// Versão 2 — agora com Firebase Authentication para TODOS os usuários
-// (não só o administrador).
+// ======================================================================
+// REGRAS DE SEGURANCA - SISTEMA POLICIA MUNICIPAL DE CARUARU
+// ======================================================================
+// Como publicar:
+// 1. Console do Firebase -> Firestore Database -> Regras
+// 2. Apague todo o conteudo do editor
+// 3. Cole todo o conteudo deste arquivo
+// 4. Clique em "Publicar"
 //
-// O que mudou em relação à versão anterior:
-//  ✅ Todo mundo que usa o app agora tem uma sessão real do Firebase
-//     (request.auth != null deixa de ser sempre falso para o usuário comum).
-//  ✅ Por isso, praticamente toda a leitura/escrita passou a exigir
-//     "request.auth != null" — alguém sem conta nenhuma no app (nem
-//     aprovada, nem pendente) não consegue mais ler ou escrever nada
-//     direto no banco, mesmo com acesso técnico ao Firebase SDK.
-//  ✅ O cadastro de um documento em "usuarios" só pode ser feito pela
-//     própria pessoa dona daquele UID (request.auth.uid == userId),
-//     nunca em nome de outra conta.
-//
-// O que ainda NÃO é garantido (limitação aceitável, pois exigiria back-end):
-//  ⚠️ Qualquer conta aprovada consegue ler dados de módulos aos quais não
-//     tem permissão na INTERFACE (ex: um usuário só de Inspetoria consegue,
-//     via acesso direto ao banco, ler documentos de "pad"/Corregedoria).
-//     A tela do app já esconde isso, mas o banco, por si, não impede um
-//     usuário autenticado (ainda que aprovado) de ler outras coleções.
-//     Para bloquear isso por módulo seria necessário guardar as permissões
-//     em "custom claims" do Firebase Auth (isso exige Cloud Functions,
-//     que não fazem parte deste projeto hoje) e reescrever cada regra para
-//     checar a permissão específica.
-// ══════════════════════════════════════════════════════════════════════════
+// Modelo de acesso:
+// - E' preciso estar autenticado (Firebase Authentication) para ler ou
+//   escrever qualquer coisa. Nao ha leitura publica.
+// - "usuarios/{uid}" guarda o cadastro de cada servidor, com:
+//     status:      "pendente" | "aprovado" | "rejeitado"
+//     permissoes:  mapa por modulo (checklist, inspetoria, administrativo,
+//                  videomonitor, inteligencia, comando, patrimonio,
+//                  tecnologia, fotos, escala, dashboard, corregedoria).
+//                  O padrao e liberado; so bloqueia se o campo estiver
+//                  marcado como "false" (mesmo comportamento do app).
+// - "admins/{uid}" marca quem e administrador geral. So e criado ou
+//   alterado manualmente pelo console - o app somente le esse documento.
+// - Registros de auditoria e historico sao "somente cria" (ninguem edita
+//   ou apaga pelo app, garantindo rastreabilidade).
+// ======================================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ─── Helpers ───
+    // -- FUNCOES AUXILIARES --------------------------------------------
     function logado() {
       return request.auth != null;
     }
-    function isAdmin() {
+
+    function meuUsuario() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    function souAdmin() {
       return logado() &&
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // ─── Coleção interna que define quem é admin. Gerenciada só pelo console. ───
+    function souAprovado() {
+      return logado() &&
+        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+        meuUsuario().status == "aprovado";
+    }
+
+    // Livre por padrao: so bloqueia se o modulo estiver explicitamente
+    // marcado como "false" nas permissoes do usuario (espelha o app).
+    function temPermissao(modulo) {
+      return souAprovado() &&
+        (!(modulo in meuUsuario().permissoes) ||
+          meuUsuario().permissoes[modulo] != false);
+    }
+
+    function souDono(uid) {
+      return logado() && request.auth.uid == uid;
+    }
+
+    // -- ADMINS (gestao so pelo console) --------------------------------
     match /admins/{uid} {
-      allow read, write: if false;
+      allow read: if souDono(uid) || souAdmin();
+      allow write: if false; // gerencie pelo console do Firebase
     }
 
-    // ─── USUÁRIOS (cadastro, aprovação, permissões) ───
-    match /usuarios/{userId} {
-      // precisa estar logado (mesmo pendente/recém-cadastrado) para ler —
-      // usado pelo próprio login e por telas que listam usuários por permissão.
-      allow read: if logado();
+    // -- USUARIOS (cadastro / aprovacao / permissoes) -------------------
+    match /usuarios/{uid} {
+      allow read: if souDono(uid) || souAdmin();
 
-      // só pode criar o PRÓPRIO documento (mesmo UID da conta recém-criada),
-      // e nunca já nascendo aprovado ou com permissão sensível.
-      allow create: if logado() && request.auth.uid == userId &&
-        request.resource.data.status == "pendente" &&
-        request.resource.data.permissoes.comando == false &&
-        request.resource.data.permissoes.corregedoria == false &&
-        request.resource.data.permissoes.administrativo == false &&
-        request.resource.data.permissoes.patrimonio == false;
+      // Cadastro: a propria pessoa cria seu documento, sempre como
+      // "pendente" e sem poder se autoaprovar ou se autoconceder
+      // permissoes maiores que o padrao inicial.
+      allow create: if souDono(uid) &&
+        request.resource.data.status == "pendente";
 
-      // aprovar, mudar permissões e editar — só admin.
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      // A propria pessoa pode atualizar dados cadastrais, mas nunca
+      // o proprio status ou as proprias permissoes.
+      allow update: if souAdmin() ||
+        (souDono(uid) &&
+          request.resource.data.status == resource.data.status &&
+          request.resource.data.permissoes == resource.data.permissoes);
+
+      allow delete: if souAdmin();
     }
 
-    // ─── SERVIDORES (roster usado por plantão/O.S/ficha) ───
-    match /servidores_plantao/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
-    }
-
-    // ─── AUDITORIA — trilha somente-inserção ───
+    // -- AUDITORIA E LOGS (somente cria - trilha integra) ---------------
     match /auditoria/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      allow update: if false;
-      allow delete: if isAdmin();
+      allow read: if souAdmin() || temPermissao("comando");
+      allow create: if souAprovado();
+      allow update, delete: if false;
     }
 
-    // ─── LOG DE ACESSOS — trilha somente-inserção ───
-    // create fica liberado mesmo sem login, pois é usado para registrar
-    // TENTATIVAS de login que falharam (aí ainda não existe request.auth).
     match /log_acessos/{id} {
-      allow read: if isAdmin();
-      allow create: if true;
-      allow update: if false;
-      allow delete: if isAdmin();
+      allow read: if souAdmin();
+      allow create: if logado();
+      allow update, delete: if false;
     }
 
-    // ─── PLANTÃO ───
+    // -- NOTIFICACOES (cada um so ve as suas) ---------------------------
+    match /notificacoes/{id} {
+      allow read: if souAdmin() ||
+        (logado() && resource.data.destEmail == request.auth.token.email);
+      allow create: if souAprovado();
+      allow update: if souAdmin() ||
+        (logado() && resource.data.destEmail == request.auth.token.email);
+      allow delete: if souAdmin();
+    }
+
+    // -- ASSUNCAO DE PLANTAO ---------------------------------------------
     match /plantao/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
+      allow read: if souAprovado();
+      allow create: if temPermissao("inspetoria");
+      allow update: if souAdmin() || temPermissao("inspetoria") ||
+        ( // ConfirmaÃ§Ã£o de assunÃ§Ã£o pelo prÃ³prio servidor â€” sÃ³ uma vez, sÃ³ apÃ³s
+          // autorizaÃ§Ã£o do inspetor, e sÃ³ alterando os campos da confirmaÃ§Ã£o.
+          souAprovado() &&
+          resource.data.servidorMat == meuUsuario().matricula &&
+          resource.data.autorizadoAssuncao == true &&
+          resource.data.confirmadoPeloServidor != true &&
+          request.resource.data.confirmadoPeloServidor == true &&
+          request.resource.data.confirmadoUid == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(["confirmadoPeloServidor","confirmadoUid","confirmadoNome","confirmadoEm","statusAssuncao"])
+        );
+      allow delete: if souAdmin();
     }
 
     match /plantao_fechamentos/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      allow update: if false;
-      allow delete: if isAdmin();
+      allow read: if souAprovado();
+      allow create: if temPermissao("inspetoria");
+      allow update, delete: if souAdmin();
     }
 
-    // ─── FISCALIZAÇÃO ───
-    match /fiscalizacao/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
+    match /servidores_plantao/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("administrativo");
     }
 
-    // ─── ORDENS DE SERVIÇO ───
-    match /ordens_servico/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
-    }
-
-    // ─── OCORRÊNCIAS ───
+    // -- OCORRENCIAS (Inspetoria -> Comando -> Corregedoria) -------------
     match /ocorrencias/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
+      allow read: if souAprovado();
+      allow create: if souAprovado();
+      // So quem decide (Comando/Corregedoria) ou administra pode alterar
+      // o status/encaminhamento; quem registrou tambem pode atualizar.
+      allow update: if souAdmin() || temPermissao("comando") || temPermissao("corregedoria") ||
+        (souAprovado() && resource.data.email == request.auth.token.email);
+      allow delete: if souAdmin();
     }
 
     match /ocorrencia_historico/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      allow update: if false;
-      allow delete: if isAdmin();
+      allow read: if souAdmin() || temPermissao("comando") || temPermissao("corregedoria");
+      allow create: if souAprovado();
+      allow update, delete: if false;
     }
 
-    // ─── PAD (Corregedoria) ───
+    // -- ORDENS DE SERVICO -------------------------------------------------
+    match /ordens_servico/{id} {
+      allow read: if souAprovado();
+      allow create: if temPermissao("inspetoria");
+      allow update: if souAdmin() || temPermissao("comando") || temPermissao("inspetoria");
+      allow delete: if souAdmin();
+    }
+
+    // -- FISCALIZACAO --------------------------------------------------------
+    match /fiscalizacao/{id} {
+      allow read: if souAprovado();
+      allow create: if temPermissao("inspetoria");
+      allow update: if souAdmin() || temPermissao("inspetoria");
+      allow delete: if souAdmin();
+    }
+
+    // -- CORREGEDORIA / PAD -------------------------------------------------
     match /pad/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
+      allow read: if souAdmin() || temPermissao("corregedoria") ||
+        (souAprovado() && resource.data.servidor == meuUsuario().nome);
+      allow create: if temPermissao("corregedoria") || temPermissao("comando");
+      allow update: if souAdmin() || temPermissao("corregedoria");
+      allow delete: if souAdmin();
     }
 
     match /pad_historico/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      allow update: if false;
-      allow delete: if isAdmin();
+      allow read: if souAdmin() || temPermissao("corregedoria");
+      allow create: if souAprovado();
+      allow update, delete: if false;
     }
 
-    // ─── LINHA DO TEMPO DO SERVIDOR ───
-    match /servidor_timeline/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      allow update: if false;
-      allow delete: if isAdmin();
-    }
-
-    // ─── ARMAS (controle individual) ───
+    // -- ARMARIA -------------------------------------------------------------
     match /armas_individuais/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("checklist");
     }
     match /armas_historico/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      allow update: if false;
-      allow delete: if isAdmin();
+      allow read: if souAprovado();
+      allow create: if souAprovado();
+      allow update, delete: if false;
     }
-
-    // ─── COLETES (EPI) ───
     match /coletes/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("checklist");
     }
     match /coletes_historico/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      allow update: if false;
-      allow delete: if isAdmin();
+      allow read: if souAprovado();
+      allow create: if souAprovado();
+      allow update, delete: if false;
+    }
+    match /municoes/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("checklist");
+    }
+    match /municoes_historico/{id} {
+      allow read: if souAprovado();
+      allow create: if souAprovado();
+      allow update, delete: if false;
     }
 
-    // ─── SOLICITAÇÕES (Policial Municipal) ───
-    match /solicitacoes/{id} {
-      allow read: if logado();
-      allow create, update: if logado();
-      allow delete: if isAdmin();
+    // -- ADMINISTRATIVO (fotos, escala, banco de horas, timeline) -----------
+    match /fotos/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("fotos");
+    }
+    match /escalas_mensais/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("escala") || temPermissao("administrativo");
+    }
+    match /banco_horas/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("administrativo") || temPermissao("escala");
+    }
+    match /servidor_timeline/{id} {
+      allow read: if souAprovado();
+      allow create: if souAdmin() || temPermissao("administrativo");
+      allow update, delete: if souAdmin();
     }
 
-    // ─── NOTIFICAÇÕES (sino) ───
-    match /notificacoes/{id} {
-      allow read: if logado();
-      allow create: if logado();
-      // só permite marcar como lida — nunca trocar destinatário/conteúdo
-      allow update: if logado() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["lida"]);
-      allow delete: if logado();
+    // -- PATRIMONIO / VIATURAS -----------------------------------------------
+    match /viaturas/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("patrimonio");
+    }
+    match /patrimonio/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("patrimonio");
+    }
+    match /patrimonio_historico/{id} {
+      allow read: if souAprovado();
+      allow create: if souAdmin() || temPermissao("patrimonio");
+      allow update, delete: if false;
+    }
+    match /patrimonio_inventarios/{id} {
+      allow read: if souAprovado();
+      allow create: if souAdmin() || temPermissao("patrimonio");
+      allow update, delete: if souAdmin();
     }
 
-    // ─── Qualquer coleção não listada acima (ex: config_admin) fica
-    // acessível apenas pelo Administrador — que tem acesso a tudo no app.
+    // -- TECNOLOGIA -----------------------------------------------------------
+    match /chamados_tecnicos/{id} {
+      allow read: if souAprovado();
+      allow create: if souAprovado();
+      allow update: if souAdmin() || temPermissao("tecnologia");
+      allow delete: if souAdmin();
+    }
+    match /sistema_config/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("tecnologia");
+    }
+    match /perfis_permissao/{id} {
+      allow read: if souAprovado();
+      allow write: if souAdmin() || temPermissao("tecnologia");
+    }
+    match /erros_sistema/{id} {
+      allow read: if souAdmin() || temPermissao("tecnologia");
+      allow create: if souAprovado();
+      allow update: if souAdmin() || temPermissao("tecnologia");
+      allow delete: if souAdmin();
+    }
+
+    // -- FALLBACK - nega tudo que nao foi listado acima ----------------------
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if false;
     }
   }
 }
