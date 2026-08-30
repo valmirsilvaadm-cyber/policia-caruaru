@@ -803,10 +803,11 @@ textarea{resize:vertical;min-height:70px;}
   <div class="admin-tabs">
     <div class="tab-btn ativa" id="tab-btn-cadastros"     onclick="mudarAba('cadastros')">👥 Usuários</div>
     <div class="tab-btn"       id="tab-btn-servidores"    onclick="mudarAba('servidores')">👮 Servidores</div>
-    <div class="tab-btn"       id="tab-btn-auditoria"     onclick="mudarAba('auditoria')">📋 Auditoria</div>
-    <div class="tab-btn"       id="tab-btn-plantao-admin" onclick="mudarAba('plantao-admin')">🏛 Plantões</div>
-    <div class="tab-btn btn-full" id="tab-btn-log"        onclick="mudarAba('log')" style="grid-column:1/-1">🔐 Log de Acessos</div>
+    <div class="tab-btn btn-full" id="tab-btn-plantao-admin" onclick="mudarAba('plantao-admin')" style="grid-column:1/-1">🏛 Plantões</div>
   </div>
+  <p style="font-size:.68rem;color:var(--cinza);margin:-8px 0 12px">
+    🔐 O Log de Auditoria foi movido para o módulo <strong>Tecnologia → Log de Auditoria</strong>.
+  </p>
 
   <!-- ABA USUÁRIOS -->
   <div class="tab-painel ativa" id="tab-cadastros">
@@ -840,29 +841,6 @@ textarea{resize:vertical;min-height:70px;}
     <div id="admin-servidores-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
   </div>
 
-  <!-- ABA AUDITORIA -->
-  <div class="tab-painel" id="tab-auditoria">
-    <div class="audit-sel-bar" id="audit-sel-bar">
-      <span id="audit-sel-count" style="font-size:.8rem;color:var(--dourado);font-family:'Oswald',sans-serif;letter-spacing:1px"></span>
-      <div style="display:flex;gap:6px">
-        <button class="btn btn-sm btn-perigo" onclick="removerAuditoriaSelecionados()">🗑 Remover</button>
-        <button class="btn btn-sm btn-cinza"  onclick="desmarcarTodos()">✕ Cancelar</button>
-      </div>
-    </div>
-    <div class="filtros-box">
-      <label>🔍 Nome do usuário</label>
-      <input type="text" id="filtro-nome" placeholder="Ex: João Silva" oninput="filtrarAuditoria()">
-      <label>📅 Data</label>
-      <input type="date" id="filtro-data" onchange="filtrarAuditoria()">
-      <div class="filtros-row">
-        <button class="btn btn-cinza btn-sm" onclick="limparFiltros()">✕ Limpar</button>
-        <button class="btn btn-verde  btn-sm" onclick="window.print()">🖨 Imprimir</button>
-      </div>
-    </div>
-    <div class="hist-contador" id="audit-contador"></div>
-    <div id="auditoria-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
-  </div>
-
   <!-- ABA PLANTÕES -->
   <div class="tab-painel" id="tab-plantao-admin">
     <div class="filtros-box">
@@ -879,37 +857,6 @@ textarea{resize:vertical;min-height:70px;}
     <div id="plantao-admin-lista" class="hist-scroll"><p class="hist-vazio">Use os filtros para buscar.</p></div>
   </div>
 
-  <!-- ABA LOG DE ACESSOS -->
-  <div class="tab-painel" id="tab-log">
-    <div style="background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);border-radius:8px;
-      padding:8px 12px;margin-bottom:10px;font-size:.75rem;color:#f1948a;font-family:'Oswald',sans-serif;letter-spacing:1px">
-      🔐 REGISTRO IMUTÁVEL — apenas visualização
-    </div>
-    <div class="filtros-box">
-      <label>🔍 Nome ou e-mail</label>
-      <input type="text" id="filtro-log-nome" placeholder="Ex: João Silva" oninput="carregarLog()">
-      <label>📅 Data</label>
-      <input type="date" id="filtro-log-data" onchange="carregarLog()">
-      <label>Tipo</label>
-      <select id="filtro-log-tipo" onchange="carregarLog()">
-        <option value="">Todos</option>
-        <option value="login">✅ Login</option>
-        <option value="logout">🚪 Logout</option>
-        <option value="timeout">⏱ Timeout</option>
-        <option value="tentativa_falha">❌ Tentativa Falha</option>
-      </select>
-      <div class="filtros-row">
-        <button class="btn btn-cinza btn-sm" onclick="
-          document.getElementById('filtro-log-nome').value='';
-          document.getElementById('filtro-log-data').value='';
-          document.getElementById('filtro-log-tipo').value='';
-          carregarLog()">✕ Limpar</button>
-        <button class="btn btn-verde btn-sm" onclick="window.print()">🖨 Imprimir</button>
-      </div>
-    </div>
-    <div class="hist-contador" id="log-contador"></div>
-    <div id="log-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
-  </div>
 
 </div>
 
@@ -927,7 +874,95 @@ textarea{resize:vertical;min-height:70px;}
     <button class="btn btn-full insp-btn" onclick="ir('fiscalizacao')">🔍 Fiscalização</button>
     <button class="btn btn-full insp-btn" onclick="ir('ordem-servico')">📄 Ordem de Serviço (O.S)</button>
     <button class="btn btn-full insp-btn" onclick="ir('ocorrencias')" style="border-left:3px solid #f87171!important">🚨 Ocorrências</button>
+    <button class="btn btn-full insp-btn" style="border-left:3px solid #34d399!important" onclick="ir('insp-postos')">🛡️ Postos Fixos</button>
+    <button class="btn btn-full insp-btn" style="border-left:3px solid #a78bfa!important" onclick="ir('insp-passagens')">🔄 Passagens de Posto <span class="badge" id="badge-insp-passagens">0</span></button>
   </div>
+</div>
+
+<!-- ══ INSPETORIA — POSTOS FIXOS (cadastro) ══ -->
+<div id="insp-postos" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('inspetoria')">← Voltar</button>
+  <div class="secao-titulo">🛡️ Postos Fixos — Cadastro</div>
+  <p style="font-size:.68rem;color:var(--cinza);margin:-6px 0 10px">
+    Cadastro de postos e vínculo de equipamentos: apenas Administrador. Definição de responsável atual/próximo policial: Inspetoria.
+  </p>
+
+  <div id="posto-cadastro-form" class="filtros-box" style="margin-bottom:14px;display:none">
+    <label>Nome do posto</label>
+    <input type="text" id="posto-nome" placeholder="Ex: Posto Fixo 01 — Marco Zero">
+    <label>Local</label>
+    <input type="text" id="posto-local" placeholder="Ex: Praça Marco Zero, Caruaru">
+    <div class="secao-titulo" style="font-size:.8rem;margin-top:8px">Equipamentos esperados</div>
+    <div id="posto-equip-lista"></div>
+    <div style="display:flex;gap:6px;margin:6px 0">
+      <select id="posto-equip-tipo" style="flex:1">
+        <option value="Placa Balística">Placa Balística</option>
+        <option value="Spark">Spark</option>
+        <option value="Cartucho">Cartucho</option>
+      </select>
+      <input type="text" id="posto-equip-id" placeholder="Nº série / lote (opc.)" style="flex:1">
+      <input type="number" id="posto-equip-qtd" placeholder="Qtd" min="1" style="width:70px">
+      <button class="btn btn-sm btn-cinza" onclick="adicionarEquipamentoPosto()">+ Add</button>
+    </div>
+    <button class="btn btn-full btn-dourado" style="margin-top:10px" onclick="salvarPosto()">💾 Salvar Posto</button>
+  </div>
+  <button class="btn btn-full btn-cinza" style="margin-bottom:10px" onclick="abrirNovoPosto()">+ Novo Posto</button>
+
+  <div id="postos-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
+</div>
+
+<!-- MODAL: DEFINIR RESPONSÁVEL / PRÓXIMO -->
+<div class="escala-modal-overlay" id="modal-posto-escala">
+  <div class="escala-modal-box">
+    <div style="font-family:'Oswald',sans-serif;font-size:.95rem;letter-spacing:2px;color:var(--dourado);margin-bottom:12px">
+      Definir Escala do Posto</div>
+    <input type="hidden" id="posto-escala-id">
+    <label class="campo-label">Policial responsável atual</label>
+    <select id="posto-escala-resp"><option value="">Selecione...</option></select>
+    <label class="campo-label">Próximo policial escalado (receberá o posto)</label>
+    <select id="posto-escala-prox"><option value="">Selecione...</option></select>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-cinza" style="flex:1" onclick="fecharModalPostoEscala()">Cancelar</button>
+      <button class="btn btn-dourado" style="flex:1" onclick="salvarEscalaPosto()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INSPETORIA — PASSAGENS DE POSTO ══ -->
+<div id="insp-passagens" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('inspetoria')">← Voltar</button>
+  <div class="secao-titulo">🔄 Passagens de Posto</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+    <div class="dash-card dash-azul"><div class="dash-num" id="ip-total-postos">—</div><div class="dash-label">🛡️ Total de Postos</div></div>
+    <div class="dash-card dash-verde"><div class="dash-num" id="ip-em-servico">—</div><div class="dash-label">🟢 Em Serviço</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+    <div class="dash-card dash-laranja"><div class="dash-num" id="ip-hoje">—</div><div class="dash-label">🔄 Passagens Hoje</div></div>
+    <div class="dash-card dash-roxo"><div class="dash-num" id="ip-pendentes">—</div><div class="dash-label">⏳ Aguardando Recebimento</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">
+    <div class="dash-card" style="background:rgba(241,196,15,.15);border-color:rgba(241,196,15,.4)"><div class="dash-num" id="ip-com-pendencia">—</div><div class="dash-label">🟡 Com Pendência</div></div>
+    <div class="dash-card dash-vermelho"><div class="dash-num" id="ip-com-divergencia">—</div><div class="dash-label">🔴 Com Divergência</div></div>
+  </div>
+
+  <div class="filtros-box" style="margin-bottom:12px">
+    <label>📅 Data</label>
+    <input type="date" id="ip-filtro-data" onchange="renderPassagensPosto()">
+    <label>🛡️ Posto</label>
+    <select id="ip-filtro-posto" onchange="renderPassagensPosto()"><option value="">Todos</option></select>
+    <label>Situação</label>
+    <select id="ip-filtro-situacao" onchange="renderPassagensPosto()">
+      <option value="">Todas</option>
+      <option value="aguardando_recebimento">⏳ Aguardando Recebimento</option>
+      <option value="recebido">🟢 Recebido</option>
+      <option value="recebido_pendencia">🟡 Recebido com Pendência</option>
+      <option value="recebido_divergencia">🔴 Recebido com Divergência</option>
+    </select>
+    <button class="btn btn-cinza btn-sm" style="margin-top:8px" onclick="document.getElementById('ip-filtro-data').value='';document.getElementById('ip-filtro-posto').value='';document.getElementById('ip-filtro-situacao').value='';renderPassagensPosto()">✕ Limpar</button>
+  </div>
+
+  <div id="passagens-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
 </div>
 
 <!-- ══ PLANTÃO ══ -->
@@ -1761,6 +1796,7 @@ textarea{resize:vertical;min-height:70px;}
     <div class="dash-card dash-verde"><div class="dash-num" id="tec-ultimo-backup" style="font-size:1.1rem">—</div><div class="dash-label">💾 Último Backup</div></div>
   </div>
 
+  <button class="btn btn-full mod-btn" style="border-left:3px solid #c0392b!important;margin-bottom:8px" onclick="ir('tec-auditoria')">🔐 Log de Auditoria</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #fbbf24!important;margin-bottom:8px" onclick="ir('admin')">👥 Gestão de Usuários</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #f87171!important;margin-bottom:8px" onclick="ir('tec-seguranca')"><span class="ic-img ic-seguranca"></span> Segurança</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #34d399!important;margin-bottom:8px" onclick="ir('tec-dispositivos')"><span class="ic-img ic-dispositivos"></span> Gerenciamento de Dispositivos</button>
@@ -1782,7 +1818,7 @@ textarea{resize:vertical;min-height:70px;}
   <div class="secao-titulo"><span class="ic-img ic-seguranca"></span> Segurança</div>
 
   <button class="btn btn-full mod-btn" style="border-left:3px solid #a78bfa!important;margin-bottom:8px" onclick="ir('tec-perfis')">🔑 Perfis de Acesso e Permissões</button>
-  <button class="btn btn-full mod-btn" style="border-left:3px solid #60a5fa!important;margin-bottom:14px" onclick="abrirLogAcessosTec()">📋 Registros de Login (Log de Acessos)</button>
+  <button class="btn btn-full mod-btn" style="border-left:3px solid #60a5fa!important;margin-bottom:14px" onclick="abrirLogAcessosTec()">📋 Registros de Login (agora dentro do Log de Auditoria)</button>
 
   <div class="secao-titulo" style="font-size:.85rem">🟢 Sessões Recentes</div>
   <p style="font-size:.68rem;color:var(--cinza);margin:-6px 0 8px">
@@ -1799,6 +1835,46 @@ textarea{resize:vertical;min-height:70px;}
   </p>
   <div id="tec-logoff-status" style="font-size:.68rem;color:var(--cinza);margin-bottom:8px"></div>
   <button class="btn btn-full btn-perigo" onclick="forcarLogoffGeral()">🔴 Forçar Logoff de Todos os Usuários</button>
+</div>
+
+<!-- ══ LOG DE AUDITORIA (unificado — ações + acessos) ══ -->
+<div id="tec-auditoria" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('tecnologia')">← Voltar</button>
+  <div class="secao-titulo">🔐 Log de Auditoria</div>
+  <div style="background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);border-radius:8px;
+    padding:8px 12px;margin-bottom:10px;font-size:.75rem;color:#f1948a;font-family:'Oswald',sans-serif;letter-spacing:1px">
+    🔐 REGISTRO DE AUDITORIA — usuário, data/hora, ação, módulo, registro afetado, IP e resultado
+  </div>
+  <div class="audit-sel-bar" id="audit-sel-bar">
+    <span id="audit-sel-count" style="font-size:.8rem;color:var(--dourado);font-family:'Oswald',sans-serif;letter-spacing:1px"></span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-perigo" onclick="removerAuditoriaSelecionados()">🗑 Remover</button>
+      <button class="btn btn-sm btn-cinza"  onclick="desmarcarTodos()">✕ Cancelar</button>
+    </div>
+  </div>
+  <div class="filtros-box">
+    <label>🔍 Nome do usuário</label>
+    <input type="text" id="filtro-nome" placeholder="Ex: João Silva" oninput="filtrarAuditoria()">
+    <label>📅 Data</label>
+    <input type="date" id="filtro-data" onchange="filtrarAuditoria()">
+    <label>Origem</label>
+    <select id="filtro-aud-origem" onchange="filtrarAuditoria()">
+      <option value="">Todas</option>
+      <option value="acao">📋 Ações do sistema</option>
+      <option value="acesso">🔑 Acessos (login/logout)</option>
+    </select>
+    <label>Módulo</label>
+    <select id="filtro-aud-modulo" onchange="filtrarAuditoria()"><option value="">Todos</option></select>
+    <div class="filtros-row">
+      <button class="btn btn-cinza btn-sm" onclick="limparFiltros()">✕ Limpar</button>
+      <button class="btn btn-verde  btn-sm" onclick="window.print()">🖨 Imprimir</button>
+    </div>
+  </div>
+  <p style="font-size:.65rem;color:var(--cinza);margin:-4px 0 8px">
+    A exclusão de registros é restrita ao Administrador autenticado e a própria exclusão fica registrada.
+  </p>
+  <div class="hist-contador" id="audit-contador"></div>
+  <div id="auditoria-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
 </div>
 
 <!-- ══ GERENCIAMENTO DE DISPOSITIVOS ══ -->
@@ -2042,6 +2118,7 @@ textarea{resize:vertical;min-height:70px;}
 
     <button class="btn btn-full btn-dourado" style="margin-bottom:14px" onclick="ir('mp-assumir-plantao')">🎖 Assunção de Plantão</button>
     <button class="btn btn-full" style="margin-bottom:14px;border-left:3px solid #60a5fa!important" onclick="ir('mp-permuta')">🔄 Permuta de Serviço <span class="badge" id="badge-mp-permuta">0</span></button>
+    <button class="btn btn-full" style="margin-bottom:14px;border-left:3px solid #34d399!important" onclick="ir('mp-posto-fixo')">🛡️ Verificação de Posto Fixo <span class="badge" id="badge-mp-posto">0</span></button>
 
   <!-- Minha Escala / Meus Plantões -->
   <div class="secao-titulo" style="font-size:1rem">📅 Minha Escala e Plantões</div>
@@ -2143,6 +2220,16 @@ textarea{resize:vertical;min-height:70px;}
   <div class="secao-titulo" style="font-size:.85rem;margin-top:20px">📋 Minhas Solicitações</div>
   <div id="perm-minhas-lista" class="hist-scroll"><p class="hist-vazio">Carregando...</p></div>
 </div>
+
+<!-- ══ VERIFICAÇÃO DE POSTO FIXO (Policial Municipal) ══ -->
+<div id="mp-posto-fixo" class="secao">
+  <button class="btn btn-voltar no-print" onclick="ir('meu-painel')">← Voltar</button>
+  <div class="secao-titulo">🛡️ Verificação de Posto Fixo</div>
+  <div id="posto-fixo-app"><p class="hist-vazio">Carregando...</p></div>
+</div>
+
+<!-- MODAL: FOTO DE ALTERAÇÃO NO AMBIENTE (posto fixo) -->
+<input type="file" id="posto-foto-input" accept="image/*" capture="environment" style="display:none" onchange="processarFotoPosto(this)">
 
 <!-- ══ VÍDEO MONITORAMENTO ══ -->
 <div id="videomonitor" class="secao">
@@ -3182,7 +3269,7 @@ textarea{resize:vertical;min-height:70px;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc,
-         updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot, arrayUnion, arrayRemove }
+         updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot, arrayUnion, arrayRemove, runTransaction }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -3297,6 +3384,9 @@ const FISC_MAP={
 };
 
 let usuarioLogado=null,contadorArmas=0,todosRegistros=[],servidoresCache=[],
+    _postosCache=[],_postoEquipTemp=[],_postoOpsCache=[],_srvAtivosCache=[],
+    _meuPostoAtual=null,_meuPostoReceber=null,_meuPostoOperacaoPendente=null,
+    _verifTemp=null,_recebTemp=null,
     plantaoStatusAtual=null,servidorSelecionado=null,
     registrosPlantaoLocal={},auditoriaSelecionados=new Set(),
     editandoId=null, // id do doc sendo editado
@@ -3323,7 +3413,8 @@ const TELAS=["cadastro","login","checklist","armas","municoes","viaturas","histo
   "tec-perfis","tec-config","tec-arquivos","tec-erros","tec-seguranca","tec-dispositivos","tec-monitoramento","tec-integracoes","tec-backup",
   "mp-assumir-plantao","mp-permuta","administrativo-permutas",
   "lancar-hora-extraordinaria","analise-horas-extras","dashboard-horas-extras","equipes-lancadas",
-  "secretario","secretario-equipe-detalhe","corregedoria-pesquisa","mp-plantoes-mes","mp-banco-horas-detalhe"];
+  "secretario","secretario-equipe-detalhe","corregedoria-pesquisa","mp-plantoes-mes","mp-banco-horas-detalhe",
+  "tec-auditoria","insp-postos","insp-passagens","mp-posto-fixo"];
 
 /* ══ NAVEGAÇÃO ══ */
 function ir(id){
@@ -3331,6 +3422,7 @@ function ir(id){
   if(id!=="mp-assumir-plantao"&&typeof _unsubAssuncaoPlantao==="function"){
     _unsubAssuncaoPlantao();_unsubAssuncaoPlantao=null;
   }
+  if(MODULO_POR_SECAO[id]) MODULO_ATUAL=id; // memoriza o módulo de nível 1 para a auditoria
   TELAS.forEach(t=>document.getElementById(t)?.classList.remove("ativa"));
   document.getElementById("menu").style.display="none";
   document.getElementById(id)?.classList.add("ativa");
@@ -3345,7 +3437,8 @@ function ir(id){
   if(id==="municoes-gestao") renderMunicoes();
   if(id==="viaturas")        ir("viaturas-gestao");
   if(id==="viaturas-gestao") renderViaturas();
-  if(id==="admin")           {carregarAdmin();carregarServidoresAdmin();carregarAuditoria();}
+  if(id==="admin")           {carregarAdmin();carregarServidoresAdmin();}
+  if(id==="tec-auditoria")   carregarAuditoria();
   if(id==="plantao")         iniciarPlantao();
   if(id==="plantao-fora-escala") iniciarForaEscala();
   if(id==="saida-plantao")   iniciarSaidaPlantao();
@@ -3375,6 +3468,9 @@ function ir(id){
   if(id==="corregedoria-pesquisa") document.getElementById("cor-pesq-termo").value="";
   if(id==="cmd-ocorrencia"){ carregarOcorrencias().then(renderOcorrenciasComando); }
   if(id==="meu-painel")     iniciarMeuPainel();
+  if(id==="mp-posto-fixo")  iniciarPostoFixo();
+  if(id==="insp-postos")    iniciarInspPostos();
+  if(id==="insp-passagens") iniciarInspPassagens();
   if(id==="plantao-ocorrencias") iniciarOcorrenciasPlantao();
   if(id==="corregedoria-ia") carregarInteligenciaDisciplinar();
   if(id==="administrativo") {carregarCentralAdministrativa();atualizarBadgePermutasAdmin();}
@@ -3661,16 +3757,14 @@ window.sair=async function(){
 /* ══ ADMIN LOGIN (Firebase Authentication) ══ */
 /* ══ ADMIN ABAS ══ */
 window.mudarAba=function(aba){
-  ["cadastros","servidores","auditoria","plantao-admin","log"].forEach(a=>{
+  ["cadastros","servidores","plantao-admin"].forEach(a=>{
     document.getElementById("tab-"+a)?.classList.remove("ativa");
     document.getElementById("tab-btn-"+a)?.classList.remove("ativa");
   });
   document.getElementById("tab-"+aba)?.classList.add("ativa");
   document.getElementById("tab-btn-"+aba)?.classList.add("ativa");
   if(aba==="plantao-admin")carregarPlantaoAdmin();
-  if(aba==="auditoria")carregarAuditoria();
   if(aba==="servidores")carregarServidoresAdmin();
-  if(aba==="log")carregarLog();
 };
 
 /* ══ ADMIN USUÁRIOS ══ */
@@ -3763,15 +3857,29 @@ async function carregarServidoresAdmin(){
   }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
 }
 
-/* ══ AUDITORIA ══ */
+/* ══ AUDITORIA (unificada: ações do sistema + acessos/login) ══ */
 async function carregarAuditoria(){
   const lista=document.getElementById("auditoria-lista");
+  if(!lista)return;
   lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
   try{
-    const snap=await getDocs(query(collection(db,COL_AUDITORIA),orderBy("criadoEm","desc")));
-    todosRegistros=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const [snapAcao,snapAcesso]=await Promise.all([
+      getDocs(query(collection(db,COL_AUDITORIA),orderBy("criadoEm","desc"))),
+      getDocs(query(collection(db,COL_LOG),orderBy("criadoEm","desc")))
+    ]);
+    const acoes  =snapAcao.docs.map(d=>({id:d.id,_col:COL_AUDITORIA,_origem:"acao",...d.data()}));
+    const acessos=snapAcesso.docs.map(d=>({id:d.id,_col:COL_LOG,_origem:"acesso",...d.data()}));
+    todosRegistros=[...acoes,...acessos].sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+    preencherFiltroModuloAuditoria();
     renderAuditoria(todosRegistros);
   }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+function preencherFiltroModuloAuditoria(){
+  const sel=document.getElementById("filtro-aud-modulo");
+  if(!sel||sel.dataset.preenchido)return;
+  const mods=Object.values(MODULO_POR_SECAO);
+  sel.innerHTML='<option value="">Todos</option>'+mods.map(m=>`<option value="${m}">${m}</option>`).join("");
+  sel.dataset.preenchido="1";
 }
 function renderAuditoria(registros){
   const lista=document.getElementById("auditoria-lista");
@@ -3779,24 +3887,46 @@ function renderAuditoria(registros){
   cont.textContent=registros.length?`${registros.length} registro(s)`:"";
   auditoriaSelecionados.clear();atualizarBarraSel();
   lista.innerHTML=registros.length
-    ?registros.map(r=>`<div class="hist-item">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <input type="checkbox" class="audit-check" data-id="${r.id}" onchange="toggleAuditSel('${r.id}',this.checked)">
-          <div class="hist-tipo" style="margin:0">${r.tipo}</div>
-        </div>
-        <div class="hist-data">🕐 ${tsStr(r.criadoEm)}</div>
-        <div class="hist-usuario">👮 ${r.usuarioNome} · ${r.matricula}</div>
-        <div class="hist-corpo">${r.dados}</div>
-      </div>`).join("")
+    ?registros.map(r=>{
+        if(r._origem==="acesso"){
+          const ic=r.tipo==="login"?"✅":r.tipo==="logout"?"🚪":r.tipo==="timeout"?"⏱":"❌";
+          return`<div class="hist-item">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <input type="checkbox" class="audit-check" data-id="${r.id}" data-col="${r._col}" onchange="toggleAuditSel('${r.id}',this.checked)">
+              <div class="hist-tipo" style="margin:0">${ic} ${(r.tipo||"").replace("_"," ").toUpperCase()} · 🔑 Acesso</div>
+            </div>
+            <div class="hist-data">🕐 ${r.hora||tsStr(r.criadoEm)}</div>
+            <div class="hist-usuario">👮 ${r.usuarioNome||r.usuarioEmail||"—"} · ${r.matricula||"—"}</div>
+            <div class="hist-corpo">${r.detalhes||""}\n📱 ${(r.dispositivo||"").substring(0,55)}</div>
+          </div>`;
+        }
+        return`<div class="hist-item">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <input type="checkbox" class="audit-check" data-id="${r.id}" data-col="${r._col}" onchange="toggleAuditSel('${r.id}',this.checked)">
+            <div class="hist-tipo" style="margin:0">${r.tipo||"Sistema"} · 📋 Ação</div>
+          </div>
+          <div class="hist-data">🕐 ${tsStr(r.criadoEm)} · 🏷 ${r.modulo||"—"}</div>
+          <div class="hist-usuario">👮 ${r.usuarioNome} · ${r.matricula}</div>
+          <div class="hist-corpo">${r.dados}</div>
+          <div class="hist-data" style="margin-top:4px">${r.registro?`📎 Registro: ${r.registro} · `:""}${r.resultado?`Resultado: ${r.resultado} · `:""}${r.ip?`IP: ${r.ip}`:""}</div>
+        </div>`;
+      }).join("")
     :'<p class="hist-vazio">Nenhum registro.</p>';
 }
 window.filtrarAuditoria=function(){
   const nome=v("filtro-nome").toLowerCase(),data=v("filtro-data");
+  const origem=v("filtro-aud-origem"),modulo=v("filtro-aud-modulo");
   renderAuditoria(todosRegistros.filter(r=>
-    (!nome||r.usuarioNome?.toLowerCase().includes(nome))&&(!data||tsData(r.criadoEm)===data)));
+    (!nome||(r.usuarioNome||r.usuarioEmail||"").toLowerCase().includes(nome))&&
+    (!data||tsData(r.criadoEm)===data)&&
+    (!origem||r._origem===origem)&&
+    (!modulo||r.modulo===modulo)
+  ));
 };
 window.limparFiltros=function(){
   document.getElementById("filtro-nome").value="";document.getElementById("filtro-data").value="";
+  const o=document.getElementById("filtro-aud-origem"),m=document.getElementById("filtro-aud-modulo");
+  if(o)o.value=""; if(m)m.value="";
   renderAuditoria(todosRegistros);
 };
 window.toggleAuditSel=function(id,checked){
@@ -3816,9 +3946,15 @@ window.desmarcarTodos=function(){
 };
 window.removerAuditoriaSelecionados=async function(){
   if(!auditoriaSelecionados.size)return;
+  // exclusão de registros de auditoria é restrita ao Administrador autenticado
+  if(!_ehAdmin()){alerta("Apenas o Administrador autenticado pode remover registros de auditoria.","erro");return;}
   if(!confirm(`Remover ${auditoriaSelecionados.size} registro(s) de auditoria?`))return;
   try{
-    for(const id of auditoriaSelecionados)await deleteDoc(doc(db,COL_AUDITORIA,id));
+    const alvos=[...document.querySelectorAll(".audit-check")].filter(c=>auditoriaSelecionados.has(c.dataset.id));
+    for(const chk of alvos)await deleteDoc(doc(db,chk.dataset.col,chk.dataset.id));
+    await registrarAuditoria("Exclusão de registro(s) de auditoria",
+      `${alvos.length} registro(s) removido(s) pelo Administrador.`,
+      {modulo:"💻 Tecnologia",resultado:"Exclusão administrativa"});
     alerta("Registros removidos.","aviso");carregarAuditoria();
   }catch(err){alerta("Erro: "+err.message,"erro");}
 };
@@ -8649,12 +8785,45 @@ window.excluirPAD=async function(id,status){
 };
 
 /* ══ AUDITORIA AUTOMÁTICA (helper global) ══ */
-async function registrarAuditoria(acao,detalhes=""){
+// Módulo atualmente aberto pelo usuário — atualizado em ir() para as telas de nível 1.
+// Usado para preencher o campo "módulo" da auditoria sem precisar alterar toda chamada existente.
+let MODULO_ATUAL="—";
+const MODULO_POR_SECAO={
+  secretario:"👔 Secretário",comando:"⭐ Comando",corregedoria:"⚖️ Corregedoria",
+  inspetoria:"🏛 Inspetoria",checklist:"🛡️ Armaria",administrativo:"📁 Administrativo",
+  videomonitor:"📹 Vídeo Monit.",inteligencia:"🔎 Inteligência",patrimonio:"🏛 Patrimônio",
+  tecnologia:"💻 Tecnologia","meu-painel":"👮 Policial Municipal"
+};
+// IP público do dispositivo — best-effort; alguns navegadores/redes bloqueiam a chamada,
+// e nesse caso o campo fica registrado como "indisponível" (não bloqueia a auditoria).
+let _ipCache=null;
+async function obterIpPublico(){
+  if(_ipCache)return _ipCache;
+  try{
+    const r=await fetch("https://api.ipify.org?format=json");
+    const j=await r.json();
+    _ipCache=j.ip||"indisponível";
+  }catch(e){_ipCache="indisponível";}
+  return _ipCache;
+}
+/**
+ * Registra uma entrada no Log de Auditoria (módulo Tecnologia).
+ * Compatível com chamadas antigas: registrarAuditoria(acao,detalhes)
+ * Uso completo: registrarAuditoria(acao,detalhes,{modulo,registro,resultado})
+ */
+async function registrarAuditoria(acao,detalhes="",opts={}){
   if(!usuarioLogado)return;
   try{
+    const ip=await obterIpPublico();
     await addDoc(collection(db,COL_AUDITORIA),{
       tipo:"Sistema",
+      acao,
       dados:`${acao}\n${detalhes}`,
+      detalhes,
+      modulo:    opts.modulo||MODULO_POR_SECAO[MODULO_ATUAL]||MODULO_ATUAL||"—",
+      registro:  opts.registro||"",
+      resultado: opts.resultado||"Sucesso",
+      ip,
       usuarioNome:  usuarioLogado.nome||"",
       usuarioEmail: usuarioLogado.email||"",
       matricula:    usuarioLogado.matricula||"",
@@ -8664,7 +8833,419 @@ async function registrarAuditoria(acao,detalhes=""){
   }catch(e){}
 }
 
-/* ══ CENTRAL DE DECISÃO DO COMANDO ══ */
+/* ══════════════════ POSTO FIXO ══════════════════ */
+const STATUS_POSTO_LABEL={
+  disponivel:["⚪","Disponível"], em_servico:["🟢","Em Serviço"],
+  aguardando_passagem:["🟡","Aguardando Passagem"], aguardando_recebimento:["🟡","Aguardando Recebimento"],
+  recebido:["🟢","Recebido"], com_pendencia:["🟡","Com Pendência"], com_divergencia:["🔴","Com Divergência"]
+};
+async function carregarServidoresAtivosPosto(){
+  if(_srvAtivosCache.length)return _srvAtivosCache;
+  try{
+    const snap=await getDocs(query(collection(db,COL_SERV),where("ativo","==",true)));
+    _srvAtivosCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+  }catch(e){_srvAtivosCache=[];}
+  return _srvAtivosCache;
+}
+
+/* --- CADASTRO DE POSTOS (Administrador cadastra; Inspetoria define escala) --- */
+window.abrirNovoPosto=function(){
+  const form=document.getElementById("posto-cadastro-form");
+  if(!_ehAdmin()){alerta("Apenas o Administrador pode cadastrar postos e equipamentos.","erro");return;}
+  form.style.display=form.style.display==="none"?"block":"none";
+  _postoEquipTemp=[];renderEquipPostoTemp();
+  document.getElementById("posto-nome").value="";document.getElementById("posto-local").value="";
+};
+window.adicionarEquipamentoPosto=function(){
+  const tipo=v("posto-equip-tipo"),ident=v("posto-equip-id"),qtd=parseInt(v("posto-equip-qtd")||"0",10);
+  if(!qtd||qtd<1)return alerta("Informe a quantidade prevista.","erro");
+  _postoEquipTemp.push({tipo,identificacao:ident,quantidadePrevista:qtd});
+  document.getElementById("posto-equip-id").value="";document.getElementById("posto-equip-qtd").value="";
+  renderEquipPostoTemp();
+};
+window.removerEquipamentoPostoTemp=function(i){_postoEquipTemp.splice(i,1);renderEquipPostoTemp();};
+function renderEquipPostoTemp(){
+  const el=document.getElementById("posto-equip-lista");
+  el.innerHTML=_postoEquipTemp.length?_postoEquipTemp.map((e,i)=>
+    `<div class="hist-item" style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px">
+      <span style="font-size:.78rem">${e.tipo}${e.identificacao?" · "+e.identificacao:""} — ${e.quantidadePrevista} un.</span>
+      <button class="btn btn-sm btn-perigo" onclick="removerEquipamentoPostoTemp(${i})">✕</button>
+    </div>`).join(""):'<p class="hist-vazio">Nenhum equipamento adicionado.</p>';
+}
+window.salvarPosto=async function(){
+  if(!_ehAdmin())return alerta("Apenas o Administrador pode cadastrar postos.","erro");
+  const nome=v("posto-nome"),local=v("posto-local");
+  if(!nome||!local)return alerta("Preencha nome e local do posto.","erro");
+  if(!_postoEquipTemp.length)return alerta("Adicione ao menos um equipamento esperado.","erro");
+  try{
+    await addDoc(collection(db,COL_POSTOS),{
+      nome,local,ativo:true,equipamentos:_postoEquipTemp,
+      responsavelMatricula:"",responsavelNome:"",proximoMatricula:"",proximoNome:"",
+      status:"disponivel",operacaoAtualId:null,
+      criadoPor:usuarioLogado?.nome||"",criadoEm:serverTimestamp()
+    });
+    await registrarAuditoria("Posto fixo cadastrado",`${nome} — ${local}`,{modulo:"🏛 Inspetoria",registro:nome});
+    alerta("Posto cadastrado!","ok");
+    document.getElementById("posto-cadastro-form").style.display="none";
+    _postoEquipTemp=[];
+    await carregarPostos();
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+async function carregarPostos(){
+  const lista=document.getElementById("postos-lista");
+  if(lista)lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  try{
+    const snap=await getDocs(query(collection(db,COL_POSTOS),orderBy("nome")));
+    _postosCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    await carregarServidoresAtivosPosto();
+    renderPostosLista();
+  }catch(err){if(lista)lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+function renderPostosLista(){
+  const lista=document.getElementById("postos-lista");
+  if(!lista)return;
+  if(!_postosCache.length){lista.innerHTML='<p class="hist-vazio">Nenhum posto cadastrado.</p>';return;}
+  lista.innerHTML=_postosCache.map(p=>{
+    const st=STATUS_POSTO_LABEL[p.status]||["⚪",p.status];
+    return `<div class="hist-item">
+      <div class="hist-tipo">${p.nome}</div>
+      <div class="hist-data">📍 ${p.local}</div>
+      <div class="hist-corpo">${st[0]} ${st[1]}</div>
+      <div class="hist-usuario">Responsável: ${p.responsavelNome||"—"} · Próximo: ${p.proximoNome||"—"}</div>
+      <div class="hist-corpo" style="font-size:.68rem;margin-top:4px">Equipamentos: ${(p.equipamentos||[]).map(e=>`${e.tipo} (${e.quantidadePrevista})`).join(", ")||"—"}</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-cinza" onclick="abrirModalPostoEscala('${p.id}')">👮 Definir Escala</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+window.abrirModalPostoEscala=async function(id){
+  const p=_postosCache.find(x=>x.id===id);if(!p)return;
+  document.getElementById("posto-escala-id").value=id;
+  await carregarServidoresAtivosPosto();
+  const opts='<option value="">Selecione...</option>'+_srvAtivosCache.map(s=>
+    `<option value="${s.matricula}" data-nome="${s.nome}">${s.nome} — ${s.matricula}</option>`).join("");
+  const selResp=document.getElementById("posto-escala-resp"),selProx=document.getElementById("posto-escala-prox");
+  selResp.innerHTML=opts;selProx.innerHTML=opts;
+  selResp.value=p.responsavelMatricula||"";selProx.value=p.proximoMatricula||"";
+  document.getElementById("modal-posto-escala").classList.add("aberto");
+};
+window.fecharModalPostoEscala=function(){document.getElementById("modal-posto-escala").classList.remove("aberto");};
+window.salvarEscalaPosto=async function(){
+  const id=v("posto-escala-id");
+  const selResp=document.getElementById("posto-escala-resp"),selProx=document.getElementById("posto-escala-prox");
+  const respMat=selResp.value,respNome=selResp.selectedOptions[0]?.dataset.nome||"";
+  const proxMat=selProx.value,proxNome=selProx.selectedOptions[0]?.dataset.nome||"";
+  if(!respMat)return alerta("Selecione o responsável atual.","erro");
+  try{
+    const ref=doc(db,COL_POSTOS,id);
+    const atual=(await getDoc(ref)).data();
+    const novoStatus=(atual.status==="disponivel")?"em_servico":atual.status;
+    await updateDoc(ref,{responsavelMatricula:respMat,responsavelNome:respNome,
+      proximoMatricula:proxMat,proximoNome:proxNome,status:novoStatus});
+    await registrarAuditoria("Escala do posto definida",`Responsável: ${respNome} · Próximo: ${proxNome||"—"}`,
+      {modulo:"🏛 Inspetoria",registro:id});
+    alerta("Escala do posto atualizada.","ok");
+    fecharModalPostoEscala();await carregarPostos();
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+function iniciarInspPostos(){carregarPostos();document.getElementById("posto-cadastro-form").style.display="none";}
+
+/* --- PASSAGENS DE POSTO (Inspetoria: dashboard + histórico) --- */
+async function carregarOperacoesPosto(){
+  const snap=await getDocs(query(collection(db,COL_POSTO_OPS),orderBy("criadoEm","desc")));
+  _postoOpsCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+  return _postoOpsCache;
+}
+async function iniciarInspPassagens(){
+  const lista=document.getElementById("passagens-lista");
+  if(lista)lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  await carregarPostos();await carregarOperacoesPosto();
+  preencherFiltroPostoPassagens();atualizarIndicadoresPassagens();renderPassagensPosto();
+  const pend=_postoOpsCache.filter(o=>o.statusOperacao==="aguardando_recebimento").length;
+  const badge=document.getElementById("badge-insp-passagens");
+  if(badge){badge.textContent=pend;badge.style.display=pend>0?"inline-flex":"none";}
+}
+function preencherFiltroPostoPassagens(){
+  const sel=document.getElementById("ip-filtro-posto");
+  if(sel)sel.innerHTML='<option value="">Todos</option>'+_postosCache.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+}
+function atualizarIndicadoresPassagens(){
+  const hoje=new Date().toLocaleDateString("pt-BR");
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set("ip-total-postos",_postosCache.length);
+  set("ip-em-servico",_postosCache.filter(p=>p.status==="em_servico").length);
+  set("ip-hoje",_postoOpsCache.filter(o=>tsStr(o.criadoEm).startsWith(hoje)).length);
+  set("ip-pendentes",_postoOpsCache.filter(o=>o.statusOperacao==="aguardando_recebimento").length);
+  set("ip-com-pendencia",_postosCache.filter(p=>p.status==="com_pendencia").length);
+  set("ip-com-divergencia",_postosCache.filter(p=>p.status==="com_divergencia").length);
+}
+window.renderPassagensPosto=function(){
+  const data=v("ip-filtro-data"),postoId=v("ip-filtro-posto"),situacao=v("ip-filtro-situacao");
+  const ops=_postoOpsCache.filter(o=>
+    (!data||tsData(o.criadoEm)===data)&&(!postoId||o.postoId===postoId)&&(!situacao||o.statusOperacao===situacao));
+  const lista=document.getElementById("passagens-lista");
+  const sitLabel={aguardando_recebimento:"⏳ Aguardando Recebimento",recebido:"🟢 Recebido",
+    recebido_pendencia:"🟡 Recebido com Pendência",recebido_divergencia:"🔴 Recebido com Divergência"};
+  lista.innerHTML=ops.length?ops.map(o=>`<div class="hist-item">
+      <div class="hist-tipo">${o.numero} — ${o.postoNome}</div>
+      <div class="hist-data">🕐 ${tsStr(o.criadoEm)}</div>
+      <div class="hist-corpo">Entregante: ${o.entreganteNome} · Recebedor: ${o.recebedorNome||"—"}</div>
+      <div class="hist-corpo">${sitLabel[o.statusOperacao]||o.statusOperacao} · Verificação: ${o.resultadoVerificacao||"—"}</div>
+      ${o.divergencias?.length?`<div class="hist-corpo" style="color:#f1948a">⚠ ${o.divergencias.length} divergência(s)</div>`:""}
+    </div>`).join(""):'<p class="hist-vazio">Nenhuma passagem encontrada.</p>';
+};
+
+/* --- POLICIAL MUNICIPAL: verificação, passagem e recebimento --- */
+async function iniciarPostoFixo(){
+  const app=document.getElementById("posto-fixo-app");
+  app.innerHTML='<p class="hist-vazio">Carregando...</p>';
+  if(!usuarioLogado?.matricula){app.innerHTML='<p class="hist-vazio">Sua matrícula não está cadastrada — fale com o Administrativo.</p>';return;}
+  try{
+    const minhaMat=normalizarMatricula(usuarioLogado.matricula);
+    const snap=await getDocs(collection(db,COL_POSTOS));
+    const postos=snap.docs.map(d=>({id:d.id,...d.data()}));
+    _meuPostoAtual=postos.find(p=>normalizarMatricula(p.responsavelMatricula)===minhaMat)||null;
+    _meuPostoReceber=postos.find(p=>normalizarMatricula(p.proximoMatricula)===minhaMat&&p.status==="aguardando_recebimento")||null;
+    _meuPostoOperacaoPendente=null;
+    if(_meuPostoReceber?.operacaoAtualId){
+      const opSnap=await getDoc(doc(db,COL_POSTO_OPS,_meuPostoReceber.operacaoAtualId));
+      if(opSnap.exists())_meuPostoOperacaoPendente={id:opSnap.id,...opSnap.data()};
+    }
+    const badge=document.getElementById("badge-mp-posto");
+    if(badge){const n=_meuPostoReceber?1:0;badge.textContent=n;badge.style.display=n>0?"inline-flex":"none";}
+    renderPostoFixoHome();
+  }catch(err){app.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+}
+function renderPostoFixoHome(){
+  const app=document.getElementById("posto-fixo-app");
+  _verifTemp=null;_recebTemp=null;
+  let html="";
+  if(_meuPostoReceber&&_meuPostoOperacaoPendente){
+    const op=_meuPostoOperacaoPendente;
+    html+=`<div class="hist-item" style="border-left:3px solid #f1c40f">
+      <div class="hist-tipo">🔔 Nova Passagem de Posto</div>
+      <div class="hist-corpo">Posto: ${_meuPostoReceber.nome}\nLocal: ${_meuPostoReceber.local}\nEntregante: ${op.entreganteNome}\nData: ${tsStr(op.criadoEm)}\nResultado da verificação: ${op.resultadoVerificacao}</div>
+      <button class="btn btn-full" style="margin-top:8px;background:rgba(46,204,113,.25);border-color:rgba(46,204,113,.6);color:#7dcea0"
+        onclick="renderRecebimentoPosto()">🟢 RECEBER POSTO</button>
+    </div>`;
+  }
+  if(_meuPostoAtual){
+    const p=_meuPostoAtual,st=STATUS_POSTO_LABEL[p.status]||["⚪",p.status];
+    html+=`<div class="hist-item">
+      <div class="hist-tipo">${p.nome}</div>
+      <div class="hist-data">📍 ${p.local}</div>
+      <div class="hist-corpo">${st[0]} ${st[1]}</div>`;
+    if(p.status==="em_servico"||p.status==="disponivel")
+      html+=`<button class="btn btn-full btn-dourado" style="margin-top:8px" onclick="iniciarVerificacaoPosto()">🛡️ Iniciar Verificação de Posto</button>`;
+    else if(p.status==="aguardando_recebimento")
+      html+=`<p style="font-size:.72rem;color:var(--cinza);margin-top:6px">Aguardando ${p.proximoNome||"o próximo policial"} confirmar o recebimento.</p>`;
+    html+="</div>";
+  }
+  if(!html)html='<p class="hist-vazio">Você não está vinculado a nenhum posto fixo no momento. Fale com a Inspetoria.</p>';
+  app.innerHTML=html;
+}
+window.iniciarVerificacaoPosto=function(){
+  const p=_meuPostoAtual;if(!p)return;
+  _verifTemp={equipamentos:(p.equipamentos||[]).map(e=>({...e,encontrado:e.quantidadePrevista,situacao:"REGULAR"})),
+    alteracaoAmbiente:false,tiposAlteracao:[],descricaoAmbiente:"",observacoesAmbiente:"",fotosAmbiente:[],providenciasAmbiente:""};
+  renderVerificacaoPosto();
+};
+function renderVerificacaoPosto(){
+  const p=_meuPostoAtual,t=_verifTemp,app=document.getElementById("posto-fixo-app");
+  const equipHtml=t.equipamentos.map((e,i)=>`
+    <div class="hist-item">
+      <div class="hist-tipo">${e.tipo}${e.identificacao?" · "+e.identificacao:""}</div>
+      <div class="hist-data">Previsto: ${e.quantidadePrevista}</div>
+      <label class="campo-label">Quantidade encontrada</label>
+      <input type="number" min="0" value="${e.encontrado}" oninput="atualizarEquipVerif(${i},'encontrado',this.value)">
+      <label class="campo-label">Situação</label>
+      <select onchange="atualizarEquipVerif(${i},'situacao',this.value)">
+        ${["REGULAR","DANIFICADA","AUSENTE","DIVERGENTE"].map(s=>`<option value="${s}" ${e.situacao===s?"selected":""}>${s}</option>`).join("")}
+      </select>
+    </div>`).join("");
+  app.innerHTML=`
+    <button class="btn btn-cinza btn-sm" style="margin-bottom:10px" onclick="renderPostoFixoHome()">← Cancelar</button>
+    <div class="secao-titulo" style="font-size:.9rem">${p.nome} — Verificação</div>
+    <div class="hist-corpo" style="margin-bottom:10px">📍 ${p.local}\n👮 ${usuarioLogado.nome} · Mat: ${usuarioLogado.matricula}\n🕐 ${agora()}</div>
+    <div class="secao-titulo" style="font-size:.85rem">Equipamentos</div>
+    ${equipHtml}
+    <div class="secao-titulo" style="font-size:.85rem;margin-top:14px">Ambiente</div>
+    <label class="campo-label">Houve alteração no ambiente?</label>
+    <select onchange="toggleAlteracaoAmbiente(this.value)">
+      <option value="nao" ${!t.alteracaoAmbiente?"selected":""}>NÃO</option>
+      <option value="sim" ${t.alteracaoAmbiente?"selected":""}>SIM</option>
+    </select>
+    <div id="posto-alt-detalhe" style="display:${t.alteracaoAmbiente?"block":"none"}">
+      <label class="campo-label">Tipo de alteração</label>
+      <select multiple size="4" onchange="atualizarTiposAlteracao(this)">
+        ${["Porta/janela","Mobiliário","Iluminação","Instalação elétrica","Equipamento","Danos ao patrimônio","Sinais de violação","Limpeza/organização","Outro"]
+          .map(x=>`<option value="${x}" ${t.tiposAlteracao.includes(x)?"selected":""}>${x}</option>`).join("")}
+      </select>
+      <label class="campo-label">Descrição detalhada</label>
+      <textarea oninput="_verifTemp.descricaoAmbiente=this.value">${t.descricaoAmbiente}</textarea>
+      <label class="campo-label">Observações</label>
+      <textarea oninput="_verifTemp.observacoesAmbiente=this.value">${t.observacoesAmbiente}</textarea>
+      <label class="campo-label">Providências adotadas</label>
+      <textarea oninput="_verifTemp.providenciasAmbiente=this.value">${t.providenciasAmbiente}</textarea>
+      <button class="btn btn-cinza btn-sm" style="margin-top:6px" onclick="document.getElementById('posto-foto-input').click()">📷 Anexar Foto</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        ${t.fotosAmbiente.map(f=>`<img src="${f}" style="width:56px;height:56px;object-fit:cover;border-radius:6px">`).join("")}
+      </div>
+    </div>
+    <button class="btn btn-full btn-dourado" style="margin-top:14px" onclick="calcularResultadoEPassar()">🔄 PASSAR O POSTO</button>
+  `;
+}
+window.atualizarEquipVerif=function(i,campo,val){_verifTemp.equipamentos[i][campo]=campo==="encontrado"?parseInt(val||"0",10):val;};
+window.toggleAlteracaoAmbiente=function(val){_verifTemp.alteracaoAmbiente=val==="sim";renderVerificacaoPosto();};
+window.atualizarTiposAlteracao=function(sel){_verifTemp.tiposAlteracao=[...sel.selectedOptions].map(o=>o.value);};
+window.processarFotoPosto=function(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>800*1024){alerta("Foto muito grande. Escolha uma imagem menor (até 800KB).","erro");input.value="";return;}
+  const reader=new FileReader();
+  reader.onload=e=>{_verifTemp.fotosAmbiente.push(e.target.result);renderVerificacaoPosto();};
+  reader.readAsDataURL(file);
+};
+function calcularResultadoPosto(){
+  const t=_verifTemp;
+  const algumProblema=t.equipamentos.some(e=>e.situacao!=="REGULAR"||e.encontrado!==e.quantidadePrevista);
+  if(!algumProblema&&!t.alteracaoAmbiente)return"regular";
+  const grave=t.equipamentos.some(e=>e.situacao==="AUSENTE"||e.situacao==="DIVERGENTE")||
+    (t.alteracaoAmbiente&&["Danos ao patrimônio","Sinais de violação"].some(x=>t.tiposAlteracao.includes(x)));
+  return grave?"irregularidade":"pendencia";
+}
+window.calcularResultadoEPassar=async function(){
+  const t=_verifTemp,p=_meuPostoAtual;
+  const resultado=calcularResultadoPosto();
+  let descricaoIrregularidade="";
+  if(resultado==="irregularidade"){
+    descricaoIrregularidade=prompt("Foi encontrada uma irregularidade. Descreva antes de continuar:")||"";
+    if(!descricaoIrregularidade.trim())return alerta("Descrição obrigatória para irregularidade.","erro");
+  }
+  const label={regular:"🟢 POSTO REGULAR",pendencia:"🟡 POSTO COM PENDÊNCIA",irregularidade:"🔴 IRREGULARIDADE ENCONTRADA"}[resultado];
+  if(!confirm(`Resultado da verificação: ${label}\n\nConfirmar passagem do posto? Ao confirmar, você declara que realizou a conferência dos equipamentos e das condições do posto conforme as informações registradas.`))return;
+  try{
+    let opId=null,numeroGerado=null,proxMatSnap="";
+    await runTransaction(db,async(trx)=>{
+      const postoRef=doc(db,COL_POSTOS,p.id);
+      const postoSnap=await trx.get(postoRef);
+      const dp=postoSnap.data();
+      if(!dp||(dp.status!=="em_servico"&&dp.status!=="disponivel"))
+        throw new Error("Este posto já está em processo de passagem/recebimento.");
+      if(normalizarMatricula(dp.responsavelMatricula)!==normalizarMatricula(usuarioLogado.matricula))
+        throw new Error("Você não é o responsável atual deste posto.");
+      const seqRef=doc(db,COL_POSTO_SEQ,"contador");
+      const seqSnap=await trx.get(seqRef);
+      const ultimo=(seqSnap.exists()?seqSnap.data().ultimo:0)+1;
+      const numero=`PF-${new Date().getFullYear()}-${String(ultimo).padStart(6,"0")}`;
+      const opRef=doc(collection(db,COL_POSTO_OPS));
+      trx.set(opRef,{
+        numero,postoId:p.id,postoNome:p.nome,local:p.local,
+        entreganteMatricula:usuarioLogado.matricula,entreganteNome:usuarioLogado.nome,
+        recebedorMatricula:dp.proximoMatricula||"",recebedorNome:dp.proximoNome||"",
+        equipamentosVerificados:t.equipamentos,
+        alteracaoAmbiente:{houve:t.alteracaoAmbiente,tipos:t.tiposAlteracao,descricao:t.descricaoAmbiente,
+          observacoes:t.observacoesAmbiente,fotos:t.fotosAmbiente,providencias:t.providenciasAmbiente},
+        resultadoVerificacao:resultado,descricaoIrregularidade,
+        statusOperacao:"aguardando_recebimento",
+        confirmacaoEntregante:{nome:usuarioLogado.nome,matricula:usuarioLogado.matricula,email:usuarioLogado.email,hora:agora()},
+        recebimento:null,divergencias:[],
+        criadoPor:usuarioLogado.email,criadoEm:serverTimestamp()
+      });
+      trx.set(seqRef,{ultimo});
+      trx.update(postoRef,{status:"aguardando_recebimento",operacaoAtualId:opRef.id});
+      opId=opRef.id;numeroGerado=numero;proxMatSnap=dp.proximoMatricula||"";
+    });
+    await registrarAuditoria("Passagem de posto registrada",`${p.nome} — ${numeroGerado} — resultado: ${label}`,
+      {modulo:"👮 Policial Municipal",registro:numeroGerado,resultado:label});
+    if(proxMatSnap){
+      const proxSnap=await getDocs(query(collection(db,COL_SERV),where("matricula","==",proxMatSnap)));
+      const prox=proxSnap.docs[0]?.data();
+      if(prox?.email)await enviarNotificacao(prox.email,"🔔 Passagem de Posto",
+        `O ${p.nome} foi passado e está aguardando seu recebimento.`,"meupainel");
+    }
+    alerta("Posto passado com sucesso!","ok");
+    await iniciarPostoFixo();
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+window.renderRecebimentoPosto=function(){
+  const op=_meuPostoOperacaoPendente,p=_meuPostoReceber,app=document.getElementById("posto-fixo-app");
+  if(!_recebTemp)_recebTemp={itens:op.equipamentosVerificados.map(e=>({...e,entregue:e.encontrado,encontrado:e.encontrado,situacao:e.situacao}))};
+  const t=_recebTemp;
+  const itensHtml=t.itens.map((e,i)=>`
+    <div class="hist-item">
+      <div class="hist-tipo">${e.tipo}${e.identificacao?" · "+e.identificacao:""}</div>
+      <div class="hist-data">Entregue: ${e.entregue}</div>
+      <label class="campo-label">Encontrado</label>
+      <input type="number" min="0" value="${e.encontrado}" oninput="atualizarEquipRecebimento(${i},'encontrado',this.value)">
+      <label class="campo-label">Situação</label>
+      <select onchange="atualizarEquipRecebimento(${i},'situacao',this.value)">
+        ${["REGULAR","DANIFICADA","AUSENTE","DIVERGENTE"].map(s=>`<option value="${s}" ${e.situacao===s?"selected":""}>${s}</option>`).join("")}
+      </select>
+    </div>`).join("");
+  const ambienteResumo=op.alteracaoAmbiente?.houve
+    ?`Alteração: ${(op.alteracaoAmbiente.tipos||[]).join(", ")} — ${op.alteracaoAmbiente.descricao||""}`
+    :"Sem alteração registrada";
+  app.innerHTML=`
+    <button class="btn btn-cinza btn-sm" style="margin-bottom:10px" onclick="_recebTemp=null;renderPostoFixoHome()">← Cancelar</button>
+    <div class="secao-titulo" style="font-size:.9rem">${op.numero} — Recebimento</div>
+    <div class="hist-corpo" style="margin-bottom:10px">📍 ${op.local}\nEntregante: ${op.entreganteNome}\nAmbiente: ${ambienteResumo}</div>
+    ${itensHtml}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-full" style="background:rgba(46,204,113,.25);border-color:rgba(46,204,113,.6);color:#7dcea0" onclick="confirmarRecebimentoPosto()">🟢 RECEBER POSTO</button>
+    </div>
+  `;
+};
+window.atualizarEquipRecebimento=function(i,campo,val){_recebTemp.itens[i][campo]=campo==="encontrado"?parseInt(val||"0",10):val;};
+window.confirmarRecebimentoPosto=async function(){
+  const t=_recebTemp,op=_meuPostoOperacaoPendente,p=_meuPostoReceber;
+  const divergentes=t.itens.filter(e=>e.encontrado!==e.entregue||e.situacao!=="REGULAR");
+  let divergencias=[];
+  if(divergentes.length){
+    if(!confirm(`Há ${divergentes.length} diferença(s) entre o entregue e o encontrado. Registrar divergência para cada item?`))return;
+    for(const d of divergentes){
+      const desc=prompt(`Divergência em ${d.tipo}${d.identificacao?" ("+d.identificacao+")":""}\nInformado: ${d.entregue} · Encontrado: ${d.encontrado}\nDescreva:`)||"";
+      const providencia=prompt("Providência adotada:")||"";
+      divergencias.push({item:d.tipo,identificacao:d.identificacao||"",quantidadeInformada:d.entregue,
+        quantidadeEncontrada:d.encontrado,tipoDivergencia:d.situacao,descricao:desc,providencia});
+    }
+  }
+  const statusFinal=divergencias.length?"recebido_divergencia":"recebido";
+  const declaracao=statusFinal==="recebido"
+    ?"Declaro que conferi o posto, os equipamentos e as condições registradas na passagem e estou assumindo o posto."
+    :"Declaro que conferi o posto e estou assumindo o posto, com as divergências registradas acima.";
+  if(!confirm(declaracao+"\n\nConfirmar recebimento?"))return;
+  try{
+    await runTransaction(db,async(trx)=>{
+      const postoRef=doc(db,COL_POSTOS,p.id),opRef=doc(db,COL_POSTO_OPS,op.id);
+      const postoSnap=await trx.get(postoRef);
+      if(postoSnap.data()?.status!=="aguardando_recebimento")
+        throw new Error("Este posto não está mais aguardando recebimento.");
+      trx.update(opRef,{
+        statusOperacao:statusFinal,
+        recebimento:{itens:t.itens,horaRecebimento:agora(),
+          confirmacaoRecebedor:{nome:usuarioLogado.nome,matricula:usuarioLogado.matricula,email:usuarioLogado.email,hora:agora()}},
+        divergencias
+      });
+      trx.update(postoRef,{
+        status:divergencias.length?"com_divergencia":"em_servico",
+        responsavelMatricula:usuarioLogado.matricula,responsavelNome:usuarioLogado.nome,
+        proximoMatricula:"",proximoNome:"",operacaoAtualId:opRef.id
+      });
+    });
+    await registrarAuditoria("Recebimento de posto confirmado",`${p.nome} — ${op.numero} — situação: ${statusFinal}`,
+      {modulo:"👮 Policial Municipal",registro:op.numero,resultado:statusFinal});
+    const entregSnap=await getDocs(query(collection(db,COL_SERV),where("matricula","==",op.entreganteMatricula)));
+    const entreg=entregSnap.docs[0]?.data();
+    if(entreg?.email)await enviarNotificacao(entreg.email,
+      divergencias.length?"⚠️ Divergência na Passagem":"✅ Posto Recebido",
+      divergencias.length?`Foi registrada uma divergência no ${p.nome}.`:`O ${p.nome} foi assumido com sucesso.`,"meupainel");
+    if(divergencias.length)await enviarNotificacao("inspetoria@sistema.local",
+      "⚠️ Divergência na Passagem de Posto",`${p.nome} — ${op.numero} recebido com divergência.`,"inspetoria");
+    alerta(divergencias.length?"Recebimento registrado com divergência.":"Posto recebido com sucesso!","ok");
+    await iniciarPostoFixo();
+  }catch(err){alerta("Erro: "+err.message,"erro");}
+};
 const CD_TIPOS={
   os:{col:COL_OS, label:"Ordem de Serviço",
       titulo:r=>`📄 O.S ${r.numero||"—"} · ${r.tipo==="temporaria"?"Temporária":"Permanente"}`,
@@ -9963,9 +10544,16 @@ window.realizarBackupManual=async function(){
    Firestore, não só pela interface).
    ══════════════════════════════════════════════════════════════════════ */
 const COL_DISPOSITIVOS="dispositivos";
+const COL_POSTOS="postos_fixos";
+const COL_POSTO_OPS="posto_operacoes"; // verificação + passagem + recebimento, um doc por operação (nº sequencial)
+const COL_POSTO_SEQ="posto_seq"; // contador do nº de operação (doc único "contador")
 
 /* ── SEGURANÇA ── */
-function abrirLogAcessosTec(){ir("admin");mudarAba("log");}
+function abrirLogAcessosTec(){
+  ir("tec-auditoria");
+  const sel=document.getElementById("filtro-aud-origem");
+  if(sel){sel.value="acesso";filtrarAuditoria();}
+}
 
 async function iniciarTecSeguranca(){
   const el=document.getElementById("tec-sessoes-lista");
