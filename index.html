@@ -3706,7 +3706,10 @@ window.logar=async function(){
     }
 
     // Modo de Manutenção: bloqueia usuários comuns, libera administradores
-    if(!adminAutenticado){
+    // (inclui quem tem a permissão "tecnologia", que já equivale a admin).
+    const ehAdminOuTecnologia = adminAutenticado ||
+      (usuario.status==="aprovado" && usuario.permissoes?.tecnologia!==false);
+    if(!ehAdminOuTecnologia){
       const statusManutencao=await verificarModoManutencao();
       if(statusManutencao.bloqueado){
         await signOut(auth);
@@ -5806,8 +5809,15 @@ window.renderFotos=async function(){
 };
 
 function _ehAdmin(){
-  // agora reflete a autenticação real via Firebase Authentication
-  return adminAutenticado===true;
+  // Espelha exatamente a função souAdmin() das Regras do Firestore:
+  // conta na coleção "admins" OU está aprovado com a permissão "tecnologia"
+  // (que no servidor já equivale a poder de Administrador). Antes esse
+  // checador só olhava adminAutenticado, então quem só tinha acesso ao
+  // módulo Tecnologia via permissão via era barrado na UI mesmo podendo
+  // fazer a ação no banco — agora os dois lados batem.
+  const temPermTecnologia = usuarioLogado?.status==="aprovado" &&
+    usuarioLogado?.permissoes?.tecnologia!==false;
+  return adminAutenticado===true || temPermTecnologia;
 }
 
 function toggleFotoSel(id){
@@ -8285,7 +8295,7 @@ window.limparDadosTesteOcorrenciasPAD=async function(){
   if(!confirm(
     "Isso vai APAGAR PERMANENTEMENTE:\n\n"+
     "• Todas as Ocorrências (internas e externas) e seu histórico\n"+
-    "• Todos os PAD com status Recebido/Em Análise/Aberto (e seu histórico) — PADs Arquivados NÃO são apagados\n\n"+
+    "• Todos os PAD, de qualquer status (Recebido/Em Análise/Aberto/Arquivado) e seu histórico\n\n"+
     "As telas e funções continuam existindo, só os dados de teste somem. Essa ação não pode ser desfeita. Continuar?"))return;
   if(!confirm("Tem certeza mesmo? Essa é a confirmação final."))return;
   try{
@@ -8297,25 +8307,14 @@ window.limparDadosTesteOcorrenciasPAD=async function(){
     const snapOcHist=await getDocs(collection(db,COL_OC_HIST));
     for(const d of snapOcHist.docs){await deleteDoc(doc(db,COL_OC_HIST,d.id));ocHistApagados++;}
 
-    // PAD com status em aberto/análise/andamento (preserva arquivados) + histórico ligado
+    // PAD — todos os status, incluindo arquivados — + histórico
     const snapPad=await getDocs(collection(db,COL_PAD));
-    const idsPadApagados=new Set();
-    for(const d of snapPad.docs){
-      const st=d.data().status;
-      if(["recebido","analise","aberto"].includes(st)){
-        await deleteDoc(doc(db,COL_PAD,d.id));
-        idsPadApagados.add(d.id);padApagados++;
-      }
-    }
+    for(const d of snapPad.docs){await deleteDoc(doc(db,COL_PAD,d.id));padApagados++;}
     const snapPadHist=await getDocs(collection(db,COL_PAD_HIST));
-    for(const d of snapPadHist.docs){
-      if(idsPadApagados.has(d.data().padId)){
-        await deleteDoc(doc(db,COL_PAD_HIST,d.id));padHistApagados++;
-      }
-    }
+    for(const d of snapPadHist.docs){await deleteDoc(doc(db,COL_PAD_HIST,d.id));padHistApagados++;}
 
     await registrarAuditoria("Limpeza de dados de teste (Ocorrências e PAD)",
-      `Ocorrências: ${ocApagadas} (+${ocHistApagados} histórico) · PADs abertos/análise/andamento: ${padApagados} (+${padHistApagados} histórico). PADs arquivados preservados.`,
+      `Ocorrências: ${ocApagadas} (+${ocHistApagados} histórico) · PADs (todos os status): ${padApagados} (+${padHistApagados} histórico).`,
       {modulo:"💻 Tecnologia",resultado:"Limpeza administrativa"});
     alerta(`Concluído! Ocorrências: ${ocApagadas} · PADs: ${padApagados} apagados.`,"ok");
   }catch(err){alerta("Erro na limpeza: "+err.message,"erro");}
