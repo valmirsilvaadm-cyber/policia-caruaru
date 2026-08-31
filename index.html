@@ -1797,6 +1797,7 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 
   <button class="btn btn-full mod-btn" style="border-left:3px solid #c0392b!important;margin-bottom:8px" onclick="ir('tec-auditoria')">🔐 Log de Auditoria</button>
+  <button class="btn btn-full mod-btn" style="border-left:3px solid #e67e22!important;margin-bottom:8px" onclick="migrarCpfRgRestrito()">🔒 Migrar CPF/RG para acesso restrito</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #fbbf24!important;margin-bottom:8px" onclick="ir('admin')">👥 Gestão de Usuários</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #f87171!important;margin-bottom:8px" onclick="ir('tec-seguranca')"><span class="ic-img ic-seguranca"></span> Segurança</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #34d399!important;margin-bottom:8px" onclick="ir('tec-dispositivos')"><span class="ic-img ic-dispositivos"></span> Gerenciamento de Dispositivos</button>
@@ -2677,6 +2678,7 @@ textarea{resize:vertical;min-height:70px;}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div><label class="campo-label">CPF</label><input type="text" id="fd-cpf" placeholder="000.000.000-00"></div>
         <div><label class="campo-label">RG</label><input type="text" id="fd-rg"></div>
+        <div id="fd-cpf-aviso" style="grid-column:1/-1;font-size:.68rem;color:var(--cinza)"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div><label class="campo-label">Data de nascimento</label><input type="date" id="fd-nascimento"></div>
@@ -3269,7 +3271,7 @@ textarea{resize:vertical;min-height:70px;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc,
-         updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot, arrayUnion, arrayRemove, runTransaction }
+         updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot, arrayUnion, arrayRemove, runTransaction, deleteField }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -8131,8 +8133,25 @@ window.abrirFicha=async function(srvId){
   document.getElementById("fd-foto-input").value="";
   document.getElementById("fd-nome").value=srv.nome||"";
   document.getElementById("fd-matricula").value=srv.matricula||"";
-  document.getElementById("fd-cpf").value=srv.cpf||"";
-  document.getElementById("fd-rg").value=srv.rg||"";
+  // CPF/RG agora ficam numa subcoleção com leitura restrita
+  // (Admin, Administrativo, ou o próprio servidor). Se o usuário atual
+  // não tiver permissão, o campo fica em branco com um aviso — não é erro.
+  const camposSensiveis=document.getElementById("fd-cpf-aviso");
+  if(camposSensiveis)camposSensiveis.textContent="";
+  document.getElementById("fd-cpf").value="";
+  document.getElementById("fd-rg").value="";
+  document.getElementById("fd-cpf").disabled=true;
+  document.getElementById("fd-rg").disabled=true;
+  carregarDadosSensiveisServidor(srvId).then(dados=>{
+    if(dados){
+      document.getElementById("fd-cpf").value=dados.cpf||"";
+      document.getElementById("fd-rg").value=dados.rg||"";
+    } else if(camposSensiveis){
+      camposSensiveis.textContent="🔒 Acesso restrito — só Administrador/Administrativo ou o próprio servidor veem CPF/RG.";
+    }
+    document.getElementById("fd-cpf").disabled=false;
+    document.getElementById("fd-rg").disabled=false;
+  });
   document.getElementById("fd-nascimento").value=srv.nascimento||"";
   document.getElementById("fd-admissao").value=srv.admissao||"";
   document.getElementById("fd-telefone").value=srv.telefone||"";
@@ -8223,22 +8242,57 @@ const COL_TIMELINE="servidor_timeline";
 
 window.salvarDadosPessoais=async function(){
   if(!fichaAtualId)return alerta("Nenhum servidor selecionado.","erro");
+  const cpf=v("fd-cpf"),rg=v("fd-rg");
   const dados={
-    nome:v("fd-nome"),matricula:v("fd-matricula"),cpf:v("fd-cpf"),rg:v("fd-rg"),
+    nome:v("fd-nome"),matricula:v("fd-matricula"),
     nascimento:v("fd-nascimento"),admissao:v("fd-admissao"),telefone:v("fd-telefone"),
     email:v("fd-email"),endereco:v("fd-endereco"),cargo:v("fd-cargo"),funcao:v("fd-funcao"),
-    lotacao:v("fd-lotacao"),unidade:v("fd-unidade"),situacao:v("fd-situacao")
+    lotacao:v("fd-lotacao"),unidade:v("fd-unidade"),situacao:v("fd-situacao"),
+    // limpa CPF/RG do documento principal (legível por qualquer aprovado) —
+    // eles agora só existem na subcoleção dados_sensiveis, de leitura restrita.
+    cpf:deleteField(),rg:deleteField()
   };
   if(fichaFotoBase64)dados.foto=fichaFotoBase64;
   if(!dados.nome||!dados.matricula)return alerta("Nome e matrícula são obrigatórios.","erro");
   try{
     await updateDoc(doc(db,COL_SERV,fichaAtualId),dados);
+    await setDoc(doc(db,COL_SERV,fichaAtualId,"dados_sensiveis","dados"),
+      {cpf,rg,email:dados.email},{merge:true});
     const idx=servidoresCache.findIndex(s=>s.id===fichaAtualId);
-    if(idx>-1)servidoresCache[idx]={...servidoresCache[idx],...dados};
-    await registrarAuditoria(`Dados pessoais atualizados: ${dados.nome}`,`Matrícula: ${dados.matricula}`);
+    if(idx>-1){servidoresCache[idx]={...servidoresCache[idx],...dados};delete servidoresCache[idx].cpf;delete servidoresCache[idx].rg;}
+    await registrarAuditoria(`Dados pessoais atualizados: ${dados.nome}`,`Matrícula: ${dados.matricula}`,
+      {modulo:"📁 Administrativo",registro:dados.matricula});
     alerta("Dados pessoais salvos!","ok");
     abrirFicha(fichaAtualId);
   }catch(err){alerta("Erro: "+err.message,"erro");}
+};
+async function carregarDadosSensiveisServidor(srvId){
+  try{
+    const snap=await getDoc(doc(db,COL_SERV,srvId,"dados_sensiveis","dados"));
+    return snap.exists()?snap.data():null;
+  }catch(e){return null;} // permission-denied cai aqui — tratado como "sem acesso", não como erro
+}
+window.migrarCpfRgRestrito=async function(){
+  if(!_ehAdmin())return alerta("Apenas o Administrador pode rodar essa migração.","erro");
+  if(!confirm("Isso vai mover CPF e RG de todos os servidores para uma área de leitura restrita "+
+    "e removê-los do documento principal (hoje visível a qualquer usuário aprovado). "+
+    "É uma operação única. Continuar?"))return;
+  try{
+    const snap=await getDocs(collection(db,COL_SERV));
+    let migrados=0,semDados=0;
+    for(const d of snap.docs){
+      const srv=d.data();
+      if(srv.cpf===undefined&&srv.rg===undefined){semDados++;continue;}
+      await setDoc(doc(db,COL_SERV,d.id,"dados_sensiveis","dados"),
+        {cpf:srv.cpf||"",rg:srv.rg||"",email:srv.email||""},{merge:true});
+      await updateDoc(doc(db,COL_SERV,d.id),{cpf:deleteField(),rg:deleteField()});
+      migrados++;
+    }
+    await registrarAuditoria("Migração CPF/RG para acesso restrito",
+      `${migrados} servidor(es) migrado(s), ${semDados} já sem CPF/RG no documento principal.`,
+      {modulo:"💻 Tecnologia",resultado:"Migração administrativa"});
+    alerta(`Migração concluída: ${migrados} servidor(es) atualizado(s).`,"ok");
+  }catch(err){alerta("Erro na migração: "+err.message,"erro");}
 };
 
 window.adicionarEventoTimeline=async function(){
@@ -11918,9 +11972,10 @@ async function iniciarMeuPainel(){
   // ── Ficha funcional (somente leitura) ──
   const elFicha=document.getElementById("mp-ficha");
   if(srv){
+    const dadosSensiveis=await carregarDadosSensiveisServidor(srv.id);
     elFicha.innerHTML=`
       <div class="hist-corpo">
-        CPF: ${srv.cpf||"—"}\nNascimento: ${srv.nascimento||"—"}\nAdmissão: ${srv.admissao||"—"}
+        CPF: ${dadosSensiveis?.cpf||"—"}\nRG: ${dadosSensiveis?.rg||"—"}\nNascimento: ${srv.nascimento||"—"}\nAdmissão: ${srv.admissao||"—"}
         \nTelefone: ${srv.telefone||"—"}\nE-mail: ${srv.email||"—"}\nEndereço: ${srv.endereco||"—"}
         \nFunção: ${srv.funcao||"—"}\nUnidade: ${srv.unidade||"—"}
       </div>`;
