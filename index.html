@@ -1798,6 +1798,7 @@ textarea{resize:vertical;min-height:70px;}
 
   <button class="btn btn-full mod-btn" style="border-left:3px solid #c0392b!important;margin-bottom:8px" onclick="ir('tec-auditoria')">🔐 Log de Auditoria</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #e67e22!important;margin-bottom:8px" onclick="migrarCpfRgRestrito()">🔒 Migrar CPF/RG para acesso restrito</button>
+  <button class="btn btn-full mod-btn" style="border-left:3px solid #c0392b!important;margin-bottom:8px" onclick="limparDadosTesteOcorrenciasPAD()">🧹 Limpar dados de teste (Ocorrências e PAD)</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #fbbf24!important;margin-bottom:8px" onclick="ir('admin')">👥 Gestão de Usuários</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #f87171!important;margin-bottom:8px" onclick="ir('tec-seguranca')"><span class="ic-img ic-seguranca"></span> Segurança</button>
   <button class="btn btn-full mod-btn" style="border-left:3px solid #34d399!important;margin-bottom:8px" onclick="ir('tec-dispositivos')"><span class="ic-img ic-dispositivos"></span> Gerenciamento de Dispositivos</button>
@@ -8272,6 +8273,53 @@ async function carregarDadosSensiveisServidor(srvId){
     return snap.exists()?snap.data():null;
   }catch(e){return null;} // permission-denied cai aqui — tratado como "sem acesso", não como erro
 }
+/**
+ * Limpeza de dados de teste — Ocorrências (interna e externa) e PAD
+ * aberto/em análise/em andamento.
+ * NÃO remove o módulo nem as funções, só os documentos das coleções
+ * "ocorrencias", "ocorrencia_historico", "pad" (status recebido/analise/
+ * aberto — mantém os arquivados) e "pad_historico" ligado a eles.
+ */
+window.limparDadosTesteOcorrenciasPAD=async function(){
+  if(!_ehAdmin())return alerta("Apenas o Administrador pode limpar esses dados.","erro");
+  if(!confirm(
+    "Isso vai APAGAR PERMANENTEMENTE:\n\n"+
+    "• Todas as Ocorrências (internas e externas) e seu histórico\n"+
+    "• Todos os PAD com status Recebido/Em Análise/Aberto (e seu histórico) — PADs Arquivados NÃO são apagados\n\n"+
+    "As telas e funções continuam existindo, só os dados de teste somem. Essa ação não pode ser desfeita. Continuar?"))return;
+  if(!confirm("Tem certeza mesmo? Essa é a confirmação final."))return;
+  try{
+    let ocApagadas=0,ocHistApagados=0,padApagados=0,padHistApagados=0;
+
+    // Ocorrências + histórico (tudo — abrange internas e externas)
+    const snapOc=await getDocs(collection(db,COL_OC));
+    for(const d of snapOc.docs){await deleteDoc(doc(db,COL_OC,d.id));ocApagadas++;}
+    const snapOcHist=await getDocs(collection(db,COL_OC_HIST));
+    for(const d of snapOcHist.docs){await deleteDoc(doc(db,COL_OC_HIST,d.id));ocHistApagados++;}
+
+    // PAD com status em aberto/análise/andamento (preserva arquivados) + histórico ligado
+    const snapPad=await getDocs(collection(db,COL_PAD));
+    const idsPadApagados=new Set();
+    for(const d of snapPad.docs){
+      const st=d.data().status;
+      if(["recebido","analise","aberto"].includes(st)){
+        await deleteDoc(doc(db,COL_PAD,d.id));
+        idsPadApagados.add(d.id);padApagados++;
+      }
+    }
+    const snapPadHist=await getDocs(collection(db,COL_PAD_HIST));
+    for(const d of snapPadHist.docs){
+      if(idsPadApagados.has(d.data().padId)){
+        await deleteDoc(doc(db,COL_PAD_HIST,d.id));padHistApagados++;
+      }
+    }
+
+    await registrarAuditoria("Limpeza de dados de teste (Ocorrências e PAD)",
+      `Ocorrências: ${ocApagadas} (+${ocHistApagados} histórico) · PADs abertos/análise/andamento: ${padApagados} (+${padHistApagados} histórico). PADs arquivados preservados.`,
+      {modulo:"💻 Tecnologia",resultado:"Limpeza administrativa"});
+    alerta(`Concluído! Ocorrências: ${ocApagadas} · PADs: ${padApagados} apagados.`,"ok");
+  }catch(err){alerta("Erro na limpeza: "+err.message,"erro");}
+};
 window.migrarCpfRgRestrito=async function(){
   if(!_ehAdmin())return alerta("Apenas o Administrador pode rodar essa migração.","erro");
   if(!confirm("Isso vai mover CPF e RG de todos os servidores para uma área de leitura restrita "+
