@@ -19,4 +19,3 @@ Sistema da Polícia Municipal de Caruaru.
 - JavaScript
 - Firebase
 - Progressive Web App (PWA)
-- 
