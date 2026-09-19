@@ -946,43 +946,61 @@ export async function salvarDiasMesAtual(){
 export async function iniciarEscala(){
   escalaMesAtual=new Date().getMonth();
   escalaAnoAtual=new Date().getFullYear();
+
+  await carregarSrvSelect();
   await renderCalendario();
   atualizarResumo();
-  // carrega servidores no select do modal
-  carregarSrvSelect();
 }
 
 export async function carregarSrvSelect(){
   const sel=document.getElementById("escala-srv-sel");
-  sel.innerHTML='<option value="">Selecione servidor...</option>';
-  if(!servidoresCache.length){
-    try{
-      const snap=await getDocs(query(collection(db,COL_SERV),where("ativo","==",true)));
-      servidoresCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.nome.localeCompare(b.nome));
-    }catch(e){}
+  if(!sel)return;
+
+  sel.innerHTML='<option value="">Carregando servidores...</option>';
+
+  try{
+    if(!servidoresCache.length){
+      const snap=await getDocs(
+        query(collection(db,COL_SERV),where("ativo","==",true))
+      );
+
+      servidoresCache=snap.docs
+        .map(d=>({id:d.id,...d.data()}))
+        .filter(s=>s.nome)
+        .sort((a,b)=>String(a.nome).localeCompare(String(b.nome),"pt-BR"));
+    }
+
+    sel.innerHTML='<option value="">Selecione servidor...</option>';
+
+    if(!servidoresCache.length){
+      sel.innerHTML='<option value="">Nenhum servidor ativo cadastrado</option>';
+      return;
+    }
+
+    servidoresCache.forEach(s=>{
+      sel.innerHTML+=`<option value="${s.id}" data-nome="${esc(s.nome)}">${esc(s.nome)} — Mat: ${esc(s.matricula||"—")}</option>`;
+    });
+  }catch(err){
+    console.error("carregarSrvSelect:",err);
+    sel.innerHTML='<option value="">Erro ao carregar servidores</option>';
   }
-  servidoresCache.forEach(s=>{
-    sel.innerHTML+=`<option value="${s.id}" data-nome="${esc(s.nome)}">${esc(s.nome)} — Mat: ${esc(s.matricula)}</option>`;
-  });
 }
 
-export async function mudarMes(dir){
-  escalaMesAtual+=dir;
-  if(escalaMesAtual>11){escalaMesAtual=0;escalaAnoAtual++;}
-  if(escalaMesAtual<0){escalaMesAtual=11;escalaAnoAtual--;}
-  await renderCalendario(); atualizarResumo();
-}
 window.mudarMes=mudarMes;
 
 export async function renderCalendario(){
   const meses=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-  document.getElementById("escala-mes-label").textContent=`${meses[escalaMesAtual]} ${escalaAnoAtual}`;
+  const label=document.getElementById("escala-mes-label");
   const cal=document.getElementById("escala-cal");
-  cal.innerHTML='<p class="hist-vazio" style="grid-column:1/-1">Carregando...</p>';
-  const dados=await carregarDiasMesAtual();
-  const hoje=new Date(); const hj=hoje.getDate(),hm=hoje.getMonth(),ha=hoje.getFullYear();
+  if(!label||!cal)return;
 
-  // dias da semana header
+  label.textContent=`${meses[escalaMesAtual]} ${escalaAnoAtual}`;
+  cal.innerHTML='<p class="hist-vazio" style="grid-column:1/-1">Carregando...</p>';
+
+  const dados=await carregarDiasMesAtual();
+  const hoje=new Date();
+  const hj=hoje.getDate(),hm=hoje.getMonth(),ha=hoje.getFullYear();
+
   const dows=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
   let html=dows.map(d=>`<div class="escala-dow">${d}</div>`).join("");
 
@@ -993,21 +1011,24 @@ export async function renderCalendario(){
 
   for(let d=1;d<=totalDias;d++){
     const isHoje=(d===hj&&escalaMesAtual===hm&&escalaAnoAtual===ha);
-    const entradas=dados[d]||[];
+    const entradas=Array.isArray(dados?.[d])?dados[d]:[];
+
     const turnos=entradas.map(e=>{
-      const cls=`turno-${e.turno.toLowerCase()}`;
-      const nome=e.nomeServidor?.split(" ")[0]||"";
-      return`<span class="escala-turno ${cls}">${e.turno} ${nome}</span>`;
+      const turno=String(e?.turno||"").toUpperCase();
+      if(!turno)return"";
+      const cls=`turno-${turno.toLowerCase()}`;
+      const nome=String(e?.nomeServidor||"").trim().split(/\s+/)[0]||"";
+      return`<span class="escala-turno ${cls}">${esc(turno)} ${esc(nome)}</span>`;
     }).join("");
+
     html+=`<div class="escala-dia${isHoje?" hoje":""}" data-dia="${d}" onclick="abrirModalEscalaDia(${d})">
       <div class="dia-num">${d}</div>
       ${turnos}
     </div>`;
   }
-  cal.innerHTML=html;
-}
 
-export async function copiarMesAnterior(){
+  cal.innerHTML=html;
+}\n\nexport async function copiarMesAnterior(){
   let mesAnt=escalaMesAtual-1,anoAnt=escalaAnoAtual;
   if(mesAnt<0){mesAnt=11;anoAnt--;}
   let dadosAnt={};
@@ -1027,43 +1048,70 @@ export async function copiarMesAnterior(){
 window.copiarMesAnterior=copiarMesAnterior;
 
 export function atualizarResumo(){
-  const dados=_diasMesAtual;
-  const total=Object.values(dados).reduce((acc,arr)=>acc+arr.length,0);
+  const dados=_diasMesAtual||{};
+  const total=Object.values(dados).reduce(
+    (acc,arr)=>acc+(Array.isArray(arr)?arr.length:0),0
+  );
   const turnos={M:0,T:0,N:0,F:0,E:0};
-  Object.values(dados).forEach(arr=>arr.forEach(e=>{ if(turnos[e.turno]!==undefined)turnos[e.turno]++; }));
-  document.getElementById("escala-resumo").innerHTML=total
+
+  Object.values(dados).forEach(arr=>{
+    if(!Array.isArray(arr))return;
+    arr.forEach(e=>{
+      const t=String(e?.turno||"").toUpperCase();
+      if(turnos[t]!==undefined)turnos[t]++;
+    });
+  });
+
+  const el=document.getElementById("escala-resumo");
+  if(!el)return;
+
+  el.innerHTML=total
     ?`Total de entradas: <strong>${total}</strong><br>
       ☀️ Manhã: ${turnos.M} · 🌤 Tarde: ${turnos.T} · 🌙 Noite: ${turnos.N}<br>
       🏖 Folga: ${turnos.F} · ⚡ Extra: ${turnos.E}`
     :"Nenhuma entrada este mês.";
-}
-
-export function abrirModalEscalaDia(dia){
-  diaEditando=dia;
-  const entradas=_diasMesAtual[dia]||[];
-  document.getElementById("escala-modal-titulo").textContent=`📅 Dia ${String(dia).padStart(2,"0")}`;
-  document.getElementById("escala-obs-sel").value="";
-
-  // lista entradas existentes
+}\n\nexport function abrirModalEscalaDia(dia){
+  const modal=document.getElementById("escala-modal");
+  const titulo=document.getElementById("escala-modal-titulo");
   const lista=document.getElementById("escala-modal-lista");
+  const srvSel=document.getElementById("escala-srv-sel");
+
+  if(!modal||!titulo||!lista||!srvSel){
+    console.error("Modal de escala incompleto no index.html.");
+    return alerta("Não foi possível abrir o lançamento da escala. Recarregue o aplicativo.","erro");
+  }
+
+  diaEditando=Number(dia);
+  const entradas=Array.isArray(_diasMesAtual?.[diaEditando])
+    ?_diasMesAtual[diaEditando]:[];
+
+  titulo.textContent=`📅 Dia ${String(diaEditando).padStart(2,"0")}`;
+  const obsEl=document.getElementById("escala-obs-sel");
+  if(obsEl)obsEl.value="";
+
   lista.innerHTML=entradas.length
     ?`<div style="font-family:'Oswald',sans-serif;font-size:.7rem;letter-spacing:1px;color:var(--cinza);margin-bottom:6px">ENTRADAS SALVAS</div>`+
       entradas.map((e,i)=>{
-        const cls=`turno-${e.turno.toLowerCase()}`;
+        const turno=String(e?.turno||"").toUpperCase();
+        const cls=turno?`turno-${turno.toLowerCase()}`:"";
+        const nome=String(e?.nomeServidor||"Servidor");
+        const jornada=String(e?.jornada||"");
+        const obs=String(e?.obs||"");
+
         return`<div style="display:flex;justify-content:space-between;align-items:center;
           background:rgba(255,255,255,.05);border-radius:6px;padding:6px 8px;margin-bottom:4px">
           <div>
-            <span class="escala-turno ${cls}" style="font-size:.65rem">${e.turno}</span>
-            <span style="font-size:.78rem;margin-left:6px">${e.nomeServidor}</span>
-            <div style="font-size:.65rem;color:var(--cinza)">${e.jornada||""}${e.obs?" · "+e.obs:""}</div>
+            <span class="escala-turno ${cls}" style="font-size:.65rem">${esc(turno||"—")}</span>
+            <span style="font-size:.78rem;margin-left:6px">${esc(nome)}</span>
+            <div style="font-size:.65rem;color:var(--cinza)">${esc(jornada)}${obs?" · "+esc(obs):""}</div>
           </div>
           <button class="btn-remover-linha" onclick="removerEntradaEscala(${i})">✕</button>
         </div>`;
       }).join("")
     :"";
-  document.getElementById("escala-modal").classList.add("aberto");
-}
-window.abrirModalEscalaDia=abrirModalEscalaDia;
+
+  modal.classList.add("aberto");
+}\nwindow.abrirModalEscalaDia=abrirModalEscalaDia;
 
 export function fecharModalEscala(){
   document.getElementById("escala-modal").classList.remove("aberto");
@@ -1073,35 +1121,54 @@ window.fecharModalEscala=fecharModalEscala;
 
 export async function salvarDiaEscala(){
   if(diaEditando===null)return;
+
   const srvSel=document.getElementById("escala-srv-sel");
+  if(!srvSel)return alerta("Campo de servidor não encontrado.","erro");
+
   const srvId=srvSel.value;
   const srvNome=srvSel.options[srvSel.selectedIndex]?.text?.split(" — ")[0]||"";
   const turno=v("escala-turno-sel")||"M";
   const jornada=v("escala-jornada-sel")||"Ordinário";
   const obs=v("escala-obs-sel");
+
   if(!srvId)return alerta("Selecione um servidor.","erro");
 
   if(!_diasMesAtual[diaEditando])_diasMesAtual[diaEditando]=[];
-  _diasMesAtual[diaEditando].push({srvId,nomeServidor:srvNome,turno,jornada,obs,criadoEm:agora()});
+
+  _diasMesAtual[diaEditando].push({
+    srvId,nomeServidor:srvNome,turno,jornada,obs,criadoEm:agora()
+  });
+
   try{
     await salvarDiasMesAtual();
     alerta("Entrada salva!","ok");
-    await renderCalendario(); atualizarResumo();
-    abrirModalEscalaDia(diaEditando); // recarrega modal com nova entrada
-  }catch(err){alerta("Erro: "+err.message,"erro");}
-}
-window.salvarDiaEscala=salvarDiaEscala;
+
+    const diaSalvo=diaEditando;
+    await renderCalendario();
+    atualizarResumo();
+    abrirModalEscalaDia(diaSalvo);
+  }catch(err){
+    console.error("salvarDiaEscala:",err);
+    alerta("Erro ao salvar a escala: "+err.message,"erro");
+  }
+}\nwindow.salvarDiaEscala=salvarDiaEscala;
 
 export async function removerEntradaEscala(idx){
   if(!confirm("Remover esta entrada?"))return;
+  if(diaEditando===null||!Array.isArray(_diasMesAtual?.[diaEditando]))return;
+
   _diasMesAtual[diaEditando].splice(idx,1);
+
   try{
     await salvarDiasMesAtual();
-    await renderCalendario(); atualizarResumo();
+    await renderCalendario();
+    atualizarResumo();
     abrirModalEscalaDia(diaEditando);
-  }catch(err){alerta("Erro: "+err.message,"erro");}
-}
-window.removerEntradaEscala=removerEntradaEscala;
+  }catch(err){
+    console.error("removerEntradaEscala:",err);
+    alerta("Erro ao remover a entrada: "+err.message,"erro");
+  }
+}\nwindow.removerEntradaEscala=removerEntradaEscala;
 
 export async function publicarEscala(){
   if(!confirm("Publicar escala? Todos os servidores receberão notificação."))return;
