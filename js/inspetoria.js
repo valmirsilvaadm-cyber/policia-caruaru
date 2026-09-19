@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, query, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { addDoc, collection, deleteDoc, doc, getDocs, query, serverTimestamp, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { COL_FISC, COL_OS, COL_SERV, COL_USUARIOS, FISC_MAP, alerta, db, enviarNotificacao, esc, ir, registrarAuditoria, usuarioLogado, v } from "./core.js";
 
 export function iniciarFiscTela(id){
