@@ -90,7 +90,7 @@ export async function registrarOS(tipo){
   try{
     await addDoc(collection(db,COL_OS),{
       tipo,numero:num,servidor:srv,matricula:mat,dataInicio:ini,dataFim:fim,descricao:desc,
-      statusOS:"ativa", // ativa | concluida | cancelada
+      statusOS:"ativa",
       statusComando:"pendente",
       supervisorNome:usuarioLogado?.nome||"",supervisorEmail:usuarioLogado?.email||"",
       criadoEm:serverTimestamp()
@@ -99,8 +99,10 @@ export async function registrarOS(tipo){
     const destino=v(`os-${p}-notif`)||"nenhum";
     const moduloAlvo=v(`os-${p}-modulo-alvo`),servidorAlvo=v(`os-${p}-servidor-alvo`);
     await notificarOS(destino,tipo,num,srv,ini,fim,desc,moduloAlvo,servidorAlvo);
-    ["num","servidor","mat","inicio","fim","desc","servidor-alvo"].forEach(c=>{const el=document.getElementById(`os-${p}-${c}`);if(el)el.value="";});
-    // vai direto para o histórico após registrar
+    ["num","servidor","mat","inicio","fim","desc","servidor-alvo"].forEach(c=>{
+      const el=document.getElementById(`os-${p}-${c}`);
+      if(el)el.value="";
+    });
     ir(`hist-os-${tipo}`);
   }catch(err){alerta("Erro: "+err.message,"erro");}
 }
@@ -117,7 +119,10 @@ export async function notificarOS(destino,tipo,numero,srv,ini,fim,desc,moduloAlv
       const enviados=new Set();
       for(const d of snap.docs){
         const u=d.data();
-        if(u.email&&!enviados.has(u.email)){enviados.add(u.email);await enviarNotificacao(u.email,titulo,corpo,"meupainel");}
+        if(u.email&&!enviados.has(u.email)){
+          enviados.add(u.email);
+          await enviarNotificacao(u.email,titulo,corpo,"meupainel");
+        }
       }
       alerta("Notificação enviada a todos os servidores.","ok");
 
@@ -129,7 +134,11 @@ export async function notificarOS(destino,tipo,numero,srv,ini,fim,desc,moduloAlv
       for(const d of snap.docs){
         const u=d.data();
         const temAcesso=!(moduloAlvo in (u.permissoes||{}))||u.permissoes[moduloAlvo]!==false;
-        if(u.email&&temAcesso&&!enviados.has(u.email)){enviados.add(u.email);await enviarNotificacao(u.email,titulo,corpo,moduloAlvo);count++;}
+        if(u.email&&temAcesso&&!enviados.has(u.email)){
+          enviados.add(u.email);
+          await enviarNotificacao(u.email,titulo,corpo,moduloAlvo);
+          count++;
+        }
       }
       alerta(`Notificação enviada a ${count} servidor(es) do módulo selecionado.`,"ok");
 
@@ -139,25 +148,37 @@ export async function notificarOS(destino,tipo,numero,srv,ini,fim,desc,moduloAlv
       const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
       const match=uSnap.docs.find(d=>d.data().nome?.toLowerCase().includes(servidorAlvo.toLowerCase()));
       if(match)email=match.data().email;
+
       if(!email){
         const sSnap=await getDocs(collection(db,COL_SERV));
         const matchS=sSnap.docs.find(d=>d.data().nome?.toLowerCase().includes(servidorAlvo.toLowerCase()));
         if(matchS)email=matchS.data().email;
       }
-      if(email){await enviarNotificacao(email,titulo,corpo,"meupainel");alerta(`Notificação enviada a ${servidorAlvo}.`,"ok");}
-      else alerta("Servidor não encontrado ou sem e-mail cadastrado.","aviso");
+
+      if(email){
+        await enviarNotificacao(email,titulo,corpo,"meupainel");
+        alerta(`Notificação enviada a ${servidorAlvo}.`,"ok");
+      }else{
+        alerta("Servidor não encontrado ou sem e-mail cadastrado.","aviso");
+      }
 
     }else if(destino==="servidor"){
       let email=null;
       const sSnap=await getDocs(query(collection(db,COL_SERV),where("nome","==",srv)));
       if(!sSnap.empty)email=sSnap.docs[0].data().email;
+
       if(!email){
         const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
         const match=uSnap.docs.find(d=>d.data().nome?.toLowerCase()===srv.toLowerCase());
         if(match)email=match.data().email;
       }
-      if(email){await enviarNotificacao(email,titulo,corpo,"meupainel");alerta(`Notificação enviada a ${srv}.`,"ok");}
-      else alerta("Servidor sem e-mail cadastrado — notificação não enviada.","aviso");
+
+      if(email){
+        await enviarNotificacao(email,titulo,corpo,"meupainel");
+        alerta(`Notificação enviada a ${srv}.`,"ok");
+      }else{
+        alerta("Servidor sem e-mail cadastrado — notificação não enviada.","aviso");
+      }
     }
   }catch(e){console.warn("notificarOS:",e.message);}
 }
@@ -166,20 +187,21 @@ export async function renderHistOS(tipo){
   const lista=document.getElementById(`lista-os-${tipo}`),cont=document.getElementById(`contador-os-${tipo}`);
   lista.innerHTML='<p class="hist-vazio">Carregando...</p>';
 
-  // barra de seleção para exclusão
   const barraId=`os-sel-bar-${tipo}`;
   let barra=document.getElementById(barraId);
+
   if(!barra){
     barra=document.createElement("div");
     barra.id=barraId;
     barra.style.cssText="display:none;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.4);border-radius:8px;padding:10px 12px;margin-bottom:10px;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap";
     lista.parentNode.insertBefore(barra,lista);
   }
+
   barra.innerHTML=`
     <span id="os-sel-cnt-${tipo}" style="font-size:.8rem;color:#f1948a;font-family:'Oswald',sans-serif;letter-spacing:1px">0 selecionada(s)</span>
     <div style="display:flex;gap:6px">
       <button class="btn btn-sm btn-perigo" onclick="excluirOSSelecionadas('${tipo}')">🗑 Excluir</button>
-      <button class="btn btn-sm btn-cinza"  onclick="desmarcarOS('${tipo}')">✕ Cancelar</button>
+      <button class="btn btn-sm btn-cinza" onclick="desmarcarOS('${tipo}')">✕ Cancelar</button>
     </div>`;
 
   const osSelecionadas=new Set();
@@ -187,13 +209,15 @@ export async function renderHistOS(tipo){
 
   try{
     const snap=await getDocs(query(collection(db,COL_OS),where("tipo","==",tipo)));
+
     const docs=snap.docs.map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+
     cont.textContent=docs.length?`${docs.length} O.S registrada(s)`:"";
 
-    // busca usuários aprovados para select
     let usuariosOpts='<option value="">Selecione usuário...</option>';
     let usuariosWA=[];
+
     try{
       const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
       uSnap.docs.forEach(d=>{
@@ -203,8 +227,8 @@ export async function renderHistOS(tipo){
       });
     }catch(e){}
 
-    // busca servidores do plantão (têm número de telefone eventualmente)
     let srvOpts='<option value="">Selecione servidor...</option>';
+
     try{
       const sSnap=await getDocs(collection(db,COL_SERV));
       sSnap.docs.forEach(d=>{
@@ -218,92 +242,152 @@ export async function renderHistOS(tipo){
       const sColor=d.statusOS==="concluida"?"#7dcea0":d.statusOS==="cancelada"?"#f1948a":"#e8c96b";
       const sLabel=d.statusOS==="concluida"?"✅ Concluída":d.statusOS==="cancelada"?"❌ Cancelada":"🟡 Ativa";
       const descEsc=(d.descricao||"").replace(/'/g,"\\'");
+
       return`<div class="hist-item" id="os-card-${d.id}" style="position:relative">
-        <!-- CHECKBOX SELEÇÃO -->
         <div style="display:flex;align-items:flex-start;gap:8px">
+
           <input type="checkbox" class="os-chk" data-id="${d.id}"
             style="width:18px;height:18px;accent-color:#c0392b;flex-shrink:0;margin-top:3px;cursor:pointer"
             onchange="toggleOSSel('${tipo}','${d.id}',this.checked)">
+
           <div style="flex:1">
+
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
               <div class="hist-tipo" style="margin:0">${ic} O.S ${d.numero}</div>
               <span style="font-size:.68rem;font-family:'Oswald',sans-serif;letter-spacing:1px;color:${sColor}">${sLabel}</span>
             </div>
+
             <div class="hist-data">📅 Início: ${d.dataInicio} · Fim: ${d.dataFim||"indeterminado"}</div>
+
             <div class="hist-usuario">👮 ${esc(d.servidor)} · Mat: ${esc(d.matricula)||"—"}</div>
+
             <div class="hist-corpo" style="margin-bottom:8px">${esc(d.descricao)||"Sem descrição"}\nSupervisor: ${esc(d.supervisorNome)}</div>
 
             <!-- STATUS -->
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px">
-              <button class="btn btn-sm btn-verde"  onclick="alterarStatusOS('${d.id}','concluida','${tipo}')">✅ Concluir</button>
-              <button class="btn btn-sm btn-perigo" onclick="alterarStatusOS('${d.id}','cancelada','${tipo}')">❌ Cancelar</button>
-              <button class="btn btn-sm" style="background:rgba(30,100,200,.3);border-color:rgba(30,100,200,.5);color:#90c2fa;font-size:.62rem"
-                onclick="alterarStatusOS('${d.id}','ativa','${tipo}')">🔄 Reativar</button>
+
+              <button class="btn btn-sm btn-verde"
+                onclick="alterarStatusOS('${d.id}','concluida','${tipo}')">
+                ✅ Concluir
+              </button>
+
+              <button class="btn btn-sm btn-perigo"
+                onclick="alterarStatusOS('${d.id}','cancelada','${tipo}')">
+                ❌ Cancelar
+              </button>
+
+              <button class="btn btn-sm"
+                style="background:rgba(30,100,200,.3);border-color:rgba(30,100,200,.5);color:#90c2fa;font-size:.62rem"
+                onclick="alterarStatusOS('${d.id}','ativa','${tipo}')">
+                🔄 Reativar
+              </button>
+
             </div>
 
             <!-- ENVIO -->
             <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px">
-              <div style="font-family:'Oswald',sans-serif;font-size:.68rem;letter-spacing:2px;color:var(--cinza);margin-bottom:8px">📤 ENVIAR O.S</div>
 
-              <!-- WHATSAPP APENAS -->
+              <div style="font-family:'Oswald',sans-serif;font-size:.68rem;letter-spacing:2px;color:var(--cinza);margin-bottom:8px">
+                📤 ENVIAR O.S
+              </div>
+
+              <!-- WHATSAPP -->
               <div>
-                <div style="font-size:.65rem;color:var(--cinza);margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:1px">📱 ENVIAR VIA WHATSAPP</div>
-                <input type="tel" id="os-wa-${d.id}" placeholder="DDD + número (ex: 81999887766)"
+
+                <div style="font-size:.65rem;color:var(--cinza);margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:1px">
+                  📱 ENVIAR VIA WHATSAPP
+                </div>
+
+                <input type="tel"
+                  id="os-wa-${d.id}"
+                  placeholder="DDD + número (ex: 81999887766)"
                   style="margin:0 0 5px;font-size:.82rem">
-                <button class="btn btn-full btn-sm" style="background:linear-gradient(135deg,#25d366,#128c7e);border-color:#25d366;color:#fff"
+
+                <button class="btn btn-full btn-sm"
+                  style="background:linear-gradient(135deg,#25d366,#128c7e);border-color:#25d366;color:#fff"
                   onclick="enviarOSWhatsApp('${d.id}','${d.numero}','${d.servidor}','${d.dataInicio}','${d.dataFim||"indeterminado"}','${tipo}','${descEsc}')">
                   💬 Enviar pelo WhatsApp
                 </button>
+
               </div>
             </div>
+
           </div>
         </div>
-      </div>`;}).join("")
+      </div>`;
+    }).join("")
     :'<p class="hist-vazio">Nenhuma O.S registrada ainda.</p>';
 
-    // eventos checkbox
     lista.querySelectorAll(".os-chk").forEach(chk=>{
-      chk.addEventListener("change",()=>{});// já tem onchange inline
+      chk.addEventListener("change",()=>{});
     });
 
-  }catch(err){lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;}
+  }catch(err){
+    lista.innerHTML=`<p class="hist-vazio">Erro: ${err.message}</p>`;
+  }
 }
 
 export function toggleOSSel(tipo,id,checked){
-  const sel=window[`osSel_${tipo}`];if(!sel)return;
-  if(checked)sel.add(id);else sel.delete(id);
+  const sel=window[`osSel_${tipo}`];
+  if(!sel)return;
+
+  if(checked)sel.add(id);
+  else sel.delete(id);
+
   const n=sel.size;
+
   const barra=document.getElementById(`os-sel-bar-${tipo}`);
   if(barra)barra.style.display=n>0?"flex":"none";
+
   const cnt=document.getElementById(`os-sel-cnt-${tipo}`);
   if(cnt)cnt.textContent=`${n} selecionada(s)`;
 }
+
 window.toggleOSSel=toggleOSSel;
 
 export function desmarcarOS(tipo){
-  const sel=window[`osSel_${tipo}`];if(sel)sel.clear();
+  const sel=window[`osSel_${tipo}`];
+  if(sel)sel.clear();
+
   document.querySelectorAll(".os-chk").forEach(c=>c.checked=false);
+
   const barra=document.getElementById(`os-sel-bar-${tipo}`);
   if(barra)barra.style.display="none";
 }
+
 window.desmarcarOS=desmarcarOS;
 
 export async function excluirOSSelecionadas(tipo){
   const sel=window[`osSel_${tipo}`];
+
   if(!sel||!sel.size)return;
+
   if(!confirm(`Excluir ${sel.size} O.S permanentemente?`))return;
+
   try{
-    for(const id of sel)await deleteDoc(doc(db,COL_OS,id));
+    for(const id of sel)
+      await deleteDoc(doc(db,COL_OS,id));
+
     alerta(`${sel.size} O.S excluída(s).`,"aviso");
+
     renderHistOS(tipo);
-  }catch(err){alerta("Erro: "+err.message,"erro");}
+
+  }catch(err){
+    alerta("Erro: "+err.message,"erro");
+  }
 }
+
 window.excluirOSSelecionadas=excluirOSSelecionadas;
 
 export async function enviarOSWhatsApp(id,numero,servidor,dataInicio,dataFim,tipo,desc){
+
   const tel=(document.getElementById(`os-wa-${id}`)?.value||"").replace(/\D/g,"");
-  if(!tel||tel.length<10)return alerta("Digite um número de WhatsApp válido com DDD.","erro");
+
+  if(!tel||tel.length<10)
+    return alerta("Digite um número de WhatsApp válido com DDD.","erro");
+
   const ic=tipo==="temporaria"?"⏳":"♾";
+
   const txt=
     `${ic} *ORDEM DE SERVIÇO — ${tipo.toUpperCase()}*\n\n`+
     `*Nº:* ${numero}\n`+
@@ -312,28 +396,139 @@ export async function enviarOSWhatsApp(id,numero,servidor,dataInicio,dataFim,tip
     (desc?`*Descrição:* ${desc}\n`:"")+
     `\n*Emitido por:* ${usuarioLogado?.nome||""}\n`+
     `*Polícia Municipal de Caruaru*`;
-  window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(txt)}`,"_blank");
 
-  // tenta enviar notificação in-app para o usuário que tem esse número
+  window.open(
+    `https://wa.me/55${tel}?text=${encodeURIComponent(txt)}`,
+    "_blank"
+  );
+
   try{
-    const sSnap=await getDocs(query(collection(db,COL_SERV),where("telefone","==",tel)));
+
+    const sSnap=await getDocs(
+      query(collection(db,COL_SERV),where("telefone","==",tel))
+    );
+
     if(!sSnap.empty){
+
       const srv=sSnap.docs[0].data();
+
       if(srv.email){
-        await enviarNotificacao(srv.email,`${ic} Nova O.S — ${numero}`,
-          `Servidor: ${servidor}\nPeríodo: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`,"inspetoria");
+
+        await enviarNotificacao(
+          srv.email,
+          `${ic} Nova O.S — ${numero}`,
+          `Servidor: ${servidor}\nPeríodo: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`,
+          "inspetoria"
+        );
+
       }
     }
-    // também tenta por e-mail do usuário cadastrado que tem o mesmo nome
-    const uSnap=await getDocs(query(collection(db,COL_USUARIOS),where("status","==","aprovado")));
+
+    const uSnap=await getDocs(
+      query(collection(db,COL_USUARIOS),where("status","==","aprovado"))
+    );
+
     uSnap.docs.forEach(async d=>{
+
       const u=d.data();
-      if(u.nome?.toLowerCase()===servidor.toLowerCase()&&u.email){
-        await enviarNotificacao(u.email,`${ic} Nova O.S — ${numero}`,
-          `Período: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`,"inspetoria");
+
+      if(
+        u.nome?.toLowerCase()===servidor.toLowerCase()&&
+        u.email
+      ){
+
+        await enviarNotificacao(
+          u.email,
+          `${ic} Nova O.S — ${numero}`,
+          `Período: ${dataInicio} a ${dataFim}\n${desc?"Descrição: "+desc+"\n":""}Emitido por: ${usuarioLogado?.nome||""}`,
+          "inspetoria"
+        );
+
       }
+
     });
+
   }catch(e){}
 }
+
 window.enviarOSWhatsApp=enviarOSWhatsApp;
 
+
+/* ══════════════════════════════════════════════════════════════
+   ALTERAR STATUS DA O.S.
+   ══════════════════════════════════════════════════════════════ */
+
+export async function alterarStatusOS(id,status,tipo){
+
+  const statusValidos=[
+    "ativa",
+    "concluida",
+    "cancelada"
+  ];
+
+  if(!statusValidos.includes(status)){
+    return alerta(
+      "Status de O.S. inválido.",
+      "erro"
+    );
+  }
+
+  if(
+    status==="cancelada" &&
+    !confirm("Confirmar cancelamento desta O.S.?")
+  ){
+    return;
+  }
+
+  try{
+
+    await updateDoc(
+      doc(db,COL_OS,id),
+      {
+        statusOS:status,
+        statusAtualizadoEm:serverTimestamp(),
+        statusAtualizadoPor:
+          usuarioLogado?.nome||
+          usuarioLogado?.email||
+          ""
+      }
+    );
+
+    const acao=
+      status==="ativa"
+        ?"reativada"
+        :status==="concluida"
+          ?"concluída"
+          :"cancelada";
+
+    await registrarAuditoria(
+      `O.S. ${acao}`,
+      `ID: ${id} | Tipo: ${tipo} | Responsável: ${
+        usuarioLogado?.nome||
+        usuarioLogado?.email||
+        "—"
+      }`
+    );
+
+    alerta(
+      `O.S ${acao} com sucesso!`,
+      "ok"
+    );
+
+    await renderHistOS(tipo);
+
+  }catch(err){
+
+    console.error(
+      "alterarStatusOS:",
+      err
+    );
+
+    alerta(
+      "Erro ao atualizar a O.S.: "+err.message,
+      "erro"
+    );
+  }
+}
+
+window.alterarStatusOS=alterarStatusOS;
