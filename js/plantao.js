@@ -986,6 +986,14 @@ export async function carregarSrvSelect(){
   }
 }
 
+export async function mudarMes(dir){
+  escalaMesAtual+=dir;
+  if(escalaMesAtual>11){escalaMesAtual=0;escalaAnoAtual++;}
+  if(escalaMesAtual<0){escalaMesAtual=11;escalaAnoAtual--;}
+  await carregarSrvSelect();
+  await renderCalendario();
+  atualizarResumo();
+}
 window.mudarMes=mudarMes;
 
 export async function renderCalendario(){
@@ -1028,7 +1036,9 @@ export async function renderCalendario(){
   }
 
   cal.innerHTML=html;
-}\n\nexport async function copiarMesAnterior(){
+}
+
+export async function copiarMesAnterior(){
   let mesAnt=escalaMesAtual-1,anoAnt=escalaAnoAtual;
   if(mesAnt<0){mesAnt=11;anoAnt--;}
   let dadosAnt={};
@@ -1070,7 +1080,9 @@ export function atualizarResumo(){
       ☀️ Manhã: ${turnos.M} · 🌤 Tarde: ${turnos.T} · 🌙 Noite: ${turnos.N}<br>
       🏖 Folga: ${turnos.F} · ⚡ Extra: ${turnos.E}`
     :"Nenhuma entrada este mês.";
-}\n\nexport function abrirModalEscalaDia(dia){
+}
+
+export function abrirModalEscalaDia(dia){
   const modal=document.getElementById("escala-modal");
   const titulo=document.getElementById("escala-modal-titulo");
   const lista=document.getElementById("escala-modal-lista");
@@ -1111,7 +1123,8 @@ export function atualizarResumo(){
     :"";
 
   modal.classList.add("aberto");
-}\nwindow.abrirModalEscalaDia=abrirModalEscalaDia;
+}
+window.abrirModalEscalaDia=abrirModalEscalaDia;
 
 export function fecharModalEscala(){
   document.getElementById("escala-modal").classList.remove("aberto");
@@ -1151,7 +1164,8 @@ export async function salvarDiaEscala(){
     console.error("salvarDiaEscala:",err);
     alerta("Erro ao salvar a escala: "+err.message,"erro");
   }
-}\nwindow.salvarDiaEscala=salvarDiaEscala;
+}
+window.salvarDiaEscala=salvarDiaEscala;
 
 export async function removerEntradaEscala(idx){
   if(!confirm("Remover esta entrada?"))return;
@@ -1168,7 +1182,8 @@ export async function removerEntradaEscala(idx){
     console.error("removerEntradaEscala:",err);
     alerta("Erro ao remover a entrada: "+err.message,"erro");
   }
-}\nwindow.removerEntradaEscala=removerEntradaEscala;
+}
+window.removerEntradaEscala=removerEntradaEscala;
 
 export async function publicarEscala(){
   if(!confirm("Publicar escala? Todos os servidores receberão notificação."))return;
